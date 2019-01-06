@@ -1,0 +1,57 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.11'
+    id "edu.wpi.first.GradleRIO" version "2019.1.1"
+    id 'org.snakeskin.snakeskin-gradle' version '1.4'
+}
+
+group 'org.team401'
+version '1.0'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url "http://maven.team401.org/artifactory/snakeskin"
+    }
+
+    maven {
+        url "http://maven.team401.org/artifactory/wpi"
+    }
+
+    maven {
+        url "http://maven.team401.org/artifactory/ctre"
+    }
+
+    maven {
+        url "http://maven.team401.org/artifactory/jitpack"
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    compile wpi.deps.wpilib()
+    compile "com.ctre.phoenix:api-java:5.12.0"
+    nativeZip "com.ctre.phoenix:cci:5.12.0"
+    compile "com.github.team401:Taxis:05579b9944ac71140ee139707bbe5fcf6b8147a5"
+}
+
+snakeskin {
+    version "2.0rc2"
+    modules {
+        core()
+        frc()
+        ctre()
+    }
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+wrapper {
+    gradleVersion = "5.0"
+}
