@@ -39,10 +39,7 @@ object Drivetrain: Subsystem(), PathFollowingDiffDrive by SmartPathFollowingDiff
         TalonSRX(HardwareMap.Drivetrain.rightRearTalonId)
     ),
     TalonPigeonIMU(HardwareMap.Drivetrain.pigeonImuId),
-    FeedforwardOnlyPathController(),
-    pathGenerationMaxDx = 2.0.Inches,
-    pathGenerationMaxDy = 0.25.Inches,
-    pathGenerationMaxDTheta = 5.0.Degrees
+    FeedforwardOnlyPathController()
 ) {
     enum class DriveStates {
         DriverControl,

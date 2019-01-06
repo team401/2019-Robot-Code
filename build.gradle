@@ -2,6 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.11'
     id "edu.wpi.first.GradleRIO" version "2019.1.1"
     id 'org.snakeskin.snakeskin-gradle' version '1.4'
+    id "com.snobot.simulator.plugin.SnobotSimulatorPlugin" version "2019-0.0.0" apply false
 }
 
 group 'org.team401'
@@ -27,13 +28,17 @@ repositories {
     }
 }
 
+apply plugin: com.snobot.simulator.plugin.SnobotSimulatorPlugin
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     compile wpi.deps.wpilib()
     compile "com.ctre.phoenix:api-java:5.12.0"
     nativeZip "com.ctre.phoenix:cci:5.12.0"
-    compile "com.github.team401:Taxis:05579b9944ac71140ee139707bbe5fcf6b8147a5"
+    compile "com.github.team401:Taxis:740cbc1192d2a27fc5e82208dbf4621852341ea3"
+
+    testCompile snobotSimJava()
 }
 
 snakeskin {
