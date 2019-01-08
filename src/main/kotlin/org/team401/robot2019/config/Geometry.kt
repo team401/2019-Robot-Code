@@ -10,7 +10,7 @@ import org.snakeskin.units.Inches
  */
 object Geometry {
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
-        override val wheelRadius = 8.0.Inches
-        override val wheelbase = 24.0.Inches
+        override val wheelRadius = 3.0.Inches
+        override val wheelbase = 26.0.Inches
     }
 }

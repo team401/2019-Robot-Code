@@ -30,6 +30,10 @@ repositories {
 
 apply plugin: com.snobot.simulator.plugin.SnobotSimulatorPlugin
 
+configurations {
+    snobotSimCompile
+}
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
@@ -38,7 +42,7 @@ dependencies {
     nativeZip "com.ctre.phoenix:cci:5.12.0"
     compile "com.github.team401:Taxis:740cbc1192d2a27fc5e82208dbf4621852341ea3"
 
-    testCompile snobotSimJava()
+    snobotSimCompile snobotSimJava()
 }
 
 snakeskin {
@@ -47,6 +51,21 @@ snakeskin {
         core()
         frc()
         ctre()
+    }
+}
+
+deploy {
+    targets {
+        target("rio", edu.wpi.first.gradlerio.frc.RoboRIO) {
+            team = 401
+        }
+    }
+    artifacts {
+        artifact("robot2019", edu.wpi.first.gradlerio.frc.FRCJavaArtifact) {
+            targets << "rio"
+            debug = Boolean.parseBoolean(System.getProperty("deployDebug") ?: "false")
+            jar = "jar"
+        }
     }
 }
 

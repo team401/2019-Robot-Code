@@ -72,6 +72,8 @@ object Drivetrain: Subsystem(), PathFollowingDiffDrive by SmartPathFollowingDiff
     }
 
     override fun setup() {
+        left.setInverted(true)
+
         on (Events.TELEOP_ENABLED) {
             driveMachine.setState(DriveStates.DriverControl)
         }
