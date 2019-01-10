@@ -14,6 +14,6 @@ import org.team401.robot2019.subsystems.*
 fun setup() {
     ControlPoller.pollInAutonomous = true
 
-    Subsystems.add(Drivetrain)
+    Subsystems.add(Drivetrain, PrototypeArm)
     Controllers.add(LeftStick, RightStick)
 }
