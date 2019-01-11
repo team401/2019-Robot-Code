@@ -1,6 +1,7 @@
 package org.team401.robot2019
 
 import org.snakeskin.dsl.HumanControls
+import org.team401.robot2019.subsystems.PrototypeArm
 
 /**
  * @author Cameron Earle
@@ -13,4 +14,9 @@ val LeftStick = HumanControls.t16000m(0) {
 
 val RightStick = HumanControls.t16000m(1) {
 
+}
+val Gamepad = HumanControls.f310(2){
+    whenButton(Buttons.B){
+        PrototypeArm.armMachine.setState(PrototypeArm.ArmStates.E_STOPPED)
+    }
 }
