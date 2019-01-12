@@ -13,6 +13,9 @@ import kotlin.math.cos
 object ArmController{
     //pwm = P * error + D * ((error - prev_error) / dt - goal_velocity) + Kv * goal_velocity + Ka * goal_acceleration
     fun generateRotationProfile(theta: Double, time: Int){
+        var time = 0
+        val rate = 20 // milliseconds
+
 
     }
 

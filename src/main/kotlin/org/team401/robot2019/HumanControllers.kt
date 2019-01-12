@@ -17,6 +17,8 @@ val RightStick = HumanControls.t16000m(1) {
 }
 val Gamepad = HumanControls.f310(2){
     whenButton(Buttons.B){
-        PrototypeArm.armMachine.setState(PrototypeArm.ArmStates.E_STOPPED)
+        pressed {
+            PrototypeArm.armMachine.setState(PrototypeArm.ArmStates.E_STOPPED)
+        }
     }
 }

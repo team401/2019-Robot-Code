@@ -15,5 +15,5 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
 
     Subsystems.add(Drivetrain, PrototypeArm)
-    Controllers.add(LeftStick, RightStick)
+    Controllers.add(LeftStick, RightStick, Gamepad)
 }
