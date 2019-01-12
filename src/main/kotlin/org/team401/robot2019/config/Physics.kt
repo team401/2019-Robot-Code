@@ -18,6 +18,6 @@ object Physics {
         override val rightKa = 1.0
         override val rightKs = 1.0
         override val rightKv = 1.0
-        override val trackScrubFactor = 1.0
+        override val trackScrubFactor = (1.160550 + 1.156347 + 1.159984) / 3.0
     }
 }

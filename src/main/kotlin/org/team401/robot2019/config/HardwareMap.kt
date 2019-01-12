@@ -16,6 +16,6 @@ object HardwareMap {
         const val rightMidRTalonId = 7
         const val rightRearTalonId = 8
 
-        const val pigeonImuId = leftMidFTalonId
+        const val pigeonImuId = leftRearTalonId
     }
 }

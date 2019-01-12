@@ -14,16 +14,18 @@ import org.team401.robot2019.RightStick
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
+import org.team401.robot2019.etc.Odometry
 import org.team401.taxis.diffdrive.component.PathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.SmartPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.FeedforwardOnlyPathController
+import org.team401.taxis.geometry.Pose2d
 
 /**
  * @author Cameron Earle
  * @version 1/5/2019
  *
  */
-object Drivetrain: Subsystem(), PathFollowingDiffDrive by SmartPathFollowingDiffDrive(
+object Drivetrain: Subsystem(100L), PathFollowingDiffDrive by SmartPathFollowingDiffDrive(
     Geometry.DrivetrainGeometry,
     Physics.DrivetrainDynamics,
     Gearbox(
@@ -75,7 +77,17 @@ object Drivetrain: Subsystem(), PathFollowingDiffDrive by SmartPathFollowingDiff
         left.setInverted(true)
 
         on (Events.TELEOP_ENABLED) {
+            left.setPosition(0.0.Degrees)
+            right.setPosition(0.0.Degrees)
+            setPose(Pose2d.identity())
             driveMachine.setState(DriveStates.DriverControl)
+        }
+    }
+
+    override fun action() {
+        if (LeftStick.readButton { TRIGGER }) {
+            //println(driveState.getLatestFieldToVehicle().value)
+            println("Left: ${left.getPosition().toLinearDistance(wheelRadius).toUnit(Inches).value}  Right: ${right.getPosition().toLinearDistance(wheelRadius).toUnit(Inches).value}")
         }
     }
 }

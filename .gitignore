@@ -27,3 +27,4 @@ build/
 grav.perl
 
 # Add other files here:
+logs/
