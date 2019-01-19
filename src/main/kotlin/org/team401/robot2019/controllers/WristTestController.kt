@@ -1,9 +1,8 @@
-package org.team401.robot2019.Controllers
+package org.team401.robot2019.controllers
 
 import org.snakeskin.units.*
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasure
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasure
 
 /**
  * @author Cameron Earle

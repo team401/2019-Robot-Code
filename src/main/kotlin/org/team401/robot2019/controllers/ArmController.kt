@@ -1,4 +1,4 @@
-package org.team401.robot2019.Controllers
+package org.team401.robot2019.controllers
 
 import org.team401.robot2019.config.Geometry.ArmGeometery.maxX
 import org.team401.robot2019.config.Geometry.ArmGeometery.maxY
