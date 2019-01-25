@@ -12,7 +12,6 @@ import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadian
 object WristTestController {
     private val k2Pi = Math.PI * 2.0
 
-    private val kWristLagDelta = 45.Degrees.toUnit(Radians) //Angular error at which to restart the profile
     private val kCruiseVelocity = 61.RadiansPerSecond
     private val kAcceleration = (61.0 * 4.0).RadiansPerSecond //Per second
 
@@ -28,6 +27,7 @@ object WristTestController {
     private var activeProfileHalfwayPoint = 0.Radians
     private var activeProfileCruiseTimeAccum = 0.0
     private var profileRunning = false
+    private var startProfile = true
 
     /**
      * Calculates the relative distance to the target.  Takes a starting position, a target, and a direction.
@@ -51,6 +51,7 @@ object WristTestController {
     fun setSetpoint(setpoint: AngularDistanceMeasure, targetDirection: Boolean) {
         finalGoal = setpoint.toUnit(Radians)
         direction = targetDirection
+        startProfile = true
     }
 
     /**
@@ -64,10 +65,11 @@ object WristTestController {
         /**
          * If the error is greater than the acceptable value, and a profile isn't already running, start a new one
          */
-        if (((finalGoal - wristTheta).value >= kWristLagDelta.value) && !profileRunning) {
-            println("Error too great, restarting profile!")
+        if (startProfile) {
+            println("Starting profile")
 
             profileRunning = true
+            startProfile = false
             //Configure parameters of profile.  We want to do everything in the relative, positive space to keep the generator simple
             activeProfilePosition = 0.Radians
             activeProfileLastPosition = 0.Radians
@@ -97,7 +99,8 @@ object WristTestController {
             }
 
             //Check if done
-            if (Math.abs(activeProfilePosition.value - activeProfileRelativeGoal.value) > 0) {
+            if (Math.abs(activeProfilePosition.value - activeProfileRelativeGoal.value) <= 0) {
+                println("Profile done")
                 profileRunning = false
             }
 
@@ -110,6 +113,13 @@ object WristTestController {
 }
 
 fun main(args: Array<String>) {
-    println(WristTestController.calculateAbsoluteDistanceToTarget((180.0).Degrees, (-180.0).Degrees, false).toUnit(Degrees).value)
+    Thread.sleep(20000)
+    val arr = DoubleArray(2)
+    WristTestController.setSetpoint(359.Degrees, true)
 
+    while (true) {
+        WristTestController.update(arr[0].MagEncoderTicks.toUnit(Degrees), 0.001, arr)
+        //println("${arr[0]}\t${arr[1]}")
+        Thread.sleep(10)
+    }
 }

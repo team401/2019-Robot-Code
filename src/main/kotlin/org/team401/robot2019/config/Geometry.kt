@@ -11,7 +11,7 @@ import kotlin.math.atan2
  */
 object Geometry {
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
-        override val wheelRadius = 3.0575.Inches
+        override val wheelRadius = 3.062954.Inches
         override val wheelbase = 25.625.Inches
     }
     object ArmGeometery{

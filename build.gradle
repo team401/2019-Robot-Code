@@ -40,7 +40,7 @@ dependencies {
     compile wpi.deps.wpilib()
     compile "com.ctre.phoenix:api-java:5.12.0"
     nativeZip "com.ctre.phoenix:cci:5.12.0"
-    compile "com.github.team401:Taxis:740cbc1192d2a27fc5e82208dbf4621852341ea3"
+    compile "com.github.team401:Taxis:35527639f64e52c78bfe1c6157555c7bc8e0d9bd"
 
     snobotSimCompile snobotSimJava()
 }
