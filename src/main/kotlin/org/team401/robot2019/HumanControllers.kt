@@ -1,8 +1,8 @@
 package org.team401.robot2019
 
 import org.snakeskin.dsl.HumanControls
-import org.team401.robot2019.subsystems.Drivetrain
-import org.team401.robot2019.subsystems.PrototypeArm
+import org.team401.robot2019.subsystems.drivetrain.Drivetrain
+import org.team401.robot2019.subsystems.arm.PrototypeArm
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.geometry.Translation2d

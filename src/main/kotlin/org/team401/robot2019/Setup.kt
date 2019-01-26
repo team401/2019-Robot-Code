@@ -3,11 +3,7 @@ package org.team401.robot2019
 import org.snakeskin.controls.ControlPoller
 import org.snakeskin.dsl.*
 import org.snakeskin.registry.Controllers
-import org.snakeskin.units.MagEncoderTicks
-import org.snakeskin.units.MagEncoderTicksPer100Ms
-import org.snakeskin.units.Radians
-import org.snakeskin.units.RadiansPerSecond
-import org.team401.robot2019.subsystems.*
+import org.team401.robot2019.subsystems.arm.PrototypeArm
 
 /**
  * @author Cameron Earle

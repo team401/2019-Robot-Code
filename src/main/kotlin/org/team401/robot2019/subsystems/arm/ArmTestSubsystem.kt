@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems
+package org.team401.robot2019.subsystems.arm
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
@@ -41,7 +41,9 @@ object ArmTestSubsystem: Subsystem() {
                 talon.configMotionAcceleration(4000 * 4)
             }
             action {
-                talon.set(ControlMode.MotionMagic, armSetpoint)
+                talon.set(ControlMode.MotionMagic,
+                    armSetpoint
+                )
             }
         }
 

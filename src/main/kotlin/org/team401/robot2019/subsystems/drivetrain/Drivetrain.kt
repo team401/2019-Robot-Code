@@ -1,19 +1,15 @@
-package org.team401.robot2019.subsystems
+package org.team401.robot2019.subsystems.drivetrain
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.DemandType
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
-import com.ctre.phoenix.sensors.PigeonIMU
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.Gearbox
-import org.snakeskin.component.TalonPigeonIMU
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
-import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.units.Degrees
-import org.snakeskin.units.Inches
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.LeftStick
 import org.team401.robot2019.RightStick
@@ -21,7 +17,6 @@ import org.team401.robot2019.SketchyPigeonFactory
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
-import org.team401.robot2019.etc.Odometry
 import org.team401.taxis.diffdrive.component.PathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.SmartPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.FeedforwardOnlyPathController
@@ -114,10 +109,16 @@ object Drivetrain: Subsystem(100L), PathFollowingDiffDrive by SmartPathFollowing
 
             rtAction {
                 val out = pathManager.update(time, driveState.getFieldToVehicle(time))
-                val leftVel = radiansPerSecondToTicksPer100ms(out.left_velocity)
-                val rightVel = radiansPerSecondToTicksPer100ms(out.right_velocity)
-                val leftAccel = radiansPerSecondToTicksPer100ms(out.left_accel) / 1000.0
-                val rightAccel = radiansPerSecondToTicksPer100ms(out.right_accel) / 1000.0
+                val leftVel =
+                    radiansPerSecondToTicksPer100ms(out.left_velocity)
+                val rightVel =
+                    radiansPerSecondToTicksPer100ms(out.right_velocity)
+                val leftAccel = radiansPerSecondToTicksPer100ms(
+                    out.left_accel
+                ) / 1000.0
+                val rightAccel = radiansPerSecondToTicksPer100ms(
+                    out.right_accel
+                ) / 1000.0
                 val leftFf = out.left_feedforward_voltage / 12.0
                 val rightFf = out.right_feedforward_voltage / 12.0
 

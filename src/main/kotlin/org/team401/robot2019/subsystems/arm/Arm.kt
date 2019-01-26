@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems
+package org.team401.robot2019.subsystems.arm
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
@@ -70,10 +70,15 @@ object PrototypeArm: Subsystem() {
 
     override fun action() {
         position = rotationMotor.selectedSensorPosition.MagEncoderTicks.toUnit(Radians) as AngularDistanceMeasureRadians
-        position = chainReduction(position.value).Radians
+        position = chainReduction(
+            position.value
+        ).Radians
         velocity = rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms.toUnit(RadiansPerSecond) as AngularVelocityMeasureRadiansPerSecond
 
-        ArmKinematics.update(armLength, position)
+        ArmKinematics.update(
+            armLength,
+            position
+        )
 
         println("Position: $ArmKinematics")
     }
