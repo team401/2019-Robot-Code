@@ -41,6 +41,7 @@ dependencies {
     compile "com.ctre.phoenix:api-java:5.12.0"
     nativeZip "com.ctre.phoenix:cci:5.12.0"
     compile "com.github.team401:Taxis:35527639f64e52c78bfe1c6157555c7bc8e0d9bd"
+    //compile group: 'org.knowm.xchart', name: 'xchart', version: '3.5.2'
 
     snobotSimCompile snobotSimJava()
 }

@@ -15,17 +15,18 @@ import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadian
 import org.team401.robot2019.Gamepad
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.ControlParameters.ArmParameters
-import org.team401.robot2019.controllers.ArmKinematics
 import kotlin.math.abs
 
 object PrototypeArm: Subsystem() {
 
+
+    // TODO EXTENSION AND ROTATION HAVE MERGED. REVIEW ALL CODE TO INCLUDE EXTENSION
     private val rotationMotor = TalonSRX(20)
     private val extensionMotor = TalonSRX(21)
 
-    private var position = rotationMotor.selectedSensorPosition.Radians
-    private var velocity = rotationMotor.selectedSensorVelocity.RadiansPerSecond
-    private var armLength = ControlParameters.ArmParameters.MIN_ARM_LENGTH
+    private var armPosition = rotationMotor.selectedSensorPosition.Radians
+    private var armVelocity = rotationMotor.selectedSensorVelocity.RadiansPerSecond
+    private var armLength = extensionMotor.selectedSensorPosition.MagEncoderTicks // TODO fix this value
 
     private var homed by LockingDelegate(false)
 
@@ -56,9 +57,6 @@ object PrototypeArm: Subsystem() {
     enum class ArmStates{
         E_STOPPED, HOMING, MANUAL_CONTROL, BETTER_CONTROL, HOLDING, TESTING
     }
-    enum class ExtensionSates{
-        E_STOPPED, MANUAL_CONTROL
-    }
 
     private fun withinTolerance(target: Double, pos: Double, tolerance: Double): Boolean{
         return abs(target - pos) <= abs(tolerance)
@@ -69,18 +67,9 @@ object PrototypeArm: Subsystem() {
 
 
     override fun action() {
-        position = rotationMotor.selectedSensorPosition.MagEncoderTicks.toUnit(Radians) as AngularDistanceMeasureRadians
-        position = chainReduction(
-            position.value
-        ).Radians
-        velocity = rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms.toUnit(RadiansPerSecond) as AngularVelocityMeasureRadiansPerSecond
-
-        ArmKinematics.update(
-            armLength,
-            position
-        )
-
-        println("Position: $ArmKinematics")
+        armPosition = rotationMotor.selectedSensorPosition.MagEncoderTicks.toUnit(Radians) as AngularDistanceMeasureRadians
+        armPosition = chainReduction(armPosition.value).Radians
+        armVelocity = rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms.toUnit(RadiansPerSecond) as AngularVelocityMeasureRadiansPerSecond
     }
 
 
@@ -90,6 +79,7 @@ object PrototypeArm: Subsystem() {
         state(ArmStates.E_STOPPED){
             entry {
                 rotationMotor.set(ControlMode.PercentOutput, 0.0)
+                extensionMotor.set(ControlMode.PercentOutput, 0.0)
             }
             action {
                 println("E Stopped")
@@ -103,17 +93,17 @@ object PrototypeArm: Subsystem() {
             action {
                 // Slowed down to not kill the arm for testing
                 var input = Gamepad.readAxis { LEFT_Y }
-                if (position.value <= ControlParameters.ArmParameters.MIN_POS && input < 0.0){
+                if (armPosition.value <= ControlParameters.ArmParameters.MIN_POS && input < 0.0){
                     input = 0.0
                 }
-                if (position.value >= ControlParameters.ArmParameters.MAX_POS && input > 0.0){
+                if (armPosition.value >= ControlParameters.ArmParameters.MAX_POS && input > 0.0){
                     input = 0.0
                 }
 
                 //println("Manual control $input")
 
                 if (withinTolerance(0.0, input, 0.05)){
-                    rotationMotor.set(ControlMode.MotionMagic, position.value)
+                    rotationMotor.set(ControlMode.MotionMagic, armPosition.value)
                 }else {
                     rotationMotor.set(ControlMode.PercentOutput, 0.25 * input)
                 }
@@ -121,8 +111,8 @@ object PrototypeArm: Subsystem() {
         }
 
         state(ArmStates.BETTER_CONTROL){
-            entry {
-                println("Please stand by for a better controller")
+            action {
+
             }
 
         }
@@ -136,10 +126,13 @@ object PrototypeArm: Subsystem() {
         state(ArmStates.HOLDING){
             entry {
                 rotationMotor.selectProfileSlot(0,0)
-                rotationMotor.set(ControlMode.MotionMagic, position.value)
+                rotationMotor.set(ControlMode.MotionMagic, armPosition.value)
+
+                extensionMotor.selectProfileSlot(0,0)
+                extensionMotor.set(ControlMode.MotionMagic, armLength.value)
             }
             action {
-                println("Target Pos: ${position.value}")
+                println("Target Pos: ${armPosition.value}")
             }
         }
 
@@ -147,8 +140,8 @@ object PrototypeArm: Subsystem() {
             var velocityCounter = 0
             entry {
                 velocityCounter = 0
-                rotationMotor.configMotionAcceleration(ArmParameters.MAX_ACCELERATION)
-                rotationMotor.configMotionCruiseVelocity(ArmParameters.MAX_VELOCITY)
+                rotationMotor.configMotionAcceleration(ArmParameters.MAX_ACCELERATION.toInt())
+                rotationMotor.configMotionCruiseVelocity(ArmParameters.MAX_VELOCITY.toInt())
                 rotationMotor.selectProfileSlot(1, 0)
                 rotationMotor.set(ControlMode.Velocity, 0.5.RevolutionsPerSecond.toUnit(MagEncoderTicksPer100Ms).value)
             }
@@ -170,25 +163,12 @@ object PrototypeArm: Subsystem() {
                 if(velocityCounter > 8){
                     rotationMotor.set(ControlMode.PercentOutput, 0.0)
                     homed = true
-                    // Homed position for prototype: 215 deg, 3.75 rad
-                    // Homed position is the Rear of the robot. - Motor power
-                    println("Homed position: ${rotationMotor.selectedSensorPosition} ticks")
+                    // Homed armPosition for prototype: 215 deg, 3.75 rad
+                    // Homed armPosition is the Rear of the robot. - Motor power
+                    println("Homed armPosition: ${rotationMotor.selectedSensorPosition} ticks")
                     rotationMotor.selectedSensorPosition = 16.875.Radians.toUnit(MagEncoderTicks).value.toInt()
                     setState(ArmStates.MANUAL_CONTROL)
                 }
-            }
-        }
-    }
-
-    val extentionMachine: StateMachine<ExtensionSates> = stateMachine {
-        rejectAllIf(*ExtensionSates.values()){isInState(ExtensionSates.E_STOPPED)}
-
-        state(ExtensionSates.E_STOPPED){
-            entry {
-                extensionMotor.set(ControlMode.PercentOutput, 0.0)
-            }
-            action {
-                println("E Stopped")
             }
         }
     }

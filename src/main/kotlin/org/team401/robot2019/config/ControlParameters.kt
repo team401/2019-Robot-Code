@@ -6,8 +6,8 @@ object ControlParameters{
     object ArmParameters{
         //val HOMING_VELOCITY = 0.25.RevolutionsPerSecond
         const val HOMING_CURRENT = 0.8
-        const val MAX_ACCELERATION = 4098
-        const val MAX_VELOCITY = 4098/8
+        const val MAX_ACCELERATION = 4098.0
+        const val MAX_VELOCITY = 4098.0/8
         const val HOMED_POSITION = 0
 
 
