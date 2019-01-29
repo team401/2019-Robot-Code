@@ -2,10 +2,9 @@ package org.team401.robot2019
 
 import org.snakeskin.dsl.HumanControls
 //import org.team401.robot2019.subsystems.drivetrain.Drivetrain
-import org.team401.robot2019.subsystems.arm.PrototypeArm
-import org.team401.taxis.geometry.Pose2d
-import org.team401.taxis.geometry.Rotation2d
-import org.team401.taxis.geometry.Translation2d
+import org.team401.robot2019.subsystems.arm.Arm
+import org.snakeskin.logic.Direction
+import org.team401.robot2019.config.ControlParameters
 
 /**
  * @author Cameron Earle
@@ -40,12 +39,20 @@ val Gamepad = HumanControls.f310(2){
 
     whenButton(Buttons.B){
         pressed {
-            //PrototypeArm.armMachine.setState(PrototypeArm.ArmStates.E_STOPPED)
+            //Arm.armMachine.setState(Arm.ArmStates.E_STOPPED)
         }
     }
     whenButton(Buttons.Y){
         pressed {
-            PrototypeArm.armMachine.setState(PrototypeArm.ArmStates.MANUAL_CONTROL)
+            Arm.armMachine.setState(Arm.ArmStates.MANUAL_CONTROL)
+        }
+    }
+    whenHatChanged(Hats.D_PAD){
+        when (it){
+            Direction.NORTH ->{Arm.setTargetPosition(ControlParameters.ArmPositions.ROCKET_TOP)}
+            Direction.SOUTH ->{Arm.setTargetPosition(ControlParameters.ArmPositions.ROCKET_LOW)}
+            Direction.EAST ->{Arm.setTargetPosition(ControlParameters.ArmPositions.LOADING_STATION)}
+            Direction.WEST ->{Arm.setTargetPosition(ControlParameters.ArmPositions.CARGO_SHIP)}
         }
     }
 }

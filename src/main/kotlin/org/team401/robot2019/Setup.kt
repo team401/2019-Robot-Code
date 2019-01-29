@@ -3,7 +3,7 @@ package org.team401.robot2019
 import org.snakeskin.controls.ControlPoller
 import org.snakeskin.dsl.*
 import org.snakeskin.registry.Controllers
-import org.team401.robot2019.subsystems.arm.PrototypeArm
+import org.team401.robot2019.subsystems.arm.Arm
 
 /**
  * @author Cameron Earle
@@ -14,7 +14,7 @@ import org.team401.robot2019.subsystems.arm.PrototypeArm
 fun setup() {
     ControlPoller.pollInAutonomous = true
 
-    Subsystems.add(PrototypeArm)
+    Subsystems.add(Arm)
     Controllers.add(Gamepad)
 }
 

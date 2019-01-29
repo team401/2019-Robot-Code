@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import org.snakeskin.dsl.on
+import org.snakeskin.dsl.rtAction
 import org.snakeskin.dsl.stateMachine
 import org.snakeskin.event.Events
 import org.snakeskin.logic.LockingDelegate
@@ -22,19 +23,20 @@ import org.team401.robot2019.config.ControlParameters.ArmParameters
 import org.team401.robot2019.config.Geometry
 import kotlin.math.abs
 
-object PrototypeArm: Subsystem() {
+object Arm: Subsystem() {
 
 
     // TODO EXTENSION AND ROTATION HAVE MERGED. REVIEW ALL CODE TO INCLUDE EXTENSION
     private val rotationMotor = TalonSRX(20)
     private val extensionMotor = TalonSRX(21)
+    private val wristMotor = TalonSRX(22)
 
     private var armAngle = rotationMotor.selectedSensorPosition.Radians
     private var armVelocity = rotationMotor.selectedSensorVelocity.RadiansPerSecond
     private var armLength = extensionMotor.selectedSensorPosition.MagEncoderTicks.toLinearDistance(Geometry.ArmGeometery.armToInches) as LinearDistanceMeasureInches // TODO fix this value
 
     private var armPosition = ArmKinematics.forward(PointPolar(armLength, armAngle))
-    private var targetPosition = Point2d(5.0.Inches, 0.0.Inches)
+    private var targetPosition = ControlParameters.ArmParameters.DEFAULT_ARM_POSITION
 
     private var homed by LockingDelegate(false)
 
@@ -45,7 +47,6 @@ object PrototypeArm: Subsystem() {
         rotationMotor.configPeakCurrentDuration(100)
         rotationMotor.configClosedLoopPeakOutput(0, 0.25)
         rotationMotor.configClosedLoopPeakOutput(1, 0.25)
-
 
         // TODO Remember - Chain reduction is 16:72
 
@@ -65,6 +66,9 @@ object PrototypeArm: Subsystem() {
     enum class ArmStates{
         E_STOPPED, HOMING, MANUAL_CONTROL, BETTER_CONTROL, HOLDING, TESTING
     }
+    enum class WristStates{
+        E_STOPPED
+    }
 
     private fun withinTolerance(target: Double, pos: Double, tolerance: Double): Boolean{
         return abs(target - pos) <= abs(tolerance)
@@ -73,6 +77,9 @@ object PrototypeArm: Subsystem() {
         return value * 16/72.0
     }
 
+    fun setTargetPosition(target: Point2d){
+        targetPosition = target
+    }
 
     override fun action() {
         armAngle = rotationMotor.selectedSensorPosition.MagEncoderTicks.toUnit(Radians) as AngularDistanceMeasureRadians
@@ -125,7 +132,7 @@ object PrototypeArm: Subsystem() {
                 ArmController.reset()
                 ArmController.setDesiredPath(armPosition, targetPosition)
             }
-            action { // Should probably be in notifier
+            rtAction {
                 if (ArmController.isDone()){
                     setState(ArmStates.HOLDING)
                 }else{
@@ -189,6 +196,14 @@ object PrototypeArm: Subsystem() {
                     rotationMotor.selectedSensorPosition = 16.875.Radians.toUnit(MagEncoderTicks).value.toInt()
                     setState(ArmStates.MANUAL_CONTROL)
                 }
+            }
+        }
+    }
+    val wristMachine: StateMachine<WristStates> = stateMachine {
+        rejectAllIf(*WristStates.values()){isInState(WristStates.E_STOPPED)}
+        state(WristStates.E_STOPPED){
+            entry {
+                wristMotor.set(ControlMode.PercentOutput, 0.0)
             }
         }
     }

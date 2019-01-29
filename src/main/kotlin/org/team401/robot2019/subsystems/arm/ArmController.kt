@@ -1,6 +1,7 @@
 package org.team401.robot2019.subsystems.arm
 
 import org.snakeskin.units.Seconds
+import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.units.measure.time.TimeMeasureSeconds
 import org.team401.armsim.ArmKinematics
 import org.team401.armsim.Point2d
@@ -17,22 +18,23 @@ object ArmController{
     // 2. Calculate Point
     // 3. Find radius
     // 4.
-    private var startPos = ControlParameters.ArmParameters.DEFAULT_ARM_POSITION
-    private var endPos = ControlParameters.ArmParameters.DEFAULT_ARM_POSITION
+    private lateinit var startPos: Point2d
+    private lateinit var endPos: Point2d
 
-    private var startTheta = ArmKinematics.inverse(ArmController.startPos).theta
-    private var endTheta = ArmKinematics.inverse(ArmController.endPos).theta
+    private lateinit var startTheta: AngularDistanceMeasureRadians
+    private lateinit var endTheta: AngularDistanceMeasureRadians
 
-    private var currentTime = 0.0.Seconds
+    private lateinit var currentTime: TimeMeasureSeconds
 
-    private var path = calculatePath()
-    private var profile = Profile2d(path)
-    private var rotationProfile = TrapezoidalProfileGenerator(
+    private lateinit var path: Array<ProfileSegment>
+    private lateinit var profile: Profile2d
+    private lateinit var rotationProfile: TrapezoidalProfileGenerator
+            /*= TrapezoidalProfileGenerator(
         ControlParameters.ArmParameters.MAX_VELOCITY,
         ControlParameters.ArmParameters.MAX_ACCELERATION,
         startTheta,
         endTheta
-    )
+    )*/
 
     private var done = false
 
@@ -55,20 +57,6 @@ object ArmController{
 
     fun reset(){
         done = false
-        startPos = ControlParameters.ArmParameters.DEFAULT_ARM_POSITION
-        endPos = ControlParameters.ArmParameters.DEFAULT_ARM_POSITION
-
-        startTheta = ArmKinematics.inverse(ArmController.startPos).theta
-        endTheta = ArmKinematics.inverse(ArmController.endPos).theta
-
-        path = calculatePath()
-        profile = Profile2d(path)
-        rotationProfile = TrapezoidalProfileGenerator(
-            ControlParameters.ArmParameters.MAX_VELOCITY,
-            ControlParameters.ArmParameters.MAX_ACCELERATION,
-            startTheta,
-            endTheta
-        )
     }
 
     fun isDone(): Boolean{

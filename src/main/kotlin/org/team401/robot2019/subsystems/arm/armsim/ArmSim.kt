@@ -4,12 +4,8 @@ import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
 import org.snakeskin.units.Inches
 import org.snakeskin.units.measure.time.TimeMeasureSeconds
-import org.team401.armsim.profile.ArmPath
-import org.team401.armsim.profile.LinearProfileSegment
-import org.team401.armsim.profile.Profile2d
 import org.team401.robot2019.subsystems.arm.ArmController
 import org.team401.robot2019.subsystems.arm.ArmState
-import org.team401.robot2019.subsystems.arm.PrototypeArm
 
 /**
  * @author Cameron Earle
@@ -26,8 +22,6 @@ object ArmSim {
         val points = ArrayList<ArmState>()
         val time = ArrayList<TimeMeasureSeconds>()
 
-        println("Test kinematics : ${ArmKinematics.inverse(Point2d((-5.0).Inches, 0.0.Inches))}")
-
         while (!ArmController.isDone()) {
             points.add(ArmController.update())
             time.add(ArmController.getCurrentTime())
@@ -37,6 +31,7 @@ object ArmSim {
         val ySeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).y.value }
         val rSeries = DoubleArray(points.size) { points[it].position.r.value }
         val thetaSeries = DoubleArray(points.size) { points[it].position.theta.value }
+        val velocitySeries = DoubleArray(points.size){points[it].armVelocity.value}
         val timeSeries = DoubleArray(time.size) { time[it].value }
 
         //println("Time series length: ${timeSeries.size}")
@@ -51,9 +46,11 @@ object ArmSim {
         val xyChart = QuickChart.getChart("XY Pose", "x", "y", "y(x)", xSeries, ySeries)
         val rChart = QuickChart.getChart("Arm Radius vs Time", "Time", "Radius", "r(t)", timeSeries, rSeries)
         val thetaChart = QuickChart.getChart("Arm Angle vs Time", "Time", "Theta", "theta(t)", timeSeries, thetaSeries)
+        val velocityChart = QuickChart.getChart("Velocity vs Time", "Time", "Velocity", "v(t)", timeSeries, velocitySeries)
         SwingWrapper(xyChart).displayChart()
         SwingWrapper(rChart).displayChart()
         SwingWrapper(thetaChart).displayChart()
+        SwingWrapper(velocityChart).displayChart()
 
     }
 }

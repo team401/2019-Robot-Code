@@ -16,4 +16,12 @@ object ControlParameters{
         val MIN_POS = 0.57.Radians.value
         val MAX_POS = 3.5.Radians.value
     }
+    object ArmPositions{
+        val ROCKET_TOP = Point2d(0.0.Inches, 0.0.Inches)
+        val ROCKET_MID = Point2d(0.0.Inches, 0.0.Inches)
+        val ROCKET_LOW = Point2d(0.0.Inches, 0.0.Inches)
+        val CARGO_SHIP = Point2d(0.0.Inches, 0.0.Inches)
+        val LOADING_STATION = Point2d(0.0.Inches, 0.0.Inches)
+        val HATCH_FLOOR_PICKUP = Point2d(0.0.Inches, 0.0.Inches)
+    }
 }
