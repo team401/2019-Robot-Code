@@ -1,9 +1,13 @@
 package org.team401.armsim.profile
 
+import org.snakeskin.units.RadiansPerSecond
+import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.units.measure.time.TimeMeasureSeconds
 import org.team401.armsim.ArmKinematics
 import org.team401.armsim.Point2d
 import org.team401.armsim.PointPolar
 import org.team401.armsim.TrapezoidalProfileGenerator
+import org.team401.robot2019.config.ControlParameters
 
 
 class Profile2d(private val segments: Array<ProfileSegment>) {
@@ -13,7 +17,7 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
 
     private val intersectsCircle = segments.size > 1
     // TODO Use real numbers
-    private val armProfile = TrapezoidalProfileGenerator(3.14, 3.14, startPoint.theta, endPoint.theta)
+    private val armProfile = TrapezoidalProfileGenerator(3.14.RadiansPerSecond, 3.14.RadiansPerSecond, startPoint.theta, endPoint.theta)
 
     fun solveSystem(): ArrayList<Pair<Point2d, PointPolar>>{
         //armProfile.generate()
@@ -48,7 +52,7 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
                 }else {
                     // Switch for different types of function
                     when { // TODO Configure for forwards and backwards motion
-                        ArmKinematics.inverse(segments[0].end).theta > it -> points.add(
+                        ArmKinematics.inverse(segments[0].end).theta.value > it.value -> points.add(
                             Pair(
                                 segments[0].solve(it),
                                 ArmKinematics.inverse(segments[0].solve(it))
@@ -75,9 +79,9 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
         return points
     }
 
-    fun solvePoint(theta: Double): Pair<Point2d, PointPolar>{
+    fun solvePoint(theta: AngularDistanceMeasureRadians): Pair<Point2d, PointPolar>{
         //println("Theta: $theta, Endpos : ${endPoint.theta}")
-        var point = Pair(Point2d(Double.NaN, Double.NaN), PointPolar(Double.NaN, Double.NaN))
+        var point = Pair(ControlParameters.ArmParameters.DEFAULT_ARM_POSITION, ArmKinematics.inverse(ControlParameters.ArmParameters.DEFAULT_ARM_POSITION))
         if (intersectsCircle) {
             if (startPoint.theta > endPoint.theta) {
                 when { // TODO Configure for forwards and backwards motion
@@ -113,7 +117,7 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
     return point
     }
 
-    fun getTime(): DoubleArray{
+    fun getTime(): Array<TimeMeasureSeconds>{
         return armProfile.getTime()
     }
 

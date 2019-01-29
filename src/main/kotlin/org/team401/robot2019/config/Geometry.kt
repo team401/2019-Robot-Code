@@ -28,5 +28,7 @@ object Geometry {
 
         val startExtension = 0.0.Inches // Distance from pivot to fully retracted
 
+        val armToInches = 0.0.Inches
+
     }
 }

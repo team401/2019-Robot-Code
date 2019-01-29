@@ -1,5 +1,10 @@
 package org.team401.armsim
 
+import org.snakeskin.units.Inches
+import org.snakeskin.units.Radians
+import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
+import org.team401.robot2019.subsystems.arm.ArmState
+
 /**
  * @author Cameron Earle
  * @version 1/20/2019
@@ -11,8 +16,15 @@ object ArmKinematics {
      */
     fun forward(point: PointPolar): Point2d {
         return Point2d(
-            point.r * Math.cos(point.theta),
-            point.r * Math.sin(point.theta)
+            (point.r * Math.cos(point.theta.value)) as LinearDistanceMeasureInches,
+            (point.r * Math.sin(point.theta.value)) as LinearDistanceMeasureInches
+        )
+    }
+
+    fun forward(point: ArmState): Point2d {
+        return Point2d(
+            (point.position.r * Math.cos(point.position.theta.value)) as LinearDistanceMeasureInches,
+            (point.position.r * Math.sin(point.position.theta.value)) as LinearDistanceMeasureInches
         )
     }
 
@@ -20,13 +32,13 @@ object ArmKinematics {
      * Solves inverse kinematics, which converts rectangular domain endpoint positions to polar domain joint positions
      */
     fun inverse(point: Point2d): PointPolar {
-        var angle = Math.atan2(point.y, point.x)
+        var angle = Math.atan2(point.y.value, point.x.value)
         if (angle <= -(Math.PI / 2.0)) {
             angle += Math.PI * 2.0
         }
         return PointPolar(
-            Math.hypot(point.x, point.y),
-            angle
+            Math.hypot(point.x.value, point.y.value).Inches,
+            angle.Radians
         )
     }
 }

@@ -1,5 +1,6 @@
 package org.team401.armsim.profile
 
+import org.snakeskin.units.Inches
 import org.team401.armsim.Point2d
 import java.lang.Math.pow
 import kotlin.math.*
@@ -23,16 +24,16 @@ class ArmPath(path: LinearProfileSegment){
 
 
     fun solve(): Array<ProfileSegment>{
-        println("Distance ")
+        //println("Distance ")
         val intersectsCircle = findIntersectionPoints()
         println(intersectsCircle)
         Thread.sleep(100)
         var segments: Array<ProfileSegment>
 
         if (intersectsCircle) {
-            println("Intersects Circle")
-            val tangentPointOne = findTangentPoint(x1, y1)
-            val tangentPointTwo = findTangentPoint(x2, y2)
+            //println("Intersects Circle")
+            val tangentPointOne = findTangentPoint(x1.value, y1.value)
+            val tangentPointTwo = findTangentPoint(x2.value, y2.value)
 
             val firstSegment = LinearProfileSegment(start, tangentPointOne)
             val secondSegment = ArcProfileSegment(tangentPointOne, tangentPointTwo, r)
@@ -49,7 +50,7 @@ class ArmPath(path: LinearProfileSegment){
     }
 
     private fun findTangentPoint(x1: Double, y1: Double): Point2d {
-        // x coordinate of tangent point
+        // x coordinate of tangent position
         val d1 = (2 * x1 * pow(r, 2.0) + sqrt(pow(2 * x1 * pow(r, 2.0), 2.0)
                 - 4 * ((pow(y1, 2.0) + pow(x1, 2.0)) * (pow(r, 4.0) - (pow(y1, 2.0) * pow(r, 2.0))))))/ (2 * (pow(y1, 2.0) + pow(x1, 2.0)))
 
@@ -57,7 +58,7 @@ class ArmPath(path: LinearProfileSegment){
         val d2 = (2 * x1 * pow(r, 2.0) - sqrt(pow(2 * x1 * pow(r, 2.0), 2.0)
                 - 4 * ((pow(y1, 2.0) + pow(x1, 2.0)) * (pow(r, 4.0) - (pow(y1, 2.0) * pow(r, 2.0))))))/ (2 * (pow(y1, 2.0) + pow(x1, 2.0)))
 
-        // y coordinate of tangent point
+        // y coordinate of tangent position
         var e1: Double
         var e2: Double
         if (y1 != 0.0) { // There is a plus or minus here, adjust if it becomes a problem
@@ -78,10 +79,10 @@ class ArmPath(path: LinearProfileSegment){
             e = e1
         }
         //println("d : $d, e: $e")
-        print("Distance from origin to Tan point : ${sqrt(pow(d, 2.0) + pow(e, 2.0))}")
+        //print("Distance from origin to Tan position : ${sqrt(pow(d, 2.0) + pow(e, 2.0))}")
         Thread.sleep(100)
 
-        return Point2d(d, e)
+        return Point2d(d.Inches, e.Inches)
     }
 
     private fun findIntersectionPoints(): Boolean{
@@ -97,7 +98,7 @@ class ArmPath(path: LinearProfileSegment){
 
         if (pow(By, 2.0) - 4 * Ay * Cy < 0 || pow(Bx, 2.0) - 4 * Ax * Cx < 0){
             // No real solutions
-            println("No real solutions")
+            //println("No real solutions")
             return false
         }
         val intY1 = -By + sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
@@ -106,15 +107,15 @@ class ArmPath(path: LinearProfileSegment){
         val intX1 = -Bx + sqrt(Bx * Bx - 4 * Ax * Cx) / (2 * Ax)
         val intX2 = -Bx - sqrt(Bx * Bx - 4 * Ax * Cx) / (2 * Ax)
 
-        var min = x1
-        var max = x2
+        var min = x1.value
+        var max = x2.value
         if (min > max){
-            min = x2
-            max = x1
+            min = x2.value
+            max = x1.value
         }
 
         if (!(intX1 >= min && intX1 <= max) && !(intX2 >= min && intX2 <= max)){
-            println("Out of scope")
+            //println("Out of scope")
             return false
         }
         return true
