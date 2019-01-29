@@ -18,13 +18,14 @@ object Geometry {
     */
     object ArmGeometery{
         //All values with the pivot as the origin
-        val maxX = 0.0.Inches
-        val maxY = 0.0.Inches
+        val maxX = 8.0.Inches
+        val maxY = 10.0.Inches
+        val minY = (-2.0).Inches
         val maxExtension = 0.0.Inches
         val maxArmLength = 0.0.Inches
+        val minExtension = 0.0.Inches
+        val minArmLength = 4.0.Inches
         val pivotHeight = 0.0.Inches
-
-        val minY = 0.0.Inches
 
         val maxTheta = atan2(maxY.value, maxX.value) // From -Pi to Pi
 

@@ -15,8 +15,5 @@ object ControlParameters{
 
         val MIN_POS = 0.57.Radians.value
         val MAX_POS = 3.5.Radians.value
-
-        val MIN_ARM_LENGTH = 38.5.Inches
-
     }
 }

@@ -26,6 +26,8 @@ object ArmSim {
         val points = ArrayList<ArmState>()
         val time = ArrayList<TimeMeasureSeconds>()
 
+        println("Test kinematics : ${ArmKinematics.inverse(Point2d((-5.0).Inches, 0.0.Inches))}")
+
         while (!ArmController.isDone()) {
             points.add(ArmController.update())
             time.add(ArmController.getCurrentTime())

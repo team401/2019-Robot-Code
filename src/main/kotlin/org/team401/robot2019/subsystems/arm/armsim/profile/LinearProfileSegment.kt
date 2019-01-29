@@ -20,7 +20,7 @@ class LinearProfileSegment(override val start: Point2d,
     private val startX = start.x.value
     private val startY = start.y.value
 
-    private val m = (endX - startY) / (endX - startX)
+    private val m = (endY - startY) / (endX - startX)
     private val b = startY - startX * m
 
     override fun solve(theta: AngularDistanceMeasureRadians): Point2d { // For graphing ONLY
