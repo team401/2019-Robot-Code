@@ -1,6 +1,6 @@
 package org.team401.robot2019.etc
 
-import org.team401.robot2019.subsystems.drivetrain.Drivetrain
+//import org.team401.robot2019.subsystems.drivetrain.Drivetrain
 import org.team401.taxis.diffdrive.odometry.OdometryTracker
 
 /**
@@ -8,4 +8,4 @@ import org.team401.taxis.diffdrive.odometry.OdometryTracker
  * @version 1/8/2019
  *
  */
-val Odometry = OdometryTracker(Drivetrain)
+//val Odometry = OdometryTracker(Drivetrain)

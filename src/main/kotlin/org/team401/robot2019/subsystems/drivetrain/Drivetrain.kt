@@ -33,6 +33,8 @@ import java.text.DecimalFormat
  * @version 1/5/2019
  *
  */
+
+/*
 object Drivetrain: Subsystem(100L), PathFollowingDiffDrive by SmartPathFollowingDiffDrive(
     Geometry.DrivetrainGeometry,
     Physics.DrivetrainDynamics,
@@ -184,3 +186,4 @@ object Drivetrain: Subsystem(100L), PathFollowingDiffDrive by SmartPathFollowing
 
     }
 }
+        */

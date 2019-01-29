@@ -1,6 +1,6 @@
 package org.team401.robot2019.config
 
-import org.snakeskin.template.TankDrivetrainGeometryTemplate
+import org.snakeskin.component.template.TankDrivetrainGeometryTemplate
 import org.snakeskin.units.Inches
 import kotlin.math.atan2
 
@@ -10,10 +10,12 @@ import kotlin.math.atan2
  *
  */
 object Geometry {
+    /*
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
         override val wheelRadius = 3.062954.Inches
         override val wheelbase = 25.625.Inches
     }
+    */
     object ArmGeometery{
         //All values with the pivot as the origin
         val maxX = 0.0.Inches

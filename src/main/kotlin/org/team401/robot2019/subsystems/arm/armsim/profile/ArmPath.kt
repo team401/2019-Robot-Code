@@ -101,8 +101,8 @@ class ArmPath(path: LinearProfileSegment){
             //println("No real solutions")
             return false
         }
-        val intY1 = -By + sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
-        val intY2 = -By - sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
+        //val intY1 = -By + sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
+        //val intY2 = -By - sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
 
         val intX1 = -Bx + sqrt(Bx * Bx - 4 * Ax * Cx) / (2 * Ax)
         val intX2 = -Bx - sqrt(Bx * Bx - 4 * Ax * Cx) / (2 * Ax)

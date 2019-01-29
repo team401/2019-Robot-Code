@@ -21,7 +21,7 @@ import org.team401.robot2019.config.HardwareMap
  */
 object ArmTestSubsystem: Subsystem() {
     private val talon = TalonSRX(9)
-    private val pigeon = TalonPigeonIMU(HardwareMap.Drivetrain.pigeonImuId)
+    private val pigeon = TalonPigeonIMU.create(HardwareMap.Drivetrain.pigeonImuId)
 
     private val pigeonYpr = DoubleArray(3) //Roll is target axis
 

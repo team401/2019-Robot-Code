@@ -19,10 +19,10 @@ data class Point2d(val x: LinearDistanceMeasureInches, val y: LinearDistanceMeas
 
     init {
         if (!withinBounds(x.value, MIN_X, MAX_X)){
-            throw InvalidPointException("X coordinate is out of bounds")
+            throw InvalidPointException("X coordinate is out of bounds. x = ${x.value}")
         }
         if (!withinBounds(y.value, MIN_Y, MAX_Y)){
-            throw InvalidPointException("Y coordinate is out of bounds")
+            throw InvalidPointException("Y coordinate is out of bounds. y = ${y.value}")
         }
 
         if (withinCircle()){
