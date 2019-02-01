@@ -23,8 +23,8 @@ object ArmKinematics {
 
     fun forward(point: ArmState): Point2d {
         return Point2d(
-            (point.position.first * Math.cos(point.position.second.value)) as LinearDistanceMeasureInches,
-            (point.position.first * Math.sin(point.position.second.value)) as LinearDistanceMeasureInches
+            (point.armRadius * Math.cos(point.armAngle.value)) as LinearDistanceMeasureInches,
+            (point.armRadius * Math.sin(point.armAngle.value)) as LinearDistanceMeasureInches
         )
     }
 

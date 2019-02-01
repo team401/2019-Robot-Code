@@ -5,6 +5,7 @@ import org.snakeskin.dsl.HumanControls
 import org.team401.robot2019.subsystems.arm.Arm
 import org.snakeskin.logic.Direction
 import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.subsystems.arm.ArmSubsystemController
 
 /**
  * @author Cameron Earle
@@ -47,6 +48,13 @@ val Gamepad = HumanControls.f310(2){
             Arm.armMachine.setState(Arm.ArmStates.MANUAL_CONTROL)
         }
     }
+    whenButton(Buttons.RIGHT_BUMPER){
+        pressed {
+            // Switch tools
+            Arm.armMachine.setState(Arm.ArmStates.SWITCH_TOOL)
+        }
+    }
+
     whenHatChanged(Hats.D_PAD){
         when (it){
             Direction.NORTH ->{Arm.setTargetPosition(ControlParameters.ArmPositions.ROCKET_TOP)}

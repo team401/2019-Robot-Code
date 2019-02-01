@@ -1,7 +1,5 @@
 package org.team401.robot2019.subsystems.arm
 
-import org.snakeskin.units.MagEncoderTicks
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.units.measure.time.TimeMeasureSeconds
@@ -74,12 +72,12 @@ object ArmPather{
         val currentArmPosition = currentArmState.position
         val currentArmVelocity = currentArmState.velocity
         val currentRadius = profile.solvePoint(currentArmPosition).second.r
-        val currentExtension = (currentRadius - Geometry.ArmGeometry.minArmLength) as LinearDistanceMeasureInches
+        //val currentExtension = (currentRadius - Geometry.ArmGeometry.minArmLength) as LinearDistanceMeasureInches
         currentTime = currentArmState.time
 
         done = rotationProfile.isDone()
 
-        return ArmState(Pair(currentExtension, currentArmPosition), currentArmVelocity)
+        return ArmState(currentRadius, currentArmPosition, currentArmVelocity)
     }
 
     private fun calculatePath(): Array<ProfileSegment>{

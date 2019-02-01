@@ -7,8 +7,8 @@ import kotlin.math.cos
 object ArmController{
 
     fun calculateRotationFF(commandedArmState: ArmState): Double{
-        val radius = commandedArmState.position.first.value
-        val theta = commandedArmState.position.second.value
+        val radius = commandedArmState.armRadius.value
+        val theta = commandedArmState.armAngle.value
         return ControlParameters.ArmParameters.kHold * radius * cos(theta)
     }
 }

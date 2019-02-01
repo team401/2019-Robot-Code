@@ -6,5 +6,10 @@ import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.team401.armsim.PointPolar
 
-data class ArmState(val position: Pair<LinearDistanceMeasureInches, AngularDistanceMeasureRadians>,
+/**
+ * Holds the state of the arm as an effective polar point + other stuff.
+ * Radius is from the pivot, not a measure of extension
+ */
+data class ArmState(val armRadius: LinearDistanceMeasureInches,
+                    val armAngle: AngularDistanceMeasureRadians,
                     val armVelocity: AngularVelocityMeasureRadiansPerSecond)

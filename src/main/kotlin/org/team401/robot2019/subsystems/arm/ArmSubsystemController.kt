@@ -5,64 +5,80 @@ import org.snakeskin.units.Radians
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.team401.armsim.ArmKinematics
+import org.team401.armsim.InvalidPointException
 import org.team401.armsim.Point2d
 import org.team401.armsim.PointPolar
 import org.team401.robot2019.config.Geometry
+import org.team401.robot2019.subsystems.arm.armsim.profile.WristPlanner
+import kotlin.math.PI
 
 object ArmSubsystemController{
 
-    private lateinit var currentArmAngle: AngularDistanceMeasureRadians
-    private lateinit var currentArmExtension: LinearDistanceMeasureInches
-    private lateinit var currentArmRadius: LinearDistanceMeasureInches
-    private lateinit var currentArmVelocity: AngularVelocityMeasureRadiansPerSecond
+    private lateinit var currentArmState: ArmState
+    private lateinit var currentWristState: WristState
     private lateinit var desiredLocation: PointPolar
 
     private var done = false
-    private var motionCommanded = false // Fail safe
+    private var armMotionCommanded = false // Fail safe
 
     // Each system has three states: e stopped, coordinated control and holding
     // The buttons set desired position and switch into coordinated control
     // Maybe this should check the motors are listening beforehand
-    fun update(armState: ArmState): ArmSystemMotionPoint{
-        currentArmAngle = armState.position.second
-        currentArmExtension = armState.position.first
-        currentArmVelocity = armState.armVelocity
-        currentArmRadius = (currentArmExtension + Geometry.ArmGeometry.minArmLength) as LinearDistanceMeasureInches
+    fun update(armState: ArmState, wristState: WristState): ArmSystemMotionPoint{
+        currentArmState = armState
+        currentWristState = wristState
 
-
-        if (motionCommanded && !done){
-            val commandedArmState = ArmPather.update()
+        // TODO Think through possible logic fails
+        if (armMotionCommanded && !done){
+            val commandedArmState = ArmPather.update() // Returns the arm's angle and position
             // Pass to wrist pather
-            // TODO Double check these values
-            val targetExtension = convertToEncoderTicks((commandedArmState.position.first - Geometry.ArmGeometry.minArmLength) as LinearDistanceMeasureInches)
-            val targetRotation = commandedArmState.position.second.toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder
+            val commandedWristState = WristPlanner.update(commandedArmState, currentWristState) // returns the wrist's angle
+            val commandedRotationFF = ArmController.calculateRotationFF(commandedArmState) // returns the FF
 
-            val rotationFeedForward = ArmController.calculateRotationFF(commandedArmState)
-            return ArmSystemMotionPoint(targetExtension, targetRotation, rotationFeedForward)
+            if (ArmPather.isDone()){
+                done = true
+            }
+
+            return ArmSystemMotionPoint(commandedArmState, commandedWristState, commandedRotationFF)
         }
-        val extensionEncoderTicks = currentArmExtension.toAngularDistance(Geometry.ArmGeometry.armToInches) as AngularDistanceMeasureCTREMagEncoder
-        val angleEncoderTicks = currentArmAngle.toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder
-        return ArmSystemMotionPoint(extensionEncoderTicks, angleEncoderTicks, 0.0)
+        return ArmSystemMotionPoint(currentArmState, currentWristState, 0.0)
     }
 
     fun commandMove(desiredLocation: Point2d){
         this.desiredLocation = ArmKinematics.inverse(desiredLocation)
 
         reset()
-        ArmPather.setDesiredPath(ArmKinematics.forward(PointPolar(currentArmRadius, currentArmAngle)), desiredLocation)
-        motionCommanded = true
+        ArmPather.setDesiredPath(ArmKinematics.forward(PointPolar(currentArmState.armRadius, currentArmState.armAngle)), desiredLocation)
+        armMotionCommanded = true
+    }
+
+    fun switchTool(newTool: Tool): WristState{
+        when {
+            armMotionCommanded -> return currentWristState
+            ArmKinematics.forward(currentArmState).y < Geometry.ArmGeometry.minSafeWristRotationHeight ->{
+                throw InvalidPointException("Wrist is too close to the ground to switch tools!")
+            }
+            newTool == currentWristState.currentTool -> println("Cannot switch. Eject game piece and try again")
+            currentWristState.hasGamePiece -> println("Cannot switch. Eject game piece and try again")
+            else -> return WristState((currentWristState.wristPosition + (PI/2.0).Radians) as AngularDistanceMeasureRadians, newTool, false)
+        }
+        // Default
+        return currentWristState
     }
 
     private fun reset(){
-        desiredLocation = PointPolar(currentArmRadius, currentArmAngle.toUnit(Radians) as AngularDistanceMeasureRadians)
+        desiredLocation = PointPolar(currentArmState.armRadius, currentArmState.armAngle)
         ArmPather.reset()
         done = false
-        motionCommanded = false
+        armMotionCommanded = false
     }
     private fun convertToEncoderTicks(extension: LinearDistanceMeasureInches): AngularDistanceMeasureCTREMagEncoder{
         return extension.toAngularDistance(Geometry.ArmGeometry.armToInches).toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder
+    }
+
+    fun isDone(): Boolean{
+        return done
     }
 
 }

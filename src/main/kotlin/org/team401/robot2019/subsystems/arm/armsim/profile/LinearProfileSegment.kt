@@ -23,9 +23,9 @@ class LinearProfileSegment(override val start: Point2d,
     private val m = (endY - startY) / (endX - startX)
     private val b = startY - startX * m
 
-    override fun solve(theta: AngularDistanceMeasureRadians): Point2d { // For graphing ONLY
-        var x = Double.NaN
-        var y = Double.NaN
+    override fun solve(theta: AngularDistanceMeasureRadians): Point2d {
+        var x: Double
+        var y: Double
         if (!m.isFinite()){
             x = startX
             y = x * tan(theta.value)

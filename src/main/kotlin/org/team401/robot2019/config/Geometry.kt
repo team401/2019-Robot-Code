@@ -25,6 +25,8 @@ object Geometry {
         val maxArmLength = 0.0.Inches
         val minExtension = 0.0.Inches
         val minArmLength = 4.0.Inches
+        val minSafeWristRotation = minArmLength + 5.0.Inches // Basically the minimum arm radius
+        val minSafeWristRotationHeight = 5.0.Inches // Don't spin and hit the floor
         val pivotHeight = 0.0.Inches
 
         val maxTheta = atan2(maxY.value, maxX.value) // From -Pi to Pi

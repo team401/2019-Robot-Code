@@ -29,8 +29,8 @@ object ArmSim {
 
         val xSeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).x.value }
         val ySeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).y.value }
-        val rSeries = DoubleArray(points.size) { points[it].position.first.value }
-        val thetaSeries = DoubleArray(points.size) { points[it].position.second.value }
+        val rSeries = DoubleArray(points.size) { points[it].armRadius.value }
+        val thetaSeries = DoubleArray(points.size) { points[it].armAngle.value }
         val velocitySeries = DoubleArray(points.size){points[it].armVelocity.value}
         val timeSeries = DoubleArray(time.size) { time[it].value }
 

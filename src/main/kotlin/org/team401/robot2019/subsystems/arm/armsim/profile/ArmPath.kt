@@ -2,6 +2,7 @@ package org.team401.armsim.profile
 
 import org.snakeskin.units.Inches
 import org.team401.armsim.Point2d
+import org.team401.robot2019.config.Geometry
 import java.lang.Math.pow
 import kotlin.math.*
 
@@ -17,7 +18,7 @@ class ArmPath(path: LinearProfileSegment){
     private val x1 = path.start.x
     private val x2 = path.end.x
 
-    private val r = 4.0
+    private val r = Geometry.ArmGeometry.minSafeWristRotation.value
     //private val a = y1 - y2
     //private val b = x2 - x1
     //private val c = (x1 - x2) * y1 + (y2 - y1) * x1
