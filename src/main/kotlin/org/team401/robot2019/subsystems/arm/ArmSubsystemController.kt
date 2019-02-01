@@ -2,7 +2,6 @@ package org.team401.robot2019.subsystems.arm
 
 import org.snakeskin.units.MagEncoderTicks
 import org.snakeskin.units.Radians
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasure
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches

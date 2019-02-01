@@ -34,6 +34,7 @@ object Arm: Subsystem() {
     private var armAngle = rotationMotor.selectedSensorPosition.Radians
     private var armVelocity = rotationMotor.selectedSensorVelocity.RadiansPerSecond
     private var armLength = extensionMotor.selectedSensorPosition.MagEncoderTicks.toLinearDistance(Geometry.ArmGeometry.armToInches) as LinearDistanceMeasureInches // TODO fix this value
+    private var wristAngle = wristMotor.selectedSensorPosition.MagEncoderTicks
 
     private var armPosition = ArmKinematics.forward(PointPolar(armLength, armAngle))
     private var targetPosition = ControlParameters.ArmParameters.DEFAULT_ARM_POSITION
@@ -41,8 +42,8 @@ object Arm: Subsystem() {
     private var homed by LockingDelegate(false)
 
     override fun setup() {
-        rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
-        rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 1, 0)
+        rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0)
+        rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 1, 0)
         rotationMotor.configPeakCurrentLimit(10)
         rotationMotor.configPeakCurrentDuration(100)
         rotationMotor.configClosedLoopPeakOutput(0, 0.25)
@@ -50,9 +51,13 @@ object Arm: Subsystem() {
 
         // TODO Remember - Chain reduction is 16:72
 
-        extensionMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
+        extensionMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute)
         extensionMotor.configPeakCurrentLimit(10)
         extensionMotor.configPeakCurrentDuration(100)
+
+        wristMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute)
+        wristMotor.configPeakCurrentLimit(10)
+        wristMotor.configPeakCurrentDuration(100)
 
         on(Events.TELEOP_ENABLED){
             if (homed){
@@ -64,10 +69,7 @@ object Arm: Subsystem() {
 
     }
     enum class ArmStates{
-        E_STOPPED, HOMING, MANUAL_CONTROL, BETTER_CONTROL, HOLDING, TESTING
-    }
-    enum class WristStates{
-        E_STOPPED
+        E_STOPPED, HOMING, MANUAL_CONTROL, COORDINATED_CONTROL, HOLDING
     }
 
     private fun withinTolerance(target: Double, pos: Double, tolerance: Double): Boolean{
@@ -87,6 +89,9 @@ object Arm: Subsystem() {
         armAngle = chainReduction(armAngle.value).Radians
         armVelocity = rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms.toUnit(RadiansPerSecond) as AngularVelocityMeasureRadiansPerSecond
         armPosition = ArmKinematics.forward(PointPolar(armLength, armAngle))
+        val armState = ArmState(Pair(armLength, armAngle), armVelocity)
+
+        val motionPoint = ArmSubsystemController.update(armState)
     }
 
 
@@ -127,26 +132,15 @@ object Arm: Subsystem() {
             }
         }
 
-        state(ArmStates.BETTER_CONTROL){
+        state(ArmStates.COORDINATED_CONTROL){
             entry{
-                ArmPather.reset()
-                ArmPather.setDesiredPath(armPosition, targetPosition)
+
             }
             rtAction {
-                if (ArmPather.isDone()){
-                    setState(ArmStates.HOLDING)
-                }else{
-                    ArmPather.update()
-                }
+
             }
             exit{
-                ArmPather.reset()
-            }
-        }
 
-        state(ArmStates.TESTING){
-            action {
-                println("Velocity: ${rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms.toUnit(RevolutionsPerSecond).value} encoder ticks / 100ms")
             }
         }
 
@@ -157,6 +151,9 @@ object Arm: Subsystem() {
 
                 extensionMotor.selectProfileSlot(0,0)
                 extensionMotor.set(ControlMode.MotionMagic, armLength.value)
+
+                wristMotor.selectProfileSlot(0, 0)
+                wristMotor.set(ControlMode.MotionMagic, wristAngle.value)
             }
             action {
                 println("Target Pos: ${armAngle.value}")
@@ -196,14 +193,6 @@ object Arm: Subsystem() {
                     rotationMotor.selectedSensorPosition = 16.875.Radians.toUnit(MagEncoderTicks).value.toInt()
                     setState(ArmStates.MANUAL_CONTROL)
                 }
-            }
-        }
-    }
-    val wristMachine: StateMachine<WristStates> = stateMachine {
-        rejectAllIf(*WristStates.values()){isInState(WristStates.E_STOPPED)}
-        state(WristStates.E_STOPPED){
-            entry {
-                wristMotor.set(ControlMode.PercentOutput, 0.0)
             }
         }
     }
