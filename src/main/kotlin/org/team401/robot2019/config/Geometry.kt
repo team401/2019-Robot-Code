@@ -16,7 +16,7 @@ object Geometry {
         override val wheelbase = 25.625.Inches
     }
     */
-    object ArmGeometery{
+    object ArmGeometry{
         //All values with the pivot as the origin
         val maxX = 8.0.Inches
         val maxY = 10.0.Inches

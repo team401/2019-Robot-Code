@@ -33,7 +33,7 @@ object Arm: Subsystem() {
 
     private var armAngle = rotationMotor.selectedSensorPosition.Radians
     private var armVelocity = rotationMotor.selectedSensorVelocity.RadiansPerSecond
-    private var armLength = extensionMotor.selectedSensorPosition.MagEncoderTicks.toLinearDistance(Geometry.ArmGeometery.armToInches) as LinearDistanceMeasureInches // TODO fix this value
+    private var armLength = extensionMotor.selectedSensorPosition.MagEncoderTicks.toLinearDistance(Geometry.ArmGeometry.armToInches) as LinearDistanceMeasureInches // TODO fix this value
 
     private var armPosition = ArmKinematics.forward(PointPolar(armLength, armAngle))
     private var targetPosition = ControlParameters.ArmParameters.DEFAULT_ARM_POSITION
@@ -129,18 +129,18 @@ object Arm: Subsystem() {
 
         state(ArmStates.BETTER_CONTROL){
             entry{
-                ArmController.reset()
-                ArmController.setDesiredPath(armPosition, targetPosition)
+                ArmPather.reset()
+                ArmPather.setDesiredPath(armPosition, targetPosition)
             }
             rtAction {
-                if (ArmController.isDone()){
+                if (ArmPather.isDone()){
                     setState(ArmStates.HOLDING)
                 }else{
-                    ArmController.update()
+                    ArmPather.update()
                 }
             }
             exit{
-                ArmController.reset()
+                ArmPather.reset()
             }
         }
 

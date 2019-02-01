@@ -1,6 +1,5 @@
 package org.team401.armsim
 import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
-import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import java.lang.Math.pow
 import kotlin.math.abs
@@ -12,11 +11,11 @@ import kotlin.math.sqrt
  *
  */
 data class Point2d(val x: LinearDistanceMeasureInches, val y: LinearDistanceMeasureInches){
-    private val MAX_X = Geometry.ArmGeometery.maxX.value
+    private val MAX_X = Geometry.ArmGeometry.maxX.value
     private val MIN_X = MAX_X * -1.0
-    private val MAX_Y = Geometry.ArmGeometery.maxY.value
-    private val MIN_Y = Geometry.ArmGeometery.minY.value
-    private val r = Geometry.ArmGeometery.maxArmLength.value
+    private val MAX_Y = Geometry.ArmGeometry.maxY.value
+    private val MIN_Y = Geometry.ArmGeometry.minY.value
+    private val r = Geometry.ArmGeometry.maxArmLength.value
 
     init {
         if (!withinBounds(x.value, MIN_X, MAX_X)){

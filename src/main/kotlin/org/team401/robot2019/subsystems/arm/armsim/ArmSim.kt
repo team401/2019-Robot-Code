@@ -4,7 +4,7 @@ import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
 import org.snakeskin.units.Inches
 import org.snakeskin.units.measure.time.TimeMeasureSeconds
-import org.team401.robot2019.subsystems.arm.ArmController
+import org.team401.robot2019.subsystems.arm.ArmPather
 import org.team401.robot2019.subsystems.arm.ArmState
 
 /**
@@ -16,21 +16,21 @@ object ArmSim {
     @JvmStatic
     fun main(args: Array<String>) {
 
-        ArmController.reset()
-        ArmController.setDesiredPath(Point2d((-5.0).Inches, 0.0.Inches), Point2d(5.0.Inches, (-2.0).Inches))
+        ArmPather.reset()
+        ArmPather.setDesiredPath(Point2d((-5.0).Inches, 0.0.Inches), Point2d(5.0.Inches, (-2.0).Inches))
 
         val points = ArrayList<ArmState>()
         val time = ArrayList<TimeMeasureSeconds>()
 
-        while (!ArmController.isDone()) {
-            points.add(ArmController.update())
-            time.add(ArmController.getCurrentTime())
+        while (!ArmPather.isDone()) {
+            points.add(ArmPather.update())
+            time.add(ArmPather.getCurrentTime())
         }
 
         val xSeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).x.value }
         val ySeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).y.value }
-        val rSeries = DoubleArray(points.size) { points[it].position.r.value }
-        val thetaSeries = DoubleArray(points.size) { points[it].position.theta.value }
+        val rSeries = DoubleArray(points.size) { points[it].position.first.value }
+        val thetaSeries = DoubleArray(points.size) { points[it].position.second.value }
         val velocitySeries = DoubleArray(points.size){points[it].armVelocity.value}
         val timeSeries = DoubleArray(time.size) { time[it].value }
 
