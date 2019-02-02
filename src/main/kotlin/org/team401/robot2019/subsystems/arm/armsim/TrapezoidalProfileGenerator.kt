@@ -138,6 +138,7 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
 
                     position += velocity * rate
 
+
                     points.add(TrapezoidalProfilePoint(position.Radians, velocity.RadiansPerSecond, time.Seconds))
                 }
             }
@@ -151,6 +152,9 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
                     i--
 
                     position += velocity * rate
+                    if((position > endPos && !backwards) || (position < endPos) && backwards){ // This might cause problems
+                        position = endPos
+                    }
 
                     points.add(TrapezoidalProfilePoint(position.Radians, velocity.RadiansPerSecond, time.Seconds))
                 }else{
@@ -161,6 +165,7 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
                 done = true
             }
         }
+        println("end : $endPos, lastPoint: ${points.last().position}")
         return points.last()
     }
 

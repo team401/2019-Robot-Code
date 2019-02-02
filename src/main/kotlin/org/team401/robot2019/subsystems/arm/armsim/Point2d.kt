@@ -15,7 +15,7 @@ data class Point2d(val x: LinearDistanceMeasureInches, val y: LinearDistanceMeas
     private val MIN_X = MAX_X * -1.0
     private val MAX_Y = Geometry.ArmGeometry.maxY.value
     private val MIN_Y = Geometry.ArmGeometry.minY.value
-    private val r = Geometry.ArmGeometry.maxArmLength.value
+    private val r = Geometry.ArmGeometry.minSafeWristRotation.value
 
     init {
         if (!withinBounds(x.value, MIN_X, MAX_X)){

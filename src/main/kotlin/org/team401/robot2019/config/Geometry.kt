@@ -18,9 +18,9 @@ object Geometry {
     */
     object ArmGeometry{
         //All values with the pivot as the origin
-        val maxX = 8.0.Inches
-        val maxY = 10.0.Inches
-        val minY = (-2.0).Inches
+        val maxX = 80.0.Inches
+        val maxY = 100.0.Inches
+        val minY = (-20.0).Inches
         val maxExtension = 0.0.Inches
         val maxArmLength = 0.0.Inches
         val minExtension = 0.0.Inches

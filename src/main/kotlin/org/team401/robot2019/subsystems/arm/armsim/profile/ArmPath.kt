@@ -116,7 +116,7 @@ class ArmPath(path: LinearProfileSegment){
         }
 
         if (!(intX1 >= min && intX1 <= max) && !(intX2 >= min && intX2 <= max)){
-            //println("Out of scope")
+            println("Out of scope")
             return false
         }
         return true

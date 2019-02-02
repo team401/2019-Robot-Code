@@ -17,7 +17,7 @@ object ArmSim {
     fun main(args: Array<String>) {
 
         ArmPather.reset()
-        ArmPather.setDesiredPath(Point2d((-5.0).Inches, 0.0.Inches), Point2d(5.0.Inches, (-2.0).Inches))
+        ArmPather.setDesiredPath(Point2d((-12.0).Inches, 0.0.Inches), Point2d((12.0).Inches, (-2.0).Inches))
 
         val points = ArrayList<ArmState>()
         val time = ArrayList<TimeMeasureSeconds>()

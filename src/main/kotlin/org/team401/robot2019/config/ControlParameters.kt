@@ -11,7 +11,7 @@ object ControlParameters{
         val MAX_VELOCITY = 3.14.RadiansPerSecond
         const val HOMED_POSITION = 0
 
-        val DEFAULT_ARM_POSITION = Point2d(0.0.Inches, 4.0.Inches) // Use real numbers
+        //val DEFAULT_ARM_POSITION = Point2d(0.0.Inches, 4.0.Inches) // Use real numbers
 
         val MIN_POS = 0.57.Radians.value
         val MAX_POS = 3.5.Radians.value

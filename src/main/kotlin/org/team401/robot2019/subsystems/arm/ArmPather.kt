@@ -82,6 +82,7 @@ object ArmPather{
 
     private fun calculatePath(): Array<ProfileSegment>{
         val armPath = ArmPath(LinearProfileSegment(startPos, endPos))
+        println("start: $startPos, end: $endPos")
         return armPath.solve()
     }
 
