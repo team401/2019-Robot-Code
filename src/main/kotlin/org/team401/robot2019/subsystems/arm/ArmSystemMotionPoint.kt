@@ -8,7 +8,8 @@ data class ArmSystemMotionPoint(val targetExtension: AngularDistanceMeasureCTREM
                                 val targetPosition: AngularDistanceMeasureCTREMagEncoder,
                                 val targetWristPosition: AngularDistanceMeasureCTREMagEncoder,
                                 val rotationFeedForward: Double){
-    constructor(armState: ArmState, wristState: WristState, rotationFeedForward: Double): this((armState.armRadius - Geometry.ArmGeometry.minArmLength).toAngularDistance(Geometry.ArmGeometry.armToInches) as AngularDistanceMeasureCTREMagEncoder,
+    constructor(armState: ArmState, wristState: WristState, rotationFeedForward: Double): this((armState.armRadius - Geometry.ArmGeometry.minArmLength).toAngularDistance(Geometry.ArmGeometry.armToInches).toUnit(
+        MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder,
         armState.armAngle.toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder, wristState.wristPosition.toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder, rotationFeedForward)
 }
 

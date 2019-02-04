@@ -10,7 +10,6 @@ import org.team401.armsim.InvalidPointException
 import org.team401.armsim.Point2d
 import org.team401.armsim.PointPolar
 import org.team401.robot2019.config.Geometry
-import org.team401.robot2019.subsystems.arm.armsim.profile.WristPlanner
 import kotlin.math.PI
 
 object ArmSubsystemController{
@@ -31,12 +30,12 @@ object ArmSubsystemController{
 
         // TODO Think through possible logic fails
         if (armMotionCommanded && !done){
-            val commandedArmState = ArmPather.update() // Returns the arm's angle and position
-            // Pass to wrist pather
+            val commandedArmState = ArmPlanner.update() // Returns the arm's angle and position
+            // Pass to wrist planner
             val commandedWristState = WristPlanner.update(commandedArmState, currentWristState) // returns the wrist's angle
             val commandedRotationFF = ArmController.calculateRotationFF(commandedArmState) // returns the FF
 
-            if (ArmPather.isDone()){
+            if (ArmPlanner.isDone()){
                 done = true
             }
 
@@ -49,7 +48,7 @@ object ArmSubsystemController{
         this.desiredLocation = ArmKinematics.inverse(desiredLocation)
 
         reset()
-        ArmPather.setDesiredPath(ArmKinematics.forward(PointPolar(currentArmState.armRadius, currentArmState.armAngle)), desiredLocation)
+        ArmPlanner.setDesiredPath(ArmKinematics.forward(PointPolar(currentArmState.armRadius, currentArmState.armAngle)), desiredLocation)
         armMotionCommanded = true
     }
 
@@ -69,7 +68,7 @@ object ArmSubsystemController{
 
     private fun reset(){
         desiredLocation = PointPolar(currentArmState.armRadius, currentArmState.armAngle)
-        ArmPather.reset()
+        ArmPlanner.reset()
         done = false
         armMotionCommanded = false
     }

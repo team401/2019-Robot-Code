@@ -26,7 +26,7 @@ data class Point2d(val x: LinearDistanceMeasureInches, val y: LinearDistanceMeas
         }
 
         if (withinCircle()){
-            throw InvalidPointException("Point is within minimum circle")
+            throw InvalidPointException("Point ($x, $y) is within minimum circle")
         }
     }
 

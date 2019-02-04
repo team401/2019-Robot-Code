@@ -1,11 +1,8 @@
-package org.team401.robot2019.subsystems.arm.armsim.profile
+package org.team401.robot2019.subsystems.arm
 
 import org.snakeskin.units.Radians
 import org.team401.armsim.InvalidPointException
 import org.team401.robot2019.config.Geometry
-import org.team401.robot2019.subsystems.arm.ArmState
-import org.team401.robot2019.subsystems.arm.Tool
-import org.team401.robot2019.subsystems.arm.WristState
 import kotlin.math.PI
 
 object WristPlanner{

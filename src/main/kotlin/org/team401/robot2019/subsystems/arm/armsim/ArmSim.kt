@@ -4,7 +4,7 @@ import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
 import org.snakeskin.units.Inches
 import org.snakeskin.units.measure.time.TimeMeasureSeconds
-import org.team401.robot2019.subsystems.arm.ArmPather
+import org.team401.robot2019.subsystems.arm.ArmPlanner
 import org.team401.robot2019.subsystems.arm.ArmState
 
 /**
@@ -16,15 +16,15 @@ object ArmSim {
     @JvmStatic
     fun main(args: Array<String>) {
 
-        ArmPather.reset()
-        ArmPather.setDesiredPath(Point2d((-12.0).Inches, 0.0.Inches), Point2d((12.0).Inches, (-2.0).Inches))
+        ArmPlanner.reset()
+        ArmPlanner.setDesiredPath(Point2d((0.0).Inches, 12.0.Inches), Point2d((0.0).Inches, (20.0).Inches))
 
         val points = ArrayList<ArmState>()
         val time = ArrayList<TimeMeasureSeconds>()
 
-        while (!ArmPather.isDone()) {
-            points.add(ArmPather.update())
-            time.add(ArmPather.getCurrentTime())
+        while (!ArmPlanner.isDone()) {
+            points.add(ArmPlanner.update())
+            time.add(ArmPlanner.getCurrentTime())
         }
 
         val xSeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).x.value }

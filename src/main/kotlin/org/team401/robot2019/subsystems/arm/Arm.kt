@@ -14,6 +14,7 @@ import org.snakeskin.units.*
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
+import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureCTREMagEncoder
 import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.team401.armsim.ArmKinematics
 import org.team401.armsim.Point2d
@@ -29,24 +30,23 @@ object Arm: Subsystem() {
     private val extensionMotor = TalonSRX(21)
     private val wristMotor = TalonSRX(22)
 
-    private var armAngle = rotationMotor.selectedSensorPosition.MagEncoderTicks
-    private var armVelocity = rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms
-    private var armLength = extensionMotor.selectedSensorPosition.MagEncoderTicks // linear
+    private lateinit var armAngle: AngularDistanceMeasureCTREMagEncoder
+    private lateinit var armVelocity: AngularVelocityMeasureCTREMagEncoder
+    private lateinit var armLength: AngularDistanceMeasureCTREMagEncoder
 
-    private var wristAngle = wristMotor.selectedSensorPosition.MagEncoderTicks
+    private lateinit var wristAngle: AngularDistanceMeasureCTREMagEncoder
     private var activeTool = Tool.CARGO_INTAKE // TODO Adjust how this works..
     private var hasGamePiece = false
 
-    private var armPosition = ArmKinematics.forward(PointPolar(armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) as LinearDistanceMeasureInches,
-        armAngle.toUnit(Radians) as AngularDistanceMeasureRadians))
+    private lateinit var armPosition: Point2d
 
     private lateinit var coordinatedControlPoint: ArmSystemMotionPoint
 
     private var homed by LockingDelegate(false)
 
     override fun setup() {
-        rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0)
-        rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 1, 0)
+        rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
+        rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 1, 0)
         rotationMotor.configPeakCurrentLimit(10)
         rotationMotor.configPeakCurrentDuration(100)
         rotationMotor.configClosedLoopPeakOutput(0, 0.25)
@@ -54,22 +54,24 @@ object Arm: Subsystem() {
 
         // TODO Remember - Chain reduction is 16:72
 
-        extensionMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute)
+        extensionMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
         extensionMotor.configPeakCurrentLimit(10)
         extensionMotor.configPeakCurrentDuration(100)
 
-        wristMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute)
+        wristMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
         wristMotor.configPeakCurrentLimit(10)
         wristMotor.configPeakCurrentDuration(100)
+
+
+        //TODO REMOVE THIS AFTER SIMULATION!!!
+        rotationMotor.selectedSensorPosition = 1024
+        extensionMotor.selectedSensorPosition = 1024
+        wristMotor.selectedSensorPosition = 0
 
         // TODO SET UP MOTION MAGIC
 
         on(Events.TELEOP_ENABLED){
-            if (homed){
-                armMachine.setState(ArmStates.MANUAL_CONTROL)
-            }else{
-                armMachine.setState(ArmStates.HOMING)
-            }
+            armMachine.setState(ArmStates.HOLDING)
         }
 
     }
@@ -92,8 +94,10 @@ object Arm: Subsystem() {
         armAngle = rotationMotor.selectedSensorPosition.MagEncoderTicks
         // TODO Update this to real robot configuration
         armAngle = chainReduction(armAngle.value).MagEncoderTicks
+        armLength = extensionMotor.selectedSensorPosition.MagEncoderTicks
         armVelocity = rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms
-        armPosition = ArmKinematics.forward(PointPolar(armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) as LinearDistanceMeasureInches, armAngle.toUnit(Radians) as AngularDistanceMeasureRadians))
+        armPosition = ArmKinematics.forward(PointPolar((armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) + Geometry.ArmGeometry.minSafeWristRotation) as LinearDistanceMeasureInches, armAngle.toUnit(Radians) as AngularDistanceMeasureRadians))
+
 
         wristAngle = wristMotor.selectedSensorPosition.MagEncoderTicks
         val armState = ArmState(armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) as LinearDistanceMeasureInches, armAngle.toUnit(Radians) as AngularDistanceMeasureRadians, armVelocity.toUnit(
@@ -167,9 +171,6 @@ object Arm: Subsystem() {
 
                 wristMotor.selectProfileSlot(0, 0)
                 wristMotor.set(ControlMode.MotionMagic, wristAngle.value)
-            }
-            action {
-                println("Target Pos: ${armAngle.value}")
             }
         }
 
