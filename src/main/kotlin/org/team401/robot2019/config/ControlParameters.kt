@@ -1,7 +1,13 @@
 package org.team401.robot2019.config
 
-import org.snakeskin.units.*
-import org.team401.armsim.Point2d
+import org.snakeskin.logic.scalars.Scalar
+import org.snakeskin.logic.scalars.ScalarGroup
+import org.snakeskin.logic.scalars.SquareScalar
+import org.snakeskin.measure.Inches
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.utility.CheesyDriveController
+import org.team401.robot2019.subsystems.arm.armsim.Point2d
 
 object ControlParameters{
     object ArmParameters{
@@ -25,5 +31,11 @@ object ControlParameters{
         val CARGO_SHIP = Point2d(0.0.Inches, 0.0.Inches)
         val LOADING_STATION = Point2d(0.0.Inches, 0.0.Inches)
         val HATCH_FLOOR_PICKUP = Point2d(0.0.Inches, 0.0.Inches)
+    }
+
+    object DrivetrainCheesyDriveParameters: CheesyDriveController.DefaultParameters() {
+        override val quickTurnScalar = ScalarGroup(SquareScalar, object : Scalar {
+            override fun scale(input: Double) = input / 3.33
+        })
     }
 }

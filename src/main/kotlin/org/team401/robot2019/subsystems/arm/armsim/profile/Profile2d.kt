@@ -1,14 +1,12 @@
-package org.team401.armsim.profile
+package org.team401.robot2019.subsystems.arm.armsim.profile
 
-import org.snakeskin.units.Radians
-import org.snakeskin.units.RadiansPerSecond
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.time.TimeMeasureSeconds
-import org.team401.armsim.ArmKinematics
-import org.team401.armsim.Point2d
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.time.TimeMeasureSeconds
+import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
+import org.team401.robot2019.subsystems.arm.armsim.Point2d
 import org.team401.armsim.PointPolar
-import org.team401.armsim.TrapezoidalProfileGenerator
-import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.subsystems.arm.armsim.TrapezoidalProfileGenerator
 import kotlin.math.abs
 
 
@@ -91,24 +89,24 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
                         point = Pair(segments[0].solve(theta), ArmKinematics.inverse(segments[0].solve(theta)))
                     }
                     ArmKinematics.inverse(segments[1].end).theta < theta -> {
-                        point = Pair(segments[1].solve(theta),ArmKinematics.inverse(segments[1].solve(theta)))
+                        point = Pair(segments[1].solve(theta), ArmKinematics.inverse(segments[1].solve(theta)))
                     }
 
                     ArmKinematics.inverse(segments[2].end).theta <= theta -> {
-                        point = Pair(segments[2].solve(theta),ArmKinematics.inverse(segments[2].solve(theta)))
+                        point = Pair(segments[2].solve(theta), ArmKinematics.inverse(segments[2].solve(theta)))
                     }
                 }
             }else {
                 // Switch for different types of function
                 when { // TODO Configure for forwards and backwards motion
                     ArmKinematics.inverse(segments[0].end).theta > theta -> {
-                        point = Pair(segments[0].solve(theta),ArmKinematics.inverse(segments[0].solve(theta)))
+                        point = Pair(segments[0].solve(theta), ArmKinematics.inverse(segments[0].solve(theta)))
                     }
                     ArmKinematics.inverse(segments[1].end).theta > theta -> {
-                        point = Pair(segments[1].solve(theta),ArmKinematics.inverse(segments[1].solve(theta)))
+                        point = Pair(segments[1].solve(theta), ArmKinematics.inverse(segments[1].solve(theta)))
                     }
                     ArmKinematics.inverse(segments[2].end).theta >= theta -> {
-                        point = Pair(segments[2].solve(theta),ArmKinematics.inverse(segments[2].solve(theta)))
+                        point = Pair(segments[2].solve(theta), ArmKinematics.inverse(segments[2].solve(theta)))
                     }
                 }
             }

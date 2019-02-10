@@ -1,13 +1,12 @@
-package org.team401.armsim
+package org.team401.robot2019.subsystems.arm.armsim
 
 import org.snakeskin.logic.LockingDelegate
-import org.snakeskin.units.Radians
-import org.snakeskin.units.RadiansPerSecond
-import org.snakeskin.units.Seconds
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.time.TimeMeasureSeconds
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
-import org.team401.robot2019.subsystems.arm.armsim.TrapezoidalProfilePoint
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.Seconds
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.time.TimeMeasureSeconds
+import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import kotlin.math.abs
 
 /**

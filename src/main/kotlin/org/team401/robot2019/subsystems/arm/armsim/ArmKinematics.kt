@@ -1,8 +1,9 @@
-package org.team401.armsim
+package org.team401.robot2019.subsystems.arm.armsim
 
-import org.snakeskin.units.Inches
-import org.snakeskin.units.Radians
-import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
+import org.snakeskin.measure.Inches
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.Unitless
+import org.team401.armsim.PointPolar
 import org.team401.robot2019.subsystems.arm.ArmState
 
 /**
@@ -16,15 +17,15 @@ object ArmKinematics {
      */
     fun forward(point: PointPolar): Point2d {
         return Point2d(
-            (point.r * Math.cos(point.theta.value)) as LinearDistanceMeasureInches,
-            (point.r * Math.sin(point.theta.value)) as LinearDistanceMeasureInches
+            (point.r * Math.cos(point.theta.value).Unitless),
+            (point.r * Math.sin(point.theta.value).Unitless)
         )
     }
 
     fun forward(point: ArmState): Point2d {
         return Point2d(
-            (point.armRadius * Math.cos(point.armAngle.value)) as LinearDistanceMeasureInches,
-            (point.armRadius * Math.sin(point.armAngle.value)) as LinearDistanceMeasureInches
+            (point.armRadius * Math.cos(point.armAngle.value).Unitless),
+            (point.armRadius * Math.sin(point.armAngle.value).Unitless)
         )
     }
 

@@ -1,6 +1,6 @@
 package org.team401.robot2019.subsystems.arm
 
-import org.snakeskin.units.Radians
+import org.snakeskin.measure.Radians
 import org.team401.armsim.InvalidPointException
 import org.team401.robot2019.config.Geometry
 import kotlin.math.PI

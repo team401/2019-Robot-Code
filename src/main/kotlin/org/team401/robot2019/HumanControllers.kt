@@ -6,6 +6,10 @@ import org.team401.robot2019.subsystems.arm.Arm
 import org.snakeskin.logic.Direction
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.subsystems.arm.ArmSubsystemController
+import org.team401.robot2019.subsystems.drivetrain.Drivetrain
+import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.geometry.Rotation2d
+import org.team401.taxis.geometry.Translation2d
 
 /**
  * @author Cameron Earle
@@ -15,27 +19,18 @@ import org.team401.robot2019.subsystems.arm.ArmSubsystemController
 val LeftStick = HumanControls.t16000m(0) {
     invertAxis(Axes.PITCH)
 
-    /*
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
             Drivetrain.setPose(Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(0.0)))
         }
     }
-
-    whenButton(Buttons.TRIGGER) {
-        pressed {
-            Drivetrain.driveMachine.setState(Drivetrain.DriveStates.PathFollowing)
-        }
-        released {
-            Drivetrain.driveMachine.setState(Drivetrain.DriveStates.DriverControl)
-        }
-    }
-    */
 }
 
 val RightStick = HumanControls.t16000m(1) {
 
 }
+
+
 val Gamepad = HumanControls.dualAction(2){
 
     whenButton(Buttons.X){

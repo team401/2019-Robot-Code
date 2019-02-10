@@ -1,7 +1,7 @@
 package org.team401.armsim
 
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 
 /**
  * @author Cameron Earle

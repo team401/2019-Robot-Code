@@ -7,15 +7,19 @@ package org.team401.robot2019.config
  */
 object HardwareMap {
     object Drivetrain {
-        const val leftFrontTalonId = 1
-        const val leftMidFTalonId = 2
-        const val leftMidRTalonId = 3
-        const val leftRearTalonId = 4
-        const val rightFrontTalonId = 5
-        const val rightMidFTalonId = 6
-        const val rightMidRTalonId = 7
-        const val rightRearTalonId = 8
+        const val leftRearSparkMaxId = 1
+        const val leftMidSparkMaxId = 2
+        const val leftFrontSparkMaxId = 3
+        const val rightRearSparkMaxId = 4
+        const val rightMidSparkMaxId = 5
+        const val rightFrontSparkMaxId = 6
 
-        const val pigeonImuId = leftRearTalonId
+
+        const val pigeonImuId = 1
+    }
+
+    object Arm {
+        const val leftIntakeWheelId = 30
+        const val rightIntakeWheelTalonId = 31
     }
 }

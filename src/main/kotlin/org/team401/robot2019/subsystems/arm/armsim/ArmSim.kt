@@ -2,10 +2,12 @@ package org.team401.armsim
 
 import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
-import org.snakeskin.units.Inches
-import org.snakeskin.units.measure.time.TimeMeasureSeconds
+import org.snakeskin.measure.Inches
+import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.team401.robot2019.subsystems.arm.ArmPlanner
 import org.team401.robot2019.subsystems.arm.ArmState
+import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
+import org.team401.robot2019.subsystems.arm.armsim.Point2d
 
 /**
  * @author Cameron Earle

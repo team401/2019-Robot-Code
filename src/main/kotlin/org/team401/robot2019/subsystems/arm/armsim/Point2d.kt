@@ -1,5 +1,7 @@
-package org.team401.armsim
-import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
+package org.team401.robot2019.subsystems.arm.armsim
+
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.team401.armsim.InvalidPointException
 import org.team401.robot2019.config.Geometry
 import java.lang.Math.pow
 import kotlin.math.abs

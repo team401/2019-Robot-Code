@@ -1,9 +1,8 @@
 package org.team401.robot2019.subsystems.arm
 
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.team401.armsim.PointPolar
 
 /**
@@ -12,4 +11,5 @@ import org.team401.armsim.PointPolar
  */
 data class ArmState(val armRadius: LinearDistanceMeasureInches,
                     val armAngle: AngularDistanceMeasureRadians,
-                    val armVelocity: AngularVelocityMeasureRadiansPerSecond)
+                    val armVelocity: AngularVelocityMeasureRadiansPerSecond
+)

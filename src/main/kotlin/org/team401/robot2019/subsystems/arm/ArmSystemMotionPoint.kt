@@ -1,15 +1,13 @@
 package org.team401.robot2019.subsystems.arm
 
-import org.snakeskin.units.MagEncoderTicks
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureMagEncoderTicks
 import org.team401.robot2019.config.Geometry
 
-data class ArmSystemMotionPoint(val targetExtension: AngularDistanceMeasureCTREMagEncoder,
-                                val targetPosition: AngularDistanceMeasureCTREMagEncoder,
-                                val targetWristPosition: AngularDistanceMeasureCTREMagEncoder,
+data class ArmSystemMotionPoint(val targetExtension: AngularDistanceMeasureMagEncoderTicks,
+                                val targetPosition: AngularDistanceMeasureMagEncoderTicks,
+                                val targetWristPosition: AngularDistanceMeasureMagEncoderTicks,
                                 val rotationFeedForward: Double){
-    constructor(armState: ArmState, wristState: WristState, rotationFeedForward: Double): this((armState.armRadius - Geometry.ArmGeometry.minArmLength).toAngularDistance(Geometry.ArmGeometry.armToInches).toUnit(
-        MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder,
-        armState.armAngle.toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder, wristState.wristPosition.toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder, rotationFeedForward)
+    constructor(armState: ArmState, wristState: WristState, rotationFeedForward: Double): this((armState.armRadius - Geometry.ArmGeometry.minArmLength).toAngularDistance(Geometry.ArmGeometry.armToInches).toMagEncoderTicks(),
+        armState.armAngle.toMagEncoderTicks(), wristState.wristPosition.toMagEncoderTicks(), rotationFeedForward)
 }
 

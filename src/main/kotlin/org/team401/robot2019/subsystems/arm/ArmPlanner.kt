@@ -1,19 +1,19 @@
 package org.team401.robot2019.subsystems.arm
 
-import org.snakeskin.units.RadiansPerSecond
-import org.snakeskin.units.Seconds
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
-import org.snakeskin.units.measure.time.TimeMeasureSeconds
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureCTREMagEncoder
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
-import org.team401.armsim.ArmKinematics
-import org.team401.armsim.Point2d
-import org.team401.armsim.TrapezoidalProfileGenerator
-import org.team401.armsim.profile.ArmPath
-import org.team401.armsim.profile.LinearProfileSegment
-import org.team401.armsim.profile.Profile2d
-import org.team401.armsim.profile.ProfileSegment
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.Seconds
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.snakeskin.measure.time.TimeMeasureSeconds
+import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
+import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
+import org.team401.robot2019.subsystems.arm.armsim.Point2d
+import org.team401.robot2019.subsystems.arm.armsim.TrapezoidalProfileGenerator
+import org.team401.robot2019.subsystems.arm.armsim.profile.ArmPath
+import org.team401.robot2019.subsystems.arm.armsim.profile.LinearProfileSegment
+import org.team401.robot2019.subsystems.arm.armsim.profile.Profile2d
+import org.team401.robot2019.subsystems.arm.armsim.profile.ProfileSegment
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.subsystems.arm.armsim.TrapezoidalProfilePoint
 
@@ -25,10 +25,10 @@ object ArmPlanner{
     private lateinit var startPos: Point2d
     private lateinit var endPos: Point2d
 
-    private lateinit var startTheta: AngularDistanceMeasureRadians
-    private lateinit var endTheta: AngularDistanceMeasureRadians
+    private var startTheta = 0.0.Radians
+    private var endTheta = 0.0.Radians
 
-    private lateinit var currentTime: TimeMeasureSeconds
+    private var currentTime = 0.0.Seconds
 
     private lateinit var path: Array<ProfileSegment>
     private lateinit var profile: Profile2d
@@ -67,9 +67,9 @@ object ArmPlanner{
 
     fun update(): ArmState{
         lateinit var currentArmState: TrapezoidalProfilePoint
-        lateinit var currentArmPosition: AngularDistanceMeasureRadians
-        lateinit var currentArmVelocity: AngularVelocityMeasureRadiansPerSecond
-        lateinit var currentRadius: LinearDistanceMeasureInches
+        var currentArmPosition: AngularDistanceMeasureRadians
+        var currentArmVelocity: AngularVelocityMeasureRadiansPerSecond
+        var currentRadius: LinearDistanceMeasureInches
 
         if(startTheta == endTheta){
             currentArmPosition = startTheta

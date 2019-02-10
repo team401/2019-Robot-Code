@@ -1,13 +1,12 @@
 package org.team401.robot2019.subsystems.arm
 
-import org.snakeskin.units.MagEncoderTicks
-import org.snakeskin.units.Radians
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
-import org.team401.armsim.ArmKinematics
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureMagEncoderTicks
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
 import org.team401.armsim.InvalidPointException
-import org.team401.armsim.Point2d
+import org.team401.robot2019.subsystems.arm.armsim.Point2d
 import org.team401.armsim.PointPolar
 import org.team401.robot2019.config.Geometry
 import kotlin.math.PI
@@ -72,8 +71,8 @@ object ArmSubsystemController{
         done = false
         armMotionCommanded = false
     }
-    private fun convertToEncoderTicks(extension: LinearDistanceMeasureInches): AngularDistanceMeasureCTREMagEncoder{
-        return extension.toAngularDistance(Geometry.ArmGeometry.armToInches).toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder
+    private fun convertToEncoderTicks(extension: LinearDistanceMeasureInches): AngularDistanceMeasureMagEncoderTicks{
+        return extension.toAngularDistance(Geometry.ArmGeometry.armToInches).toMagEncoderTicks()
     }
 
     fun isDone(): Boolean{
