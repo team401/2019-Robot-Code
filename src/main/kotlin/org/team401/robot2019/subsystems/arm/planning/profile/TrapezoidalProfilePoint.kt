@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems.arm.armsim
+package org.team401.robot2019.subsystems.arm.planning.profile
 
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.time.TimeMeasureSeconds

@@ -1,12 +1,11 @@
-package org.team401.robot2019.subsystems.arm.armsim.profile
+package org.team401.robot2019.subsystems.arm.planning.profile
 
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.time.TimeMeasureSeconds
-import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
-import org.team401.robot2019.subsystems.arm.armsim.Point2d
-import org.team401.armsim.PointPolar
-import org.team401.robot2019.subsystems.arm.armsim.TrapezoidalProfileGenerator
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.subsystems.arm.geometry.Point2d
+import org.team401.robot2019.subsystems.arm.geometry.PointPolar
 import kotlin.math.abs
 
 
@@ -17,7 +16,12 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
 
     private val intersectsCircle = segments.size > 1
     // TODO Use real numbers
-    private val armProfile = TrapezoidalProfileGenerator(3.14.RadiansPerSecond, 3.14.RadiansPerSecond, startPoint.theta, endPoint.theta)
+    private val armProfile = TrapezoidalProfileGenerator(
+        3.14.RadiansPerSecond,
+        3.14.RadiansPerSecond,
+        startPoint.theta,
+        endPoint.theta
+    )
 
     fun solveSystem(): ArrayList<Pair<Point2d, PointPolar>>{
         //armProfile.generate()

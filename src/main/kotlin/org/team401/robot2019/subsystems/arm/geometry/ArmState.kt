@@ -1,9 +1,8 @@
-package org.team401.robot2019.subsystems.arm
+package org.team401.robot2019.subsystems.arm.geometry
 
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
-import org.team401.armsim.PointPolar
 
 /**
  * Holds the state of the arm as an effective polar point + other stuff.

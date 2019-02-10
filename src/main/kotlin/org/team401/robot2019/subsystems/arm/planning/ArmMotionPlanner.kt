@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems.arm
+package org.team401.robot2019.subsystems.arm.planning
 
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
@@ -7,17 +7,18 @@ import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
-import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
-import org.team401.robot2019.subsystems.arm.armsim.Point2d
-import org.team401.robot2019.subsystems.arm.armsim.TrapezoidalProfileGenerator
-import org.team401.robot2019.subsystems.arm.armsim.profile.ArmPath
-import org.team401.robot2019.subsystems.arm.armsim.profile.LinearProfileSegment
-import org.team401.robot2019.subsystems.arm.armsim.profile.Profile2d
-import org.team401.robot2019.subsystems.arm.armsim.profile.ProfileSegment
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.subsystems.arm.geometry.Point2d
+import org.team401.robot2019.subsystems.arm.planning.profile.TrapezoidalProfileGenerator
+import org.team401.robot2019.subsystems.arm.planning.profile.ArmPath
+import org.team401.robot2019.subsystems.arm.planning.profile.LinearProfileSegment
+import org.team401.robot2019.subsystems.arm.planning.profile.Profile2d
+import org.team401.robot2019.subsystems.arm.planning.profile.ProfileSegment
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.subsystems.arm.armsim.TrapezoidalProfilePoint
+import org.team401.robot2019.subsystems.arm.geometry.ArmState
+import org.team401.robot2019.subsystems.arm.planning.profile.TrapezoidalProfilePoint
 
-object ArmPlanner{
+object ArmMotionPlanner{
     // 1. Calculate Path
     // 2. Calculate Point
     // 3. Find radius
@@ -36,14 +37,15 @@ object ArmPlanner{
 
     private var done = false
 
-    fun setDesiredPath(startPos: Point2d, endPos: Point2d){
-        this.startPos = startPos
-        this.endPos = endPos
+    fun setDesiredTrajectory(startPos: Point2d, endPos: Point2d){
+        ArmMotionPlanner.startPos = startPos
+        ArmMotionPlanner.endPos = endPos
 
-        startTheta = ArmKinematics.inverse(ArmPlanner.startPos).theta
-        endTheta = ArmKinematics.inverse(ArmPlanner.endPos).theta
+        startTheta = ArmKinematics.inverse(ArmMotionPlanner.startPos).theta
+        endTheta = ArmKinematics.inverse(ArmMotionPlanner.endPos).theta
 
-        path = calculatePath()
+        path =
+                calculatePath()
         profile = Profile2d(path)
         rotationProfile = TrapezoidalProfileGenerator(
             ControlParameters.ArmParameters.MAX_VELOCITY,
@@ -61,11 +63,11 @@ object ArmPlanner{
         return done
     }
 
-    fun getCurrentTime(): TimeMeasureSeconds{
+    fun getCurrentTime(): TimeMeasureSeconds {
         return currentTime
     }
 
-    fun update(): ArmState{
+    fun update(dt: Double): ArmState {
         lateinit var currentArmState: TrapezoidalProfilePoint
         var currentArmPosition: AngularDistanceMeasureRadians
         var currentArmVelocity: AngularVelocityMeasureRadiansPerSecond
@@ -77,8 +79,8 @@ object ArmPlanner{
             currentRadius = ArmKinematics.inverse(endPos).r
             currentTime = 0.0.Seconds // TODO See if this causes problems
             done = true
-        }else {
-            currentArmState = rotationProfile.updatePoint()
+        } else {
+            currentArmState = rotationProfile.update(dt)
             currentArmPosition = currentArmState.position
             currentArmVelocity = currentArmState.velocity
             currentRadius = profile.solvePoint(currentArmPosition).second.r
@@ -88,11 +90,18 @@ object ArmPlanner{
             done = rotationProfile.isDone()
         }
 
-        return ArmState(currentRadius, currentArmPosition, currentArmVelocity)
+        return ArmState(
+            currentRadius,
+            currentArmPosition,
+            currentArmVelocity
+        )
     }
 
     private fun calculatePath(): Array<ProfileSegment>{
-        val armPath = ArmPath(LinearProfileSegment(startPos, endPos))
+        val armPath = ArmPath(LinearProfileSegment(
+            startPos,
+            endPos
+        ))
         println("start: $startPos, end: $endPos")
         return armPath.solve()
     }

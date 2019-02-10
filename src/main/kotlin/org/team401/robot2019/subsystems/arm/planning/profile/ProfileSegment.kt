@@ -1,7 +1,7 @@
-package org.team401.robot2019.subsystems.arm.armsim.profile
+package org.team401.robot2019.subsystems.arm.planning.profile
 
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
-import org.team401.robot2019.subsystems.arm.armsim.Point2d
+import org.team401.robot2019.subsystems.arm.geometry.Point2d
 
 /**
  * @author Cameron Earle

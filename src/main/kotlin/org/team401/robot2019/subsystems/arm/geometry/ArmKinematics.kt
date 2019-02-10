@@ -1,10 +1,11 @@
-package org.team401.robot2019.subsystems.arm.armsim
+package org.team401.robot2019.subsystems.arm.control
 
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.Unitless
-import org.team401.armsim.PointPolar
-import org.team401.robot2019.subsystems.arm.ArmState
+import org.team401.robot2019.subsystems.arm.geometry.PointPolar
+import org.team401.robot2019.subsystems.arm.geometry.ArmState
+import org.team401.robot2019.subsystems.arm.geometry.Point2d
 
 /**
  * @author Cameron Earle

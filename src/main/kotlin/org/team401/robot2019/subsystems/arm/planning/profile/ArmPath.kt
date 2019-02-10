@@ -1,7 +1,7 @@
-package org.team401.robot2019.subsystems.arm.armsim.profile
+package org.team401.robot2019.subsystems.arm.planning.profile
 
 import org.snakeskin.measure.Inches
-import org.team401.robot2019.subsystems.arm.armsim.Point2d
+import org.team401.robot2019.subsystems.arm.geometry.Point2d
 import org.team401.robot2019.config.Geometry
 import java.lang.Math.pow
 import kotlin.math.*

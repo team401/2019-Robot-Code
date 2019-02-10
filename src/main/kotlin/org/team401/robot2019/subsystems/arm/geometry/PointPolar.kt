@@ -1,4 +1,4 @@
-package org.team401.armsim
+package org.team401.robot2019.subsystems.arm.geometry
 
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches

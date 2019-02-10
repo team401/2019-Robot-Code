@@ -1,13 +1,13 @@
-package org.team401.armsim
+package org.team401.robot2019.subsystems.arm.armsim
 
 import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.time.TimeMeasureSeconds
-import org.team401.robot2019.subsystems.arm.ArmPlanner
-import org.team401.robot2019.subsystems.arm.ArmState
-import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
-import org.team401.robot2019.subsystems.arm.armsim.Point2d
+import org.team401.robot2019.subsystems.arm.planning.ArmMotionPlanner
+import org.team401.robot2019.subsystems.arm.geometry.ArmState
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.subsystems.arm.geometry.Point2d
 
 /**
  * @author Cameron Earle
@@ -18,15 +18,15 @@ object ArmSim {
     @JvmStatic
     fun main(args: Array<String>) {
 
-        ArmPlanner.reset()
-        ArmPlanner.setDesiredPath(Point2d((0.0).Inches, 12.0.Inches), Point2d((0.0).Inches, (20.0).Inches))
+        ArmMotionPlanner.reset()
+        ArmMotionPlanner.setDesiredTrajectory(Point2d((0.0).Inches, 12.0.Inches), Point2d((0.0).Inches, (20.0).Inches))
 
         val points = ArrayList<ArmState>()
         val time = ArrayList<TimeMeasureSeconds>()
 
-        while (!ArmPlanner.isDone()) {
-            points.add(ArmPlanner.update())
-            time.add(ArmPlanner.getCurrentTime())
+        while (!ArmMotionPlanner.isDone()) {
+            points.add(ArmMotionPlanner.update(0.01))
+            time.add(ArmMotionPlanner.getCurrentTime())
         }
 
         val xSeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).x.value }

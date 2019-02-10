@@ -1,9 +1,9 @@
-package org.team401.robot2019.subsystems.arm.armsim.profile
+package org.team401.robot2019.subsystems.arm.planning.profile
 
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
-import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
-import org.team401.robot2019.subsystems.arm.armsim.Point2d
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.subsystems.arm.geometry.Point2d
 import kotlin.math.cos
 import kotlin.math.sin
 

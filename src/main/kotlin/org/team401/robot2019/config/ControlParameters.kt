@@ -7,7 +7,7 @@ import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.utility.CheesyDriveController
-import org.team401.robot2019.subsystems.arm.armsim.Point2d
+import org.team401.robot2019.subsystems.arm.geometry.Point2d
 
 object ControlParameters{
     object ArmParameters{
@@ -22,7 +22,15 @@ object ControlParameters{
         val MIN_POS = 0.57.Radians.value
         val MAX_POS = 3.5.Radians.value
 
-        const val kHold = 0.0
+        /**
+         * Voltage required to hold the arm static, divided by the cosine of the angle times the radius the test was taken at
+         */
+        const val kS = 1.0
+
+        /**
+         * Velocity feedforward voltage.  "Voltage to velocity relationship"
+         */
+        const val kV = 1.0
     }
     object ArmPositions{
         val ROCKET_TOP = Point2d(0.0.Inches, 0.0.Inches)

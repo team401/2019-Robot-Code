@@ -5,7 +5,6 @@ import org.snakeskin.dsl.HumanControls
 import org.team401.robot2019.subsystems.arm.Arm
 import org.snakeskin.logic.Direction
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.subsystems.arm.ArmSubsystemController
 import org.team401.robot2019.subsystems.drivetrain.Drivetrain
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d

@@ -12,16 +12,18 @@ import org.snakeskin.measure.MagEncoderTicks
 import org.snakeskin.measure.MagEncoderTicksPerHundredMilliseconds
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RevolutionsPerSecond
-import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.state.StateMachine
 import org.snakeskin.subsystem.Subsystem
-import org.team401.robot2019.subsystems.arm.armsim.ArmKinematics
-import org.team401.robot2019.subsystems.arm.armsim.Point2d
-import org.team401.armsim.PointPolar
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.Gamepad
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.ControlParameters.ArmParameters
 import org.team401.robot2019.config.Geometry
+import org.team401.robot2019.subsystems.arm.control.SuperstructureControlOutput
+import org.team401.robot2019.subsystems.arm.geometry.*
+import org.team401.robot2019.subsystems.arm.planning.ArmMotionPlanner
+import org.team401.robot2019.subsystems.arm.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.subsystems.arm.planning.WristMotionPlanner
 import kotlin.math.abs
 
 object Arm: Subsystem() {
@@ -33,13 +35,15 @@ object Arm: Subsystem() {
     private var armVelocity = 0.0.MagEncoderTicksPerHundredMilliseconds
     private var armLength = 0.0.MagEncoderTicks
 
+    //TODO move a lot of this out of the subsystem and into the planner
+
     private var wristAngle = 0.0.MagEncoderTicks
-    private var activeTool = Tool.CARGO_INTAKE // TODO Adjust how this works..
+    private var activeTool = WristMotionPlanner.Tool.CargoTool// TODO Adjust how this works..
     private var hasGamePiece = false
 
     private lateinit var armPosition: Point2d
 
-    private lateinit var coordinatedControlPoint: ArmSystemMotionPoint
+    private lateinit var coordinatedControlPoint: SuperstructureControlOutput
 
     private var homed by LockingDelegate(false)
 
@@ -86,7 +90,7 @@ object Arm: Subsystem() {
     }
 
     fun setTargetPosition(target: Point2d){
-        ArmSubsystemController.commandMove(target)
+        SuperstructureMotionPlanner.commandMove(target)
     }
 
     override fun action() {
@@ -99,10 +103,15 @@ object Arm: Subsystem() {
 
 
         wristAngle = wristMotor.selectedSensorPosition.toDouble().MagEncoderTicks
-        val armState = ArmState(armLength.toLinearDistance(Geometry.ArmGeometry.armToInches), armAngle.toRadians(), armVelocity.toRadiansPerSecond()) // Double check arm length
-        val wristState = WristState(wristAngle.toRadians(), activeTool, hasGamePiece)
+        val armState = ArmState(
+            armLength.toLinearDistance(Geometry.ArmGeometry.armToInches),
+            armAngle.toRadians(),
+            armVelocity.toRadiansPerSecond()
+        ) // Double check arm length
+        val wristState =
+            WristState(wristAngle.toRadians(), activeTool, hasGamePiece, hasGamePiece) //TODO update!
 
-        coordinatedControlPoint = ArmSubsystemController.update(armState, wristState)
+        coordinatedControlPoint = SuperstructureMotionPlanner.update(0.01, armState, wristState) //TODO this goes in a dedicated rt task
     }
 
 
@@ -145,6 +154,7 @@ object Arm: Subsystem() {
 
         state(ArmStates.COORDINATED_CONTROL){
             rtAction {
+                /*
                 rotationMotor.config_kF(0, coordinatedControlPoint.rotationFeedForward)
                 rotationMotor.set(ControlMode.Position, coordinatedControlPoint.targetPosition.value)
 
@@ -152,10 +162,13 @@ object Arm: Subsystem() {
 
                 wristMotor.set(ControlMode.MotionMagic, coordinatedControlPoint.targetWristPosition.value)
 
-                if(ArmSubsystemController.isDone() && armAngle == coordinatedControlPoint.targetPosition &&
-                        armLength == coordinatedControlPoint.targetExtension && wristAngle == coordinatedControlPoint.targetWristPosition){// TODO add tolerances
+                if(SuperstructureMotionPlanner.isDone() && armAngle == coordinatedControlPoint.targetPosition &&
+                        armLength == coordinatedControlPoint.extension && wristAngle == coordinatedControlPoint.targetWristPosition){// TODO add tolerances
 
                 }
+                */
+
+                //TODO update this to use the arb ff properly
             }
         }
 
@@ -181,10 +194,10 @@ object Arm: Subsystem() {
                 extensionMotor.selectProfileSlot(0,0)
                 extensionMotor.set(ControlMode.MotionMagic, armLength.value)
 
-                if (activeTool == Tool.CARGO_INTAKE){ // Should probably be a boolean...
-                    newWristState = ArmSubsystemController.switchTool(Tool.HATCH_INTAKE)
+                if (activeTool == WristMotionPlanner.Tool.CargoTool){ // Should probably be a boolean...
+                    newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.HatchPanelTool)
                 }else{
-                    newWristState = ArmSubsystemController.switchTool(Tool.CARGO_INTAKE)
+                    newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.CargoTool)
                 }
                 wristMotor.set(ControlMode.MotionMagic, newWristState.wristPosition.toMagEncoderTicks().value)
             }
