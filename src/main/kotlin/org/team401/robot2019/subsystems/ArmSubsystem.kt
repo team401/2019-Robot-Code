@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems.arm
+package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
@@ -8,39 +8,41 @@ import org.snakeskin.dsl.rtAction
 import org.snakeskin.dsl.stateMachine
 import org.snakeskin.event.Events
 import org.snakeskin.logic.LockingDelegate
+import org.snakeskin.measure.MagEncoderTicks
+import org.snakeskin.measure.MagEncoderTicksPerHundredMilliseconds
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.RevolutionsPerSecond
 import org.snakeskin.state.StateMachine
 import org.snakeskin.subsystem.Subsystem
-import org.snakeskin.units.*
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureCTREMagEncoder
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
-import org.team401.armsim.ArmKinematics
-import org.team401.armsim.Point2d
-import org.team401.armsim.PointPolar
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.Gamepad
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.ControlParameters.ArmParameters
 import org.team401.robot2019.config.Geometry
+import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
+import org.team401.robot2019.control.superstructure.geometry.*
+import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import kotlin.math.abs
 
-object Arm: Subsystem() {
+object ArmSubsystem: Subsystem() {
     private val rotationMotor = TalonSRX(20)
     private val extensionMotor = TalonSRX(21)
     private val wristMotor = TalonSRX(22)
 
-    private lateinit var armAngle: AngularDistanceMeasureCTREMagEncoder
-    private lateinit var armVelocity: AngularVelocityMeasureCTREMagEncoder
-    private lateinit var armLength: AngularDistanceMeasureCTREMagEncoder
+    private var armAngle = 0.0.MagEncoderTicks
+    private var armVelocity = 0.0.MagEncoderTicksPerHundredMilliseconds
+    private var armLength = 0.0.MagEncoderTicks
 
-    private lateinit var wristAngle: AngularDistanceMeasureCTREMagEncoder
-    private var activeTool = Tool.CARGO_INTAKE // TODO Adjust how this works..
+    //TODO move a lot of this out of the subsystem and into the planner
+
+    private var wristAngle = 0.0.MagEncoderTicks
+    private var activeTool = WristMotionPlanner.Tool.CargoTool// TODO Adjust how this works..
     private var hasGamePiece = false
 
     private lateinit var armPosition: Point2d
 
-    private lateinit var coordinatedControlPoint: ArmSystemMotionPoint
+    private lateinit var coordinatedControlPoint: SuperstructureControlOutput
 
     private var homed by LockingDelegate(false)
 
@@ -87,24 +89,34 @@ object Arm: Subsystem() {
     }
 
     fun setTargetPosition(target: Point2d){
-        ArmSubsystemController.commandMove(target)
+        SuperstructureMotionPlanner.commandMove(target)
     }
 
     override fun action() {
-        armAngle = rotationMotor.selectedSensorPosition.MagEncoderTicks
+        armAngle = rotationMotor.selectedSensorPosition.toDouble().MagEncoderTicks
         // TODO Update this to real robot configuration
-        armAngle = chainReduction(armAngle.value).MagEncoderTicks
-        armLength = extensionMotor.selectedSensorPosition.MagEncoderTicks
-        armVelocity = rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms
-        armPosition = ArmKinematics.forward(PointPolar((armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) + Geometry.ArmGeometry.minSafeWristRotation) as LinearDistanceMeasureInches, armAngle.toUnit(Radians) as AngularDistanceMeasureRadians))
+        armAngle = chainReduction(armAngle.value)
+            .MagEncoderTicks
+        armLength = extensionMotor.selectedSensorPosition.toDouble().MagEncoderTicks
+        armVelocity = rotationMotor.selectedSensorVelocity.toDouble().MagEncoderTicksPerHundredMilliseconds
+        armPosition = ArmKinematics.forward(PointPolar((armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) + Geometry.ArmGeometry.minSafeWristRotation), armAngle.toRadians()))
 
 
-        wristAngle = wristMotor.selectedSensorPosition.MagEncoderTicks
-        val armState = ArmState(armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) as LinearDistanceMeasureInches, armAngle.toUnit(Radians) as AngularDistanceMeasureRadians, armVelocity.toUnit(
-            RadiansPerSecond) as AngularVelocityMeasureRadiansPerSecond) // Double check arm length
-        val wristState = WristState(wristAngle.toUnit(Radians) as AngularDistanceMeasureRadians, activeTool, hasGamePiece)
+        wristAngle = wristMotor.selectedSensorPosition.toDouble().MagEncoderTicks
+        val armState = ArmState(
+            armLength.toLinearDistance(Geometry.ArmGeometry.armToInches),
+            armAngle.toRadians(),
+            armVelocity.toRadiansPerSecond()
+        ) // Double check superstructure length
+        val wristState =
+            WristState(
+                wristAngle.toRadians(),
+                activeTool,
+                hasGamePiece,
+                hasGamePiece
+            ) //TODO update!
 
-        coordinatedControlPoint = ArmSubsystemController.update(armState, wristState)
+        coordinatedControlPoint = SuperstructureMotionPlanner.update(0.01, armState, wristState) //TODO this goes in a dedicated rt task
     }
 
 
@@ -126,7 +138,7 @@ object Arm: Subsystem() {
                 rotationMotor.selectProfileSlot(0,0)
             }
             action {
-                // Slowed down to not kill the arm for testing
+                // Slowed down to not kill the superstructure for testing
                 var input = Gamepad.readAxis { LEFT_Y }
                 if (armAngle.value <= ControlParameters.ArmParameters.MIN_POS && input < 0.0){
                     input = 0.0
@@ -147,6 +159,7 @@ object Arm: Subsystem() {
 
         state(ArmStates.COORDINATED_CONTROL){
             rtAction {
+                /*
                 rotationMotor.config_kF(0, coordinatedControlPoint.rotationFeedForward)
                 rotationMotor.set(ControlMode.Position, coordinatedControlPoint.targetPosition.value)
 
@@ -154,10 +167,13 @@ object Arm: Subsystem() {
 
                 wristMotor.set(ControlMode.MotionMagic, coordinatedControlPoint.targetWristPosition.value)
 
-                if(ArmSubsystemController.isDone() && armAngle == coordinatedControlPoint.targetPosition &&
-                        armLength == coordinatedControlPoint.targetExtension && wristAngle == coordinatedControlPoint.targetWristPosition){// TODO add tolerances
+                if(SuperstructureMotionPlanner.isDone() && armAngle == coordinatedControlPoint.targetPosition &&
+                        armLength == coordinatedControlPoint.extension && wristAngle == coordinatedControlPoint.targetWristPosition){// TODO add tolerances
 
                 }
+                */
+
+                //TODO update this to use the arb ff properly
             }
         }
 
@@ -183,15 +199,15 @@ object Arm: Subsystem() {
                 extensionMotor.selectProfileSlot(0,0)
                 extensionMotor.set(ControlMode.MotionMagic, armLength.value)
 
-                if (activeTool == Tool.CARGO_INTAKE){ // Should probably be a boolean...
-                    newWristState = ArmSubsystemController.switchTool(Tool.HATCH_INTAKE)
+                if (activeTool == WristMotionPlanner.Tool.CargoTool){ // Should probably be a boolean...
+                    newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.HatchPanelTool)
                 }else{
-                    newWristState = ArmSubsystemController.switchTool(Tool.CARGO_INTAKE)
+                    newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.CargoTool)
                 }
-                wristMotor.set(ControlMode.MotionMagic, newWristState.wristPosition.toUnit(MagEncoderTicks).value)
+                wristMotor.set(ControlMode.MotionMagic, newWristState.wristPosition.toMagEncoderTicks().value)
             }
             action {
-                if (wristAngle == newWristState.wristPosition.toUnit(MagEncoderTicks) as AngularDistanceMeasureCTREMagEncoder){
+                if (wristAngle == newWristState.wristPosition.toMagEncoderTicks()){
                     setState(ArmStates.HOLDING)
                 }
             }
@@ -204,15 +220,15 @@ object Arm: Subsystem() {
                 rotationMotor.configMotionAcceleration(ArmParameters.MAX_ACCELERATION.value.toInt())
                 rotationMotor.configMotionCruiseVelocity(ArmParameters.MAX_VELOCITY.value.toInt())
                 rotationMotor.selectProfileSlot(1, 0)
-                rotationMotor.set(ControlMode.Velocity, 0.5.RevolutionsPerSecond.toUnit(MagEncoderTicksPer100Ms).value)
+                rotationMotor.set(ControlMode.Velocity, 0.5.RevolutionsPerSecond.toMagEncoderTicksPerHundredMilliseconds().value)
             }
             action{
                 println("Homing action")
 
-                var velocity = rotationMotor.selectedSensorVelocity.MagEncoderTicksPer100Ms
+                var velocity = rotationMotor.selectedSensorVelocity.toDouble().MagEncoderTicksPerHundredMilliseconds
                 var current = rotationMotor.outputCurrent
 
-                println("Velocity revs/s: ${velocity.toUnit(RevolutionsPerSecond).value}")
+                println("Velocity revs/s: ${velocity.toRevolutionsPerSecond().value}")
                 println("Current : ${rotationMotor.outputCurrent}")
 
                 if(abs(current) >= ArmParameters.HOMING_CURRENT){
@@ -227,7 +243,7 @@ object Arm: Subsystem() {
                     // Homed armAngle for prototype: 215 deg, 3.75 rad
                     // Homed armAngle is the Rear of the robot. - Motor power
                     println("Homed armAngle: ${rotationMotor.selectedSensorPosition} ticks")
-                    rotationMotor.selectedSensorPosition = 16.875.Radians.toUnit(MagEncoderTicks).value.toInt()
+                    rotationMotor.selectedSensorPosition = 16.875.Radians.toMagEncoderTicks().value.toInt()
                     setState(ArmStates.MANUAL_CONTROL)
                 }
             }

@@ -1,12 +1,13 @@
-package org.team401.armsim
+package org.team401.robot2019.control.superstructure.armsim
 
 import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
-import org.snakeskin.units.Inches
-import org.snakeskin.units.Seconds
-import org.snakeskin.units.measure.time.TimeMeasureSeconds
-import org.team401.robot2019.subsystems.arm.ArmPlanner
-import org.team401.robot2019.subsystems.arm.ArmState
+import org.snakeskin.measure.Inches
+import org.snakeskin.measure.time.TimeMeasureSeconds
+import org.team401.robot2019.control.superstructure.planning.ArmMotionPlanner
+import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.control.superstructure.geometry.Point2d
 
 /**
  * @author Cameron Earle
@@ -17,15 +18,15 @@ object ArmSim {
     @JvmStatic
     fun main(args: Array<String>) {
 
-        ArmPlanner.reset()
-        ArmPlanner.setDesiredPath(Point2d((0.0).Inches, 12.0.Inches), Point2d((10.0).Inches, (20.0).Inches))
+        ArmMotionPlanner.reset()
+        ArmMotionPlanner.setDesiredTrajectory(Point2d((0.0).Inches, 12.0.Inches), Point2d((0.0).Inches, (20.0).Inches))
 
         val points = ArrayList<ArmState>()
         val time = ArrayList<TimeMeasureSeconds>()
 
-        while (!ArmPlanner.isDone()) {
-            points.add(ArmPlanner.update(0.001.Seconds))
-            time.add(ArmPlanner.getCurrentTime())
+        while (!ArmMotionPlanner.isDone()) {
+            points.add(ArmMotionPlanner.update(0.01))
+            time.add(ArmMotionPlanner.getCurrentTime())
         }
 
         val xSeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).x.value }
@@ -45,8 +46,8 @@ object ArmSim {
 
 
         val xyChart = QuickChart.getChart("XY Pose", "x", "y", "y(x)", xSeries, ySeries)
-        val rChart = QuickChart.getChart("Arm Radius vs Time", "Time", "Radius", "r(t)", timeSeries, rSeries)
-        val thetaChart = QuickChart.getChart("Arm Angle vs Time", "Time", "Theta", "theta(t)", timeSeries, thetaSeries)
+        val rChart = QuickChart.getChart("ArmSubsystem Radius vs Time", "Time", "Radius", "r(t)", timeSeries, rSeries)
+        val thetaChart = QuickChart.getChart("ArmSubsystem Angle vs Time", "Time", "Theta", "theta(t)", timeSeries, thetaSeries)
         val velocityChart = QuickChart.getChart("Velocity vs Time", "Time", "Velocity", "v(t)", timeSeries, velocitySeries)
         SwingWrapper(xyChart).displayChart()
         SwingWrapper(rChart).displayChart()

@@ -5,11 +5,9 @@ import com.ctre.phoenix.motorcontrol.NeutralMode
 import org.snakeskin.auto.RobotAuto
 import org.snakeskin.auto.steps.AutoStep
 import org.snakeskin.auto.steps.SequentialSteps
-import org.snakeskin.units.Meters
-import org.snakeskin.units.RadiansPerSecond
-import org.snakeskin.units.Seconds
-import org.snakeskin.units.measure.time.TimeMeasure
-import org.team401.taxis.diffdrive.component.PathFollowingDiffDrive
+import org.snakeskin.component.ISmartGearbox
+import org.snakeskin.measure.time.TimeMeasureSeconds
+import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.util.Util
 
 /**
@@ -17,12 +15,12 @@ import org.team401.taxis.util.Util
  * @version 1/16/2019
  *
  */
-class CollectLinearTorqueData(val drive: PathFollowingDiffDrive, val power: Double = 1.0, val runtime: TimeMeasure, val axis: Int = 0): AutoStep() {
+class CollectLinearTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<*>>, val power: Double = 1.0, val runtime: TimeMeasureSeconds, val axis: Int = 0): AutoStep() {
     companion object {
         const val ACCEL_TO_MS2 = 0.0005985504150390625
         const val ACCEL_MINIMUM_MS2 = 1.0
 
-        fun analyzeData(data: List<Pair<Double, Double>>, drive: PathFollowingDiffDrive): Double {
+        fun analyzeData(data: List<Pair<Double, Double>>, drive: IPathFollowingDiffDrive<ISmartGearbox<*>>): Double {
             val acceptedAccelerations = arrayListOf<Double>()
             var droppedPointCount = 0
             for (i in 0 until data.size) {
@@ -38,12 +36,12 @@ class CollectLinearTorqueData(val drive: PathFollowingDiffDrive, val power: Doub
             println("Accepted ${acceptedAccelerations.size} data points")
             val acceleration = acceptedAccelerations.average()
             println("Acceleration: $acceleration m/s/s")
-            val torque = acceleration * drive.fullStateModel.drivetrainDynamicsModel.mass() * drive.wheelRadius.toUnit(Meters).value
+            val torque = acceleration * drive.fullStateModel.drivetrainDynamicsModel.mass() * drive.wheelRadius.toMeters().value
             println("Torque: $torque N*m")
             return torque
         }
 
-        fun createAuto(drive: PathFollowingDiffDrive, power: Double = 1.0, runtime: TimeMeasure, axis: Int = 0): RobotAuto {
+        fun createAuto(drive: IPathFollowingDiffDrive<ISmartGearbox<*>>, power: Double = 1.0, runtime: TimeMeasureSeconds, axis: Int = 0): RobotAuto {
             return object : RobotAuto(10L) {
                 override fun assembleAuto(): SequentialSteps {
                     return SequentialSteps(CollectLinearTorqueData(drive, power, runtime, axis))
@@ -58,14 +56,16 @@ class CollectLinearTorqueData(val drive: PathFollowingDiffDrive, val power: Doub
 
     override fun entry(currentTime: Double) {
         startTime = currentTime
-        drive.setNeutralMode(NeutralMode.Brake)
+        drive.both {
+            setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
+        }
     }
 
     override fun action(currentTime: Double, lastTime: Double): Boolean {
-        drive.arcade(ControlMode.PercentOutput, power, 0.0)
+        drive.arcade(power, 0.0)
         drive.imu.getBiasedAccelerometer(xyz)
         data.add(currentTime to (xyz[axis] * ACCEL_TO_MS2))
-        return currentTime - startTime >= runtime.toUnit(Seconds).value
+        return currentTime - startTime >= runtime.toSeconds().value
     }
 
     override fun exit(currentTime: Double) {

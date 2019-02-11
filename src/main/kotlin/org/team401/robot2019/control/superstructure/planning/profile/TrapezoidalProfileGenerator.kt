@@ -1,17 +1,16 @@
-package org.team401.armsim
+package org.team401.robot2019.control.superstructure.planning.profile
 
 import org.snakeskin.logic.LockingDelegate
-import org.snakeskin.units.Radians
-import org.snakeskin.units.RadiansPerSecond
-import org.snakeskin.units.Seconds
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.units.measure.time.TimeMeasureSeconds
-import org.snakeskin.units.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
-import org.team401.robot2019.subsystems.arm.armsim.TrapezoidalProfilePoint
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.Seconds
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.time.TimeMeasureSeconds
+import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import kotlin.math.abs
 
 /**
- * @author Cameron Earle
+ * @author Eli Jelesko
  * @version 1/19/2019
  *
  */
@@ -19,7 +18,6 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
                                   maxAcceleration: AngularVelocityMeasureRadiansPerSecond,
                                   start: AngularDistanceMeasureRadians,
                                   end: AngularDistanceMeasureRadians){
-
     // Discrete Form : Pt = Pt + Vt + 1/2A
     // Continuous Form : Pt = P0 + VoT + 1/2AT^2
     private val startPos = start.value
@@ -27,7 +25,6 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
 
     private val backwards = startPos > endPos
 
-    private val rate = 0.01
     private var position = startPos
     private var velocity = 0.0 // Units/sec
     private val maxVel = if (backwards){-maxVelocity.value}else{maxVelocity.value} // Units/sec/sec
@@ -95,30 +92,38 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
         velocity = 0.0
         points.clear()
     }
+
     fun isDone(): Boolean{
         return done
     }
 
     /**
-     * Called in a loop, generates a profile
+     * Called in a loop, generates and executes a profile
+     * @param dt The time delta between now and the last time the function was called, in seconds
      */
-    fun updatePoint(dt: TimeMeasureSeconds): TrapezoidalProfilePoint{
+    fun update(dt: Double): TrapezoidalProfilePoint {
         when {
             !firstPhaseDone -> {
                 if((position < startPos + ((endPos - startPos) / 2.0) && !backwards) ||
                         (position > endPos + ((startPos - endPos)/2.0)) && backwards){ // Generate the first half of the profile
                     //println("Pos: $position, Vel: $velocity, Time: $time")
-                    time += dt.value
+                    time += dt
 
                     if (abs(velocity) < abs(maxVel)){
-                        velocity += maxAccel * dt.value
+                        velocity += maxAccel * dt
                     }else{
                         velocity = maxVel
                     }
 
-                    position += velocity * dt.value
+                    position += velocity * dt
 
-                    points.add(TrapezoidalProfilePoint(position.Radians, velocity.RadiansPerSecond, time.Seconds))
+                    points.add(
+                        TrapezoidalProfilePoint(
+                            position.Radians,
+                            velocity.RadiansPerSecond,
+                            time.Seconds
+                        )
+                    )
                 }else{
                     firstPhaseDone = true
                 }
@@ -131,32 +136,44 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
                 if (points.size < 2 * tempPoints.size - 1){
                     //println("Pos: $position, Vel: $velocity, Time: $time")
 
-                    time += dt.value
+                    time += dt
 
                     velocity = tempPoints[i].velocity.value
                     i--
 
-                    position += velocity * dt.value
+                    position += velocity * dt
 
 
-                    points.add(TrapezoidalProfilePoint(position.Radians, velocity.RadiansPerSecond, time.Seconds))
+                    points.add(
+                        TrapezoidalProfilePoint(
+                            position.Radians,
+                            velocity.RadiansPerSecond,
+                            time.Seconds
+                        )
+                    )
                 }
             }
             !thirdPhaseDone -> {
                 if (points.size < 2 * tempPoints.size - 1){
                     //println("Pos: $position, Vel: $velocity, Time: $time")
 
-                    time += dt.value
+                    time += dt
 
                     velocity = tempPoints[i].velocity.value
                     i--
 
-                    position += velocity * dt.value
+                    position += velocity * dt
                     if((position > endPos && !backwards) || (position < endPos) && backwards){ // This might cause problems
                         position = endPos
                     }
 
-                    points.add(TrapezoidalProfilePoint(position.Radians, velocity.RadiansPerSecond, time.Seconds))
+                    points.add(
+                        TrapezoidalProfilePoint(
+                            position.Radians,
+                            velocity.RadiansPerSecond,
+                            time.Seconds
+                        )
+                    )
                 }else{
                     thirdPhaseDone = true
                 }
@@ -165,7 +182,7 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
                 done = true
             }
         }
-        //println("end : $endPos, lastPoint: ${points.last().position}")
+        println("end : $endPos, lastPoint: ${points.last().position}")
         return points.last()
     }
 

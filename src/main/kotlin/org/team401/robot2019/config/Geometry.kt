@@ -1,7 +1,7 @@
 package org.team401.robot2019.config
 
-import org.snakeskin.component.template.TankDrivetrainGeometryTemplate
-import org.snakeskin.units.Inches
+import org.snakeskin.measure.Inches
+import org.snakeskin.template.TankDrivetrainGeometryTemplate
 import kotlin.math.atan2
 
 /**
@@ -10,12 +10,11 @@ import kotlin.math.atan2
  *
  */
 object Geometry {
-    /*
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
         override val wheelRadius = 3.062954.Inches
         override val wheelbase = 25.625.Inches
     }
-    */
+
     object ArmGeometry{
         //All values with the pivot as the origin
         val maxX = 80.0.Inches
@@ -25,7 +24,7 @@ object Geometry {
         val maxArmLength = 0.0.Inches
         val minExtension = 0.0.Inches
         val minArmLength = 4.0.Inches
-        val minSafeWristRotation = minArmLength + 5.0.Inches // Basically the minimum arm radius
+        val minSafeWristRotation = minArmLength + 5.0.Inches // Basically the minimum superstructure radius
         val minSafeWristRotationHeight = 5.0.Inches // Don't spin and hit the floor
         val pivotHeight = 0.0.Inches
 

@@ -1,8 +1,8 @@
-package org.team401.armsim.profile
+package org.team401.robot2019.control.superstructure.planning.profile
 
-import org.snakeskin.units.Inches
-import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
-import org.team401.armsim.Point2d
+import org.snakeskin.measure.Inches
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.team401.robot2019.control.superstructure.geometry.Point2d
 import java.lang.Math.pow
 import kotlin.math.sqrt
 import kotlin.math.tan
@@ -13,7 +13,8 @@ import kotlin.math.tan
  *
  */
 class LinearProfileSegment(override val start: Point2d,
-                           override val end: Point2d): ProfileSegment {
+                           override val end: Point2d
+): ProfileSegment {
 
     private val endX = end.x.value
     private val endY = end.y.value

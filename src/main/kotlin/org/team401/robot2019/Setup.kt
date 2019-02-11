@@ -2,8 +2,12 @@ package org.team401.robot2019
 
 import org.snakeskin.controls.ControlPoller
 import org.snakeskin.dsl.*
+import org.snakeskin.measure.*
 import org.snakeskin.registry.Controllers
-import org.team401.robot2019.subsystems.arm.Arm
+import org.snakeskin.rt.RealTimeExecutor
+import org.team401.robot2019.config.Geometry
+import org.team401.robot2019.subsystems.DrivetrainSubsystem
+import org.team401.robot2019.subsystems.FloorPickupSubsystem
 
 /**
  * @author Cameron Earle
@@ -13,43 +17,14 @@ import org.team401.robot2019.subsystems.arm.Arm
 @Setup
 fun setup() {
     ControlPoller.pollInAutonomous = true
+    RealTimeExecutor.rate = 0.01
 
-    Subsystems.add(Arm)
-    Controllers.add(Gamepad)
+    Subsystems.add(DrivetrainSubsystem, FloorPickupSubsystem)
+    Controllers.add(LeftStick, RightStick)
+
+    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
 }
 
 fun main(args: Array<String>) {
-    val accel = 10.0
-    val cruise = 100.0
-    val target = -5000.0 //pos unit
-    val dt = .01
-    var vel = 0.0
-    var lastPos = 0.0
-    var pos = 0.0
-    var t = 0.0
-
-    var flatSeconds = 0.0
-
-    val halfway = target / 2.0
-
-    while (Math.abs(pos - target) > 0) { //Run until we're at the target
-        if (halfway - pos > 0) { //The profile is less than halfway through
-            vel = Math.min(cruise, vel + (accel * dt))
-            if (vel == cruise) {
-                flatSeconds += dt //If we're at cruise, begin accumulating the number of seconds we are there
-            }
-        } else { //The profile is more than halfway through
-            flatSeconds -= dt //Begin decrementing seconds from flatSeconds.  When this is <= 0, begin decelerating
-            if (flatSeconds <= 0) {
-                vel = Math.max(0.0, vel - (accel * dt))
-            }
-        }
-        pos = Math.min(target, lastPos + (vel * dt))
-        if (vel == 0.0 && pos != target) { //We aren't quite hitting our setpoint, just jump to it.
-            pos = target
-        }
-        t += dt
-        println("$t\t$vel\t$pos")
-        lastPos = pos
-    }
+    println(0.5.FeetPerSecond.toAngularVelocity(Geometry.DrivetrainGeometry.wheelRadius).toRadiansPerSecond())
 }

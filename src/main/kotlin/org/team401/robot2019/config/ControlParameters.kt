@@ -1,7 +1,13 @@
 package org.team401.robot2019.config
 
-import org.snakeskin.units.*
-import org.team401.armsim.Point2d
+import org.snakeskin.logic.scalars.Scalar
+import org.snakeskin.logic.scalars.ScalarGroup
+import org.snakeskin.logic.scalars.SquareScalar
+import org.snakeskin.measure.Inches
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.utility.CheesyDriveController
+import org.team401.robot2019.control.superstructure.geometry.Point2d
 
 object ControlParameters{
     object ArmParameters{
@@ -16,7 +22,15 @@ object ControlParameters{
         val MIN_POS = 0.57.Radians.value
         val MAX_POS = 3.5.Radians.value
 
-        const val kHold = 0.0
+        /**
+         * Voltage required to hold the superstructure static, divided by the cosine of the angle times the radius the test was taken at
+         */
+        const val kS = 1.0
+
+        /**
+         * Velocity feedforward voltage.  "Voltage to velocity relationship"
+         */
+        const val kV = 1.0
     }
     object ArmPositions{
         val ROCKET_TOP = Point2d(0.0.Inches, 0.0.Inches)
@@ -25,5 +39,16 @@ object ControlParameters{
         val CARGO_SHIP = Point2d(0.0.Inches, 0.0.Inches)
         val LOADING_STATION = Point2d(0.0.Inches, 0.0.Inches)
         val HATCH_FLOOR_PICKUP = Point2d(0.0.Inches, 0.0.Inches)
+    }
+
+    object DrivetrainCheesyDriveParameters: CheesyDriveController.DefaultParameters() {
+        override val quickTurnScalar = ScalarGroup(SquareScalar, object : Scalar {
+            override fun scale(input: Double) = input / 3.33
+        })
+    }
+
+    object FloorPickupParameters {
+        const val intakeSpeed = 0.50
+        const val ejectSpeed = -0.50
     }
 }
