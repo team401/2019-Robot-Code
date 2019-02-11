@@ -65,7 +65,7 @@ object ArmPlanner{
         return currentTime
     }
 
-    fun update(): ArmState{
+    fun update(dt: TimeMeasureSeconds): ArmState{
         lateinit var currentArmState: TrapezoidalProfilePoint
         lateinit var currentArmPosition: AngularDistanceMeasureRadians
         lateinit var currentArmVelocity: AngularVelocityMeasureRadiansPerSecond
@@ -78,7 +78,7 @@ object ArmPlanner{
             currentTime = 0.0.Seconds // TODO See if this causes problems
             done = true
         }else {
-            currentArmState = rotationProfile.updatePoint()
+            currentArmState = rotationProfile.updatePoint(dt)
             currentArmPosition = currentArmState.position
             currentArmVelocity = currentArmState.velocity
             currentRadius = profile.solvePoint(currentArmPosition).second.r

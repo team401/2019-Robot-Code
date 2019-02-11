@@ -3,6 +3,7 @@ package org.team401.armsim
 import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
 import org.snakeskin.units.Inches
+import org.snakeskin.units.Seconds
 import org.snakeskin.units.measure.time.TimeMeasureSeconds
 import org.team401.robot2019.subsystems.arm.ArmPlanner
 import org.team401.robot2019.subsystems.arm.ArmState
@@ -17,13 +18,13 @@ object ArmSim {
     fun main(args: Array<String>) {
 
         ArmPlanner.reset()
-        ArmPlanner.setDesiredPath(Point2d((0.0).Inches, 12.0.Inches), Point2d((0.0).Inches, (20.0).Inches))
+        ArmPlanner.setDesiredPath(Point2d((0.0).Inches, 12.0.Inches), Point2d((10.0).Inches, (20.0).Inches))
 
         val points = ArrayList<ArmState>()
         val time = ArrayList<TimeMeasureSeconds>()
 
         while (!ArmPlanner.isDone()) {
-            points.add(ArmPlanner.update())
+            points.add(ArmPlanner.update(0.001.Seconds))
             time.add(ArmPlanner.getCurrentTime())
         }
 

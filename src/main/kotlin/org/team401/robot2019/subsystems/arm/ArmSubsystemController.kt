@@ -1,7 +1,9 @@
 package org.team401.robot2019.subsystems.arm
 
+import org.snakeskin.rt.RealTimeTask
 import org.snakeskin.units.MagEncoderTicks
 import org.snakeskin.units.Radians
+import org.snakeskin.units.Seconds
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureCTREMagEncoder
 import org.snakeskin.units.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.units.measure.distance.linear.LinearDistanceMeasureInches
@@ -21,6 +23,7 @@ object ArmSubsystemController{
     private var done = false
     private var armMotionCommanded = false // Fail safe
 
+
     // Each system has three states: e stopped, coordinated control and holding
     // The buttons set desired position and switch into coordinated control
     // Maybe this should check the motors are listening beforehand
@@ -30,8 +33,10 @@ object ArmSubsystemController{
 
         // TODO Think through possible logic fails
         if (armMotionCommanded && !done){
-            val commandedArmState = ArmPlanner.update() // Returns the arm's angle and position
+            val dt = 0.001.Seconds
+            val commandedArmState = ArmPlanner.update(dt) // Returns the arm's angle and position
             // Pass to wrist planner
+
             val commandedWristState = WristPlanner.update(commandedArmState, currentWristState) // returns the wrist's angle
             val commandedRotationFF = ArmController.calculateRotationFF(commandedArmState) // returns the FF
 
