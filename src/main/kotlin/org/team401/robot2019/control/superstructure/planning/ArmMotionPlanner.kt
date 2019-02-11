@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems.arm.planning
+package org.team401.robot2019.control.superstructure.planning
 
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
@@ -8,15 +8,15 @@ import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
-import org.team401.robot2019.subsystems.arm.geometry.Point2d
-import org.team401.robot2019.subsystems.arm.planning.profile.TrapezoidalProfileGenerator
-import org.team401.robot2019.subsystems.arm.planning.profile.ArmPath
-import org.team401.robot2019.subsystems.arm.planning.profile.LinearProfileSegment
-import org.team401.robot2019.subsystems.arm.planning.profile.Profile2d
-import org.team401.robot2019.subsystems.arm.planning.profile.ProfileSegment
+import org.team401.robot2019.control.superstructure.geometry.Point2d
+import org.team401.robot2019.control.superstructure.planning.profile.TrapezoidalProfileGenerator
+import org.team401.robot2019.control.superstructure.planning.profile.ArmPath
+import org.team401.robot2019.control.superstructure.planning.profile.LinearProfileSegment
+import org.team401.robot2019.control.superstructure.planning.profile.Profile2d
+import org.team401.robot2019.control.superstructure.planning.profile.ProfileSegment
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.subsystems.arm.geometry.ArmState
-import org.team401.robot2019.subsystems.arm.planning.profile.TrapezoidalProfilePoint
+import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.control.superstructure.planning.profile.TrapezoidalProfilePoint
 
 object ArmMotionPlanner{
     // 1. Calculate Path

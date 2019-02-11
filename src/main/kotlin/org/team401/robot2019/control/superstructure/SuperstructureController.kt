@@ -1,13 +1,14 @@
-package org.team401.robot2019.subsystems.arm.control
+package org.team401.robot2019.control.superstructure
 
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.subsystems.arm.geometry.WristState
-import org.team401.robot2019.subsystems.arm.geometry.ArmState
+import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.robot2019.control.superstructure.geometry.ArmState
 
 object SuperstructureController {
-    var output = SuperstructureControlOutput(0.0.Radians, 0.0.Inches, 0.0.Radians, 0.0)
+    var output =
+        SuperstructureControlOutput(0.0.Radians, 0.0.Inches, 0.0.Radians, 0.0)
     private set
 
     private fun calculateCounterbalanceVoltage(commandedArmState: ArmState): Double {
@@ -15,7 +16,7 @@ object SuperstructureController {
         val theta = commandedArmState.armAngle.value
 
         //Equation: kS * r * theta
-        //Constant kS: Voltage required to hold the arm static, divided by r * theta that the test was performed at
+        //Constant kS: Voltage required to hold the superstructure static, divided by r * theta that the test was performed at
         return ControlParameters.ArmParameters.kS * radius * Math.cos(theta)
     }
 
@@ -28,27 +29,30 @@ object SuperstructureController {
     }
 
     /**
-     * @param commandedArmState The desired state of the arm
+     * @param commandedArmState The desired state of the superstructure
      * @param commandedWristState The desired state of the wrist
      *
      * Updates the field "output" with the current control command
      */
     fun update(commandedArmState: ArmState, commandedWristState: WristState) {
         //Calculate dynamics "counterbalance voltage"
-        val counterbalanceFf = calculateCounterbalanceVoltage(commandedArmState)
+        val counterbalanceFf =
+            calculateCounterbalanceVoltage(commandedArmState)
 
         //Calculate velocity feedforward
-        val velocityFf = calculateVelocityVoltage(commandedArmState)
+        val velocityFf =
+            calculateVelocityVoltage(commandedArmState)
 
         //Calculate total feedforward
         val ff = counterbalanceFf + velocityFf
 
         //Update control output
-        output = SuperstructureControlOutput(
-            commandedArmState.armAngle,
-            commandedArmState.armRadius,
-            commandedWristState.wristPosition,
-            ff
-        )
+        output =
+                SuperstructureControlOutput(
+                    commandedArmState.armAngle,
+                    commandedArmState.armRadius,
+                    commandedWristState.wristPosition,
+                    ff
+                )
     }
 }

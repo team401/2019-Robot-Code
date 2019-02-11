@@ -6,8 +6,8 @@ import org.snakeskin.measure.*
 import org.snakeskin.registry.Controllers
 import org.snakeskin.rt.RealTimeExecutor
 import org.team401.robot2019.config.Geometry
-import org.team401.robot2019.subsystems.arm.Arm
-import org.team401.robot2019.subsystems.drivetrain.Drivetrain
+import org.team401.robot2019.subsystems.DrivetrainSubsystem
+import org.team401.robot2019.subsystems.FloorPickupSubsystem
 
 /**
  * @author Cameron Earle
@@ -19,10 +19,10 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Subsystems.add(Drivetrain)
+    Subsystems.add(DrivetrainSubsystem, FloorPickupSubsystem)
     Controllers.add(LeftStick, RightStick)
 
-    RealTimeExecutor.addTask(Drivetrain.stateEstimator)
+    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
 }
 
 fun main(args: Array<String>) {

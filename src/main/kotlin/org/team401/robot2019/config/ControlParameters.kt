@@ -7,7 +7,7 @@ import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.utility.CheesyDriveController
-import org.team401.robot2019.subsystems.arm.geometry.Point2d
+import org.team401.robot2019.control.superstructure.geometry.Point2d
 
 object ControlParameters{
     object ArmParameters{
@@ -23,7 +23,7 @@ object ControlParameters{
         val MAX_POS = 3.5.Radians.value
 
         /**
-         * Voltage required to hold the arm static, divided by the cosine of the angle times the radius the test was taken at
+         * Voltage required to hold the superstructure static, divided by the cosine of the angle times the radius the test was taken at
          */
         const val kS = 1.0
 
@@ -45,5 +45,10 @@ object ControlParameters{
         override val quickTurnScalar = ScalarGroup(SquareScalar, object : Scalar {
             override fun scale(input: Double) = input / 3.33
         })
+    }
+
+    object FloorPickupParameters {
+        const val intakeSpeed = 0.50
+        const val ejectSpeed = -0.50
     }
 }

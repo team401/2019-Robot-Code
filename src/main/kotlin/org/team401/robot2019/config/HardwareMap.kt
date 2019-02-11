@@ -22,4 +22,9 @@ object HardwareMap {
         const val leftIntakeWheelId = 30
         const val rightIntakeWheelTalonId = 31
     }
+
+    object FloorPickup {
+        const val solenoidId = 1
+        const val intakeWheelsTalonId = 31
+    }
 }

@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems.arm.planning.profile
+package org.team401.robot2019.control.superstructure.planning.profile
 
 import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.Radians

@@ -1,9 +1,9 @@
-package org.team401.robot2019.subsystems.arm.planning
+package org.team401.robot2019.control.superstructure.planning
 
 import org.snakeskin.measure.Radians
 import org.team401.robot2019.config.Geometry
-import org.team401.robot2019.subsystems.arm.geometry.ArmState
-import org.team401.robot2019.subsystems.arm.geometry.WristState
+import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.control.superstructure.geometry.WristState
 
 object WristMotionPlanner {
     //Tools on the wrist

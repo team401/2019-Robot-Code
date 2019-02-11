@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems.arm.planning
+package org.team401.robot2019.control.superstructure.planning
 
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureMagEncoderTicks
@@ -6,9 +6,9 @@ import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.config.Geometry
-import org.team401.robot2019.subsystems.arm.control.SuperstructureController
-import org.team401.robot2019.subsystems.arm.control.SuperstructureControlOutput
-import org.team401.robot2019.subsystems.arm.geometry.*
+import org.team401.robot2019.control.superstructure.SuperstructureController
+import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
+import org.team401.robot2019.control.superstructure.geometry.*
 import kotlin.math.PI
 
 object SuperstructureMotionPlanner{
@@ -30,7 +30,7 @@ object SuperstructureMotionPlanner{
 
         // TODO Think through possible logic fails
         if (armMotionCommanded && !done){
-            val commandedArmState = ArmMotionPlanner.update(dt) // Returns the arm's angle and position
+            val commandedArmState = ArmMotionPlanner.update(dt) // Returns the superstructure's angle and position
             // Pass to wrist planner
             val commandedWristState = WristMotionPlanner.update(
                 commandedArmState,

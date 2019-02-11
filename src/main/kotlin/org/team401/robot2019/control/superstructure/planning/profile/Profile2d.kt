@@ -1,16 +1,16 @@
-package org.team401.robot2019.subsystems.arm.planning.profile
+package org.team401.robot2019.control.superstructure.planning.profile
 
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
-import org.team401.robot2019.subsystems.arm.geometry.Point2d
-import org.team401.robot2019.subsystems.arm.geometry.PointPolar
+import org.team401.robot2019.control.superstructure.geometry.Point2d
+import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import kotlin.math.abs
 
 
 class Profile2d(private val segments: Array<ProfileSegment>) {
-    // Find the two end points for arm profile generation
+    // Find the two end points for superstructure profile generation
     private val startPoint = ArmKinematics.inverse(segments.first().start)
     private val endPoint = ArmKinematics.inverse(segments.last().end)
 

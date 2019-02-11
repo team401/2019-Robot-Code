@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems.drivetrain
+package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import com.ctre.phoenix.sensors.PigeonIMU
@@ -28,15 +28,15 @@ import org.team401.taxis.diffdrive.odometry.OdometryTracker
  *
  */
 
-object Drivetrain: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox> by PigeonPathFollowingDiffDrive(
+object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox> by PigeonPathFollowingDiffDrive(
     SparkMaxCTRESensoredGearbox(
-        TalonSRX(HardwareMap.Arm.leftIntakeWheelId), //TODO grab these from the Arm subsystem
+        TalonSRX(0), //TODO grab these from the ArmSubsystem subsystem
         CANSparkMax(HardwareMap.Drivetrain.leftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.Drivetrain.leftMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.Drivetrain.leftRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
     ),
     SparkMaxCTRESensoredGearbox(
-        TalonSRX(HardwareMap.Arm.rightIntakeWheelTalonId), //TODO grab these from the arm subsystem
+        TalonSRX(0), //TODO grab these from the superstructure subsystem
         CANSparkMax(HardwareMap.Drivetrain.rightFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.Drivetrain.rightMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.Drivetrain.rightRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)

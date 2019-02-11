@@ -1,4 +1,4 @@
-package org.team401.robot2019.subsystems.arm
+package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
@@ -19,14 +19,13 @@ import org.team401.robot2019.Gamepad
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.ControlParameters.ArmParameters
 import org.team401.robot2019.config.Geometry
-import org.team401.robot2019.subsystems.arm.control.SuperstructureControlOutput
-import org.team401.robot2019.subsystems.arm.geometry.*
-import org.team401.robot2019.subsystems.arm.planning.ArmMotionPlanner
-import org.team401.robot2019.subsystems.arm.planning.SuperstructureMotionPlanner
-import org.team401.robot2019.subsystems.arm.planning.WristMotionPlanner
+import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
+import org.team401.robot2019.control.superstructure.geometry.*
+import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import kotlin.math.abs
 
-object Arm: Subsystem() {
+object ArmSubsystem: Subsystem() {
     private val rotationMotor = TalonSRX(20)
     private val extensionMotor = TalonSRX(21)
     private val wristMotor = TalonSRX(22)
@@ -96,7 +95,8 @@ object Arm: Subsystem() {
     override fun action() {
         armAngle = rotationMotor.selectedSensorPosition.toDouble().MagEncoderTicks
         // TODO Update this to real robot configuration
-        armAngle = chainReduction(armAngle.value).MagEncoderTicks
+        armAngle = chainReduction(armAngle.value)
+            .MagEncoderTicks
         armLength = extensionMotor.selectedSensorPosition.toDouble().MagEncoderTicks
         armVelocity = rotationMotor.selectedSensorVelocity.toDouble().MagEncoderTicksPerHundredMilliseconds
         armPosition = ArmKinematics.forward(PointPolar((armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) + Geometry.ArmGeometry.minSafeWristRotation), armAngle.toRadians()))
@@ -107,9 +107,14 @@ object Arm: Subsystem() {
             armLength.toLinearDistance(Geometry.ArmGeometry.armToInches),
             armAngle.toRadians(),
             armVelocity.toRadiansPerSecond()
-        ) // Double check arm length
+        ) // Double check superstructure length
         val wristState =
-            WristState(wristAngle.toRadians(), activeTool, hasGamePiece, hasGamePiece) //TODO update!
+            WristState(
+                wristAngle.toRadians(),
+                activeTool,
+                hasGamePiece,
+                hasGamePiece
+            ) //TODO update!
 
         coordinatedControlPoint = SuperstructureMotionPlanner.update(0.01, armState, wristState) //TODO this goes in a dedicated rt task
     }
@@ -133,7 +138,7 @@ object Arm: Subsystem() {
                 rotationMotor.selectProfileSlot(0,0)
             }
             action {
-                // Slowed down to not kill the arm for testing
+                // Slowed down to not kill the superstructure for testing
                 var input = Gamepad.readAxis { LEFT_Y }
                 if (armAngle.value <= ControlParameters.ArmParameters.MIN_POS && input < 0.0){
                     input = 0.0
