@@ -1,98 +1,166 @@
 package org.team401.robot2019.control.superstructure.planning
 
+import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
-import org.snakeskin.measure.distance.angular.AngularDistanceMeasureMagEncoderTicks
-import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
-import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.Seconds
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureController
-import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.geometry.*
-import kotlin.math.PI
+import org.team401.robot2019.control.superstructure.planning.command.MoveSuperstructureCommand
+import org.team401.robot2019.control.superstructure.planning.command.SuperstructureCommand
+import java.util.*
 
-object SuperstructureMotionPlanner{
+object SuperstructureMotionPlanner {
+    private val commandQueue = LinkedList<SuperstructureCommand>()
 
-    private lateinit var currentArmState: ArmState
-    private lateinit var currentWristState: WristState
-    private lateinit var desiredLocation: PointPolar
+    /**
+     * Maximum time in seconds that a command queue is allowed to run.
+     * If a command queue runs for any longer than this time, it will be cancelled,
+     * and each subsystem will be put into their respective "hold" states.
+     *
+     * If this timeout is violated, it is assumed that something is stuck
+     */
+    private val queueTimeout = 5.0.Seconds
 
-    private var done = false
-    private var armMotionCommanded = false // Fail safe
+    /**
+     * Represents the last time the queue was reset.  This is used to see if we have timed out
+     */
+    private var lastQueueScheduleTime = 0.0
+
+    /**
+     * If this is true, the superstructure has timed out and listening subsystems should switch to holding
+     */
+    var hasTimedOut = false
+    private set
+    @Synchronized get
+
+    /**
+     * Last observed state of the arm
+     */
+    private var lastObservedArmState = ArmState(0.0.Inches, 0.0.Radians, 0.0.RadiansPerSecond)
+
+    /**
+     * Last observed state of the wrist
+     */
+    private var lastObservedWristState = WristState(0.0.Radians, false, false)
+
+    /**
+     * Active "target" tool for the system.
+     */
+    private var activeTool = WristMotionPlanner.Tool.HatchPanelTool
 
     // Each system has three states: e stopped, coordinated control and holding
     // The buttons set desired position and switch into coordinated control
     // Maybe this should check the motors are listening beforehand
     //TODO make this class manage timestamp vs dt to detect long pauses in execution (i.e. robot disabled)
-    fun update(dt: Double, armState: ArmState, wristState: WristState): SuperstructureControlOutput {
-        currentArmState = armState
-        currentWristState = wristState
+    @Synchronized
+    fun update(time: Double, dt: Double, armState: ArmState, wristState: WristState) {
+        lastObservedArmState = armState     //Update state variables
+        lastObservedWristState = wristState
 
-        // TODO Think through possible logic fails
-        if (armMotionCommanded && !done){
-            val commandedArmState = ArmMotionPlanner.update(dt) // Returns the superstructure's angle and position
-            // Pass to wrist planner
-            val commandedWristState = WristMotionPlanner.update(
-                commandedArmState,
-                currentWristState
-            ) // returns the wrist's angle
-            SuperstructureController.update(commandedArmState, commandedWristState)
-
-            if (ArmMotionPlanner.isDone()){
-                done = true
-            }
-
-            return SuperstructureController.output
+        if (hasTimedOut) { //If we timed out last loop
+            reset() //Reset the motion planner
+            return //Break execution here
         }
-        /*
-        return SuperstructureControlOutput(
-            currentArmState,
-            currentWristState,
-            0.0
-        )
-        */
-        return SuperstructureController.output //TODO implement the above logic somewhere else
-    }
-
-    fun commandMove(desiredLocation: Point2d){
-        SuperstructureMotionPlanner.desiredLocation = ArmKinematics.inverse(desiredLocation)
-
-        reset()
-        ArmMotionPlanner.setDesiredTrajectory(ArmKinematics.forward(PointPolar(currentArmState.armRadius, currentArmState.armAngle)), desiredLocation)
-        armMotionCommanded = true
-    }
-
-    fun switchTool(newTool: WristMotionPlanner.Tool): WristState {
-        when {
-            armMotionCommanded -> return currentWristState
-            ArmKinematics.forward(currentArmState).y < Geometry.ArmGeometry.minSafeWristRotationHeight ->{
-                //throw InvalidPointException("Wrist is too close to the ground to switch tools!")
+        //Pop the first command from the queue
+        if (commandQueue.isNotEmpty()) { //If there are commands in the queue
+            val currentCommand = commandQueue.pop() //Remove the first element
+            currentCommand.update(dt, armState, wristState) //Update the command
+            if (!currentCommand.isDone()) { //If the command isn't done
+                commandQueue.push(currentCommand) //Put it back at the start of the queue
             }
-            newTool == currentWristState.currentTool -> println("Cannot switch. Eject game piece and try again")
-            currentWristState.hasHatchPanel || currentWristState.hasCargo -> println("Cannot switch. Eject game piece and try again")
-            else -> return WristState(
-                (currentWristState.wristPosition + (PI / 2.0).Radians) as AngularDistanceMeasureRadians,
-                newTool,
-                false, //TODO update this
-            false
+
+            //If we have commands, we need to update the watchdog
+            if (time - lastQueueScheduleTime > queueTimeout.toSeconds().value) {
+                System.err.println("Superstructure reached watchdog timeout!  All mechanisms entering holding.")
+                hasTimedOut = true
+            }
+        }
+    }
+
+    @Synchronized
+    private fun reset(){
+        commandQueue.clear()
+
+        //Push through a command to the controller so that when the subsystems
+        //enter coordinated control, they'll hold at their current states and not
+        //jerk around.
+        SuperstructureController.update(
+            ArmState(
+                lastObservedArmState.armRadius,
+                lastObservedArmState.armAngle,
+                0.0.RadiansPerSecond //Stop arm motion
+            ),
+            lastObservedWristState,
+            activeTool
+        )
+    }
+
+    /**
+     * Returns whether or not the motion planner is done with it's command queue.
+     * If the queue is empty, the planner is considered "done" and this will return true
+     */
+    @Synchronized fun isDone(): Boolean {
+        return commandQueue.isEmpty()
+    }
+
+    /**
+     * Asks the system to change tools, preferably without moving.
+     */
+    @Synchronized fun requestToolChange(tool: WristMotionPlanner.Tool) {
+        if (tool == activeTool) { //If we're trying to switch to the same tool, ignore it
+            println("Ignoring switch to already selected tool!")
+            return
+        }
+
+        when (activeTool) {
+            WristMotionPlanner.Tool.HatchPanelTool -> {
+                if (lastObservedWristState.hasHatchPanel) { //If we're in the hatch panel tool and we have a hatch panel
+                    println("You're a tool!  Drop the hatch panel to switch tools.") //Reject the switch
+                    return
+                }
+            }
+
+            WristMotionPlanner.Tool.CargoTool -> {
+                if (lastObservedWristState.hasCargo) { //Same as above for cargo
+                    println("You're a tool!  Drop the cargo to switch tools.")
+                    return
+                }
+            }
+        }
+
+        val startArmPose = ArmKinematics.forward(lastObservedArmState) //Calculate the current arm pose
+        val adjustedArmPose = if (startArmPose.x < 0.0.Inches) {
+            Point2d(
+                Math.min(startArmPose.x.toInches().value, -Geometry.ArmGeometry.minSafeWristToolChangeRadius.toInches().value).Inches,
+                Geometry.ArmGeometry.minSafeWristRotationHeight.toInches()
+            )
+        } else {
+            Point2d(
+                Math.max(startArmPose.x.toInches().value, Geometry.ArmGeometry.minSafeWristToolChangeRadius.toInches().value).Inches,
+                Geometry.ArmGeometry.minSafeWristRotationHeight.toInches()
             )
         }
-        // Default
-        return currentWristState
+        if (startArmPose.y < Geometry.ArmGeometry.minSafeWristRotationHeight) { //If the arm is below the "virtual floor"
+            //Before changing tools we need to raise up to the minimum height.  We'll stay at the same x-coordinate:
+            commandQueue.add(MoveSuperstructureCommand(startArmPose, adjustedArmPose, tool))
+        }
+        //Schedule the command to rotate the wrist
+        //TODO add wrist command
+        if (startArmPose.y < Geometry.ArmGeometry.minSafeWristRotationHeight) { //If the arm was below the "virtual floor"
+            //Now that we've changed tools, we need to move back down to the original pose
+            commandQueue.add(MoveSuperstructureCommand(adjustedArmPose, startArmPose, tool))
+        }
     }
 
-    private fun reset(){
-        desiredLocation = PointPolar(currentArmState.armRadius, currentArmState.armAngle)
-        ArmMotionPlanner.reset()
-        done = false
-        armMotionCommanded = false
+    /**
+     * Asks the system to move to a new pose, while following a series of constraints.
+     */
+    @Synchronized fun requestMove(endPose: Point2d) {
+        //TODO actually make sure we can do it
+        val currentPose = ArmKinematics.forward(lastObservedArmState)
+        commandQueue.add(MoveSuperstructureCommand(currentPose, endPose, WristMotionPlanner.Tool.CargoTool))
     }
-    private fun convertToEncoderTicks(extension: LinearDistanceMeasureInches): AngularDistanceMeasureMagEncoderTicks{
-        return extension.toAngularDistance(Geometry.ArmGeometry.armToInches).toMagEncoderTicks()
-    }
-
-    fun isDone(): Boolean{
-        return done
-    }
-
 }

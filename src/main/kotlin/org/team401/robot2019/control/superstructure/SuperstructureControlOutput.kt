@@ -2,6 +2,8 @@ package org.team401.robot2019.control.superstructure
 
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 /**
  * @param armAngle The angle of the superstructure's pivot, in radians
@@ -12,4 +14,6 @@ import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 data class SuperstructureControlOutput(val armAngle: AngularDistanceMeasureRadians,
                                        val armRadius: LinearDistanceMeasureInches,
                                        val wristTheta: AngularDistanceMeasureRadians,
+                                       val wristTool: WristMotionPlanner.Tool,
+                                       val armVelocity: AngularVelocityMeasureRadiansPerSecond,
                                        val armFeedForwardVoltage: Double)

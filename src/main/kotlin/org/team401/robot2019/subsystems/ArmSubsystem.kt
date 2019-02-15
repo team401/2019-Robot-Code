@@ -3,6 +3,7 @@ package org.team401.robot2019.subsystems
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
+import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.on
 import org.snakeskin.dsl.rtAction
 import org.snakeskin.dsl.stateMachine
@@ -30,6 +31,9 @@ object ArmSubsystem: Subsystem() {
     private val extensionMotor = TalonSRX(21)
     private val wristMotor = TalonSRX(22)
 
+    private val extension = CTRESmartGearbox(extensionMotor)
+    private val rotation = CTRESmartGearbox(rotationMotor)
+
     private var armAngle = 0.0.MagEncoderTicks
     private var armVelocity = 0.0.MagEncoderTicksPerHundredMilliseconds
     private var armLength = 0.0.MagEncoderTicks
@@ -45,6 +49,21 @@ object ArmSubsystem: Subsystem() {
     private lateinit var coordinatedControlPoint: SuperstructureControlOutput
 
     private var homed by LockingDelegate(false)
+
+    /**
+     * Gets the current state of the arm as measured by sensors
+     */
+    fun getCurrentArmState(): ArmState {
+        val extensionLength = extension.getPosition()
+            .toLinearDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius)
+            .toInches()
+        val radius = extensionLength + Geometry.ArmGeometry.armBaseLength
+
+        val armAngle = rotation.getPosition()
+        val armVelocity = rotation.getVelocity()
+
+        return ArmState(radius, armAngle, armVelocity)
+    }
 
     override fun setup() {
         rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
@@ -88,10 +107,6 @@ object ArmSubsystem: Subsystem() {
         return value * 16/72.0
     }
 
-    fun setTargetPosition(target: Point2d){
-        SuperstructureMotionPlanner.commandMove(target)
-    }
-
     override fun action() {
         armAngle = rotationMotor.selectedSensorPosition.toDouble().MagEncoderTicks
         // TODO Update this to real robot configuration
@@ -99,15 +114,16 @@ object ArmSubsystem: Subsystem() {
             .MagEncoderTicks
         armLength = extensionMotor.selectedSensorPosition.toDouble().MagEncoderTicks
         armVelocity = rotationMotor.selectedSensorVelocity.toDouble().MagEncoderTicksPerHundredMilliseconds
-        armPosition = ArmKinematics.forward(PointPolar((armLength.toLinearDistance(Geometry.ArmGeometry.armToInches) + Geometry.ArmGeometry.minSafeWristRotation), armAngle.toRadians()))
+        armPosition = ArmKinematics.forward(PointPolar((armLength.toLinearDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius) + Geometry.ArmGeometry.minSafeWristRotationHeight), armAngle.toRadians()))
 
 
         wristAngle = wristMotor.selectedSensorPosition.toDouble().MagEncoderTicks
         val armState = ArmState(
-            armLength.toLinearDistance(Geometry.ArmGeometry.armToInches),
+            armLength.toLinearDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius),
             armAngle.toRadians(),
             armVelocity.toRadiansPerSecond()
         ) // Double check superstructure length
+        /*
         val wristState =
             WristState(
                 wristAngle.toRadians(),
@@ -117,6 +133,7 @@ object ArmSubsystem: Subsystem() {
             ) //TODO update!
 
         coordinatedControlPoint = SuperstructureMotionPlanner.update(0.01, armState, wristState) //TODO this goes in a dedicated rt task
+        */
     }
 
 
@@ -200,9 +217,9 @@ object ArmSubsystem: Subsystem() {
                 extensionMotor.set(ControlMode.MotionMagic, armLength.value)
 
                 if (activeTool == WristMotionPlanner.Tool.CargoTool){ // Should probably be a boolean...
-                    newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.HatchPanelTool)
+                    //newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.HatchPanelTool)
                 }else{
-                    newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.CargoTool)
+                    //newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.CargoTool)
                 }
                 wristMotor.set(ControlMode.MotionMagic, newWristState.wristPosition.toMagEncoderTicks().value)
             }

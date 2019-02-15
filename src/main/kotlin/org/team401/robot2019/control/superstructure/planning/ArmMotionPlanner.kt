@@ -38,6 +38,7 @@ object ArmMotionPlanner{
     private var done = false
 
     fun setDesiredTrajectory(startPos: Point2d, endPos: Point2d){
+        reset()
         ArmMotionPlanner.startPos = startPos
         ArmMotionPlanner.endPos = endPos
 
