@@ -3,8 +3,6 @@ package org.team401.robot2019.control.superstructure.planning.profile
 import org.snakeskin.measure.Inches
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.config.Geometry
-import java.lang.Math.pow
-import kotlin.math.*
 
 class ArmPath(path: LinearProfileSegment){
 
@@ -18,7 +16,7 @@ class ArmPath(path: LinearProfileSegment){
     private val x1 = path.start.x
     private val x2 = path.end.x
 
-    private val r = Geometry.ArmGeometry.minSafeWristRotation.value
+    private val r = Geometry.ArmGeometry.minSafeWristRotationHeight.value
     //private val a = y1 - y2
     //private val b = x2 - x1
     //private val c = (x1 - x2) * y1 + (y2 - y1) * x1
@@ -52,22 +50,22 @@ class ArmPath(path: LinearProfileSegment){
 
     private fun findTangentPoint(x1: Double, y1: Double): Point2d {
         // x coordinate of tangent position
-        val d1 = (2 * x1 * pow(r, 2.0) + sqrt(pow(2 * x1 * pow(r, 2.0), 2.0)
-                - 4 * ((pow(y1, 2.0) + pow(x1, 2.0)) * (pow(r, 4.0) - (pow(y1, 2.0) * pow(r, 2.0))))))/ (2 * (pow(y1, 2.0) + pow(x1, 2.0)))
+        val d1 = (2 * x1 * Math.pow(r, 2.0) + Math.sqrt(Math.pow(2 * x1 * Math.pow(r, 2.0), 2.0)
+                - 4 * ((Math.pow(y1, 2.0) + Math.pow(x1, 2.0)) * (Math.pow(r, 4.0) - (Math.pow(y1, 2.0) * Math.pow(r, 2.0))))))/ (2 * (Math.pow(y1, 2.0) + Math.pow(x1, 2.0)))
 
 
-        val d2 = (2 * x1 * pow(r, 2.0) - sqrt(pow(2 * x1 * pow(r, 2.0), 2.0)
-                - 4 * ((pow(y1, 2.0) + pow(x1, 2.0)) * (pow(r, 4.0) - (pow(y1, 2.0) * pow(r, 2.0))))))/ (2 * (pow(y1, 2.0) + pow(x1, 2.0)))
+        val d2 = (2 * x1 * Math.pow(r, 2.0) - Math.sqrt(Math.pow(2 * x1 * Math.pow(r, 2.0), 2.0)
+                - 4 * ((Math.pow(y1, 2.0) + Math.pow(x1, 2.0)) * (Math.pow(r, 4.0) - (Math.pow(y1, 2.0) * Math.pow(r, 2.0))))))/ (2 * (Math.pow(y1, 2.0) + Math.pow(x1, 2.0)))
 
         // y coordinate of tangent position
         var e1: Double
         var e2: Double
         if (y1 != 0.0) { // There is a plus or minus here, adjust if it becomes a problem
-            e1 = (pow(r, 2.0) - x1 * d1) / y1
-            e2 = (pow(r, 2.0) - x1 * d2) / y1
+            e1 = (Math.pow(r, 2.0) - x1 * d1) / y1
+            e2 = (Math.pow(r, 2.0) - x1 * d2) / y1
         }else{
-            e1 = sqrt(x1 * d1 - pow(d1, 2.0))
-            e2 = sqrt(x1 * d2 - pow(d2, 2.0))
+            e1 = Math.sqrt(x1 * d1 - Math.pow(d1, 2.0))
+            e2 = Math.sqrt(x1 * d2 - Math.pow(d2, 2.0))
         }
 
         var d: Double
@@ -80,7 +78,7 @@ class ArmPath(path: LinearProfileSegment){
             e = e1
         }
         //println("d : $d, e: $e")
-        //print("Distance from origin to Tan position : ${sqrt(pow(d, 2.0) + pow(e, 2.0))}")
+        //print("Distance from origin to Tan position : ${Math.sqrt(Math.pow(d, 2.0) + Math.pow(e, 2.0))}")
         Thread.sleep(100)
 
         return Point2d(d.Inches, e.Inches)
@@ -89,24 +87,24 @@ class ArmPath(path: LinearProfileSegment){
     private fun findIntersectionPoints(): Boolean{
         val m = path.getM()
         val b = path.getB()
-        val Ay = pow(m, 2.0) + 1
+        val Ay = Math.pow(m, 2.0) + 1
         val By = 2 * b
-        val Cy = pow(b, 2.0) - pow(m, 2.0) * pow(r, 2.0)
+        val Cy = Math.pow(b, 2.0) - Math.pow(m, 2.0) * Math.pow(r, 2.0)
 
-        val Ax = pow(m, 2.0) + 1
+        val Ax = Math.pow(m, 2.0) + 1
         val Bx = 2 * b * m
-        val Cx = pow(b, 2.0) - pow(r, 2.0)
+        val Cx = Math.pow(b, 2.0) - Math.pow(r, 2.0)
 
-        if (pow(By, 2.0) - 4 * Ay * Cy < 0 || pow(Bx, 2.0) - 4 * Ax * Cx < 0){
+        if (Math.pow(By, 2.0) - 4 * Ay * Cy < 0 || Math.pow(Bx, 2.0) - 4 * Ax * Cx < 0){
             // No real solutions
             //println("No real solutions")
             return false
         }
-        //val intY1 = -By + sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
-        //val intY2 = -By - sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
+        //val intY1 = -By + Math.sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
+        //val intY2 = -By - Math.sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
 
-        val intX1 = -Bx + sqrt(Bx * Bx - 4 * Ax * Cx) / (2 * Ax)
-        val intX2 = -Bx - sqrt(Bx * Bx - 4 * Ax * Cx) / (2 * Ax)
+        val intX1 = -Bx + Math.sqrt(Bx * Bx - 4 * Ax * Cx) / (2 * Ax)
+        val intX2 = -Bx - Math.sqrt(Bx * Bx - 4 * Ax * Cx) / (2 * Ax)
 
         var min = x1.value
         var max = x2.value

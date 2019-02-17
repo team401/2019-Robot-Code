@@ -140,15 +140,6 @@ val Gamepad = HumanControls.dualAction(2){
 
 
     whenHatChanged(Hats.D_PAD){
-        when (it){
-            Direction.NORTH ->{
-                ArmSubsystem.setTargetPosition(ControlParameters.ArmPositions.ROCKET_TOP)}
-            Direction.SOUTH ->{
-                ArmSubsystem.setTargetPosition(ControlParameters.ArmPositions.ROCKET_LOW)}
-            Direction.EAST ->{
-                ArmSubsystem.setTargetPosition(ControlParameters.ArmPositions.LOADING_STATION)}
-            Direction.WEST ->{
-                ArmSubsystem.setTargetPosition(ControlParameters.ArmPositions.CARGO_SHIP)}
-        }
+
     }
 }

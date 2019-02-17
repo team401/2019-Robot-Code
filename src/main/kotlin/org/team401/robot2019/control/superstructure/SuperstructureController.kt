@@ -2,13 +2,15 @@ package org.team401.robot2019.control.superstructure
 
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
+import org.snakeskin.measure.RadiansPerSecond
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 object SuperstructureController {
     var output =
-        SuperstructureControlOutput(0.0.Radians, 0.0.Inches, 0.0.Radians, 0.0)
+        SuperstructureControlOutput(0.0.Radians, 0.0.Inches, 0.0.Radians, WristMotionPlanner.Tool.CargoTool, 0.0.RadiansPerSecond, 0.0)
     private set
 
     private fun calculateCounterbalanceVoltage(commandedArmState: ArmState): Double {
@@ -34,7 +36,7 @@ object SuperstructureController {
      *
      * Updates the field "output" with the current control command
      */
-    fun update(commandedArmState: ArmState, commandedWristState: WristState) {
+    fun update(commandedArmState: ArmState, commandedWristState: WristState, commandedWristTool: WristMotionPlanner.Tool) {
         //Calculate dynamics "counterbalance voltage"
         val counterbalanceFf =
             calculateCounterbalanceVoltage(commandedArmState)
@@ -52,6 +54,8 @@ object SuperstructureController {
                     commandedArmState.armAngle,
                     commandedArmState.armRadius,
                     commandedWristState.wristPosition,
+                    commandedWristTool,
+                    commandedArmState.armVelocity,
                     ff
                 )
     }
