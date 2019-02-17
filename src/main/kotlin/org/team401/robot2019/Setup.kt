@@ -26,7 +26,7 @@ fun setup() {
     RealTimeExecutor.rate = 0.01
 
     Subsystems.add(WristSubsystem)
-    Controllers.add(LeftStick, RightStick)
+    Controllers.add(Gamepad)
 
     //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
 }

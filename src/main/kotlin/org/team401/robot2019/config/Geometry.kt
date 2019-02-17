@@ -26,10 +26,16 @@ object Geometry {
         val maxArmLength = 0.0.Inches
 
         /**
+         * Distance that the reference point on the extension sticks out from the base when fully retracted.
+         * This is used when homing the extension to set the right offset distance.
+         */
+        val armExtensionStickout = 1.0.Inches
+
+        /**
          * Length of the fixed part of the arm in inches, plus the minimum possible extension length
          * Essentially represents the distance from the arm pivot to the wrist pivot at minimum extension
          */
-        val armBaseLength = 19.0.Inches + 1.0.Inches //Arm radius + minimum extension stickout
+        val armBaseLength = 19.0.Inches + armExtensionStickout //Arm radius + minimum extension stickout
 
         /**
          * Minimum effective radius of the system that allows the wrist to rotate (i.e. not collide with the base)

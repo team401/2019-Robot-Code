@@ -15,10 +15,11 @@ object ControlParameters{
         /**
          * Max velocity and acceleration values to configure the extension motion magic controller
          */
-        val EXTENSION_MAX_ACCELERATION = 6.0.InchesPerSecond.toAngularVelocity(Geometry.ArmGeometry.extensionAngularToLinearRadius)
-            .toMagEncoderTicksPerSecond().value.roundToInt()
-        val EXTENSION_MAX_VELOCITY = 6.0.InchesPerSecond.toAngularVelocity(Geometry.ArmGeometry.extensionAngularToLinearRadius)
-            .toMagEncoderTicksPerSecond().value.roundToInt()
+        val extensionVelocity = 12.0.InchesPerSecond
+
+
+        val extensionAcceleration = 12.0.InchesPerSecond //PER SECOND
+
 
         val ROTATION_MAX_ACCELERATION = 0.25.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
         val ROTATION_MAX_VELOCITY = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
@@ -37,11 +38,21 @@ object ControlParameters{
          */
         const val kV = 1.0
 
+        /**
+         * Amount of time to home the arm
+         */
+        val extensionHomingTime = 0.5.Seconds
+
+        /**
+         * Power to home the arm at.  This should be negative
+         */
+        val extensionHomingPower = -0.25
+
         object ArmRotationPIDF: PIDFTemplate{
             override val kP = 0.0
             override val kI = 0.0
             override val kD = 0.0
-            override val kF = 0.0
+            override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
         }
 
         object ArmExtensionPIDF: PIDFTemplate{
@@ -53,8 +64,8 @@ object ControlParameters{
     }
 
     object WristParameters{
-        val acceleration = 1.5.RevolutionsPerSecondPerSecond
-        val cruiseVelocity = 1.0.RevolutionsPerSecond
+        val acceleration = 2.0.RevolutionsPerSecondPerSecond
+        val cruiseVelocity = 2.0.RevolutionsPerSecond
 
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 2.3

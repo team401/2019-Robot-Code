@@ -11,6 +11,7 @@ import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.measure.Degrees
+import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.HardwareMap
@@ -36,14 +37,23 @@ object WristSubsystem: Subsystem() {
 
     enum class WristStates {
         CollectFf,
-        GoTo90
+        GoTo90,
+        GoTo0,
+        GoTo180
     }
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
         rotation.set(ControlMode.MotionMagic, setpoint.toMagEncoderTicks().value)
     }
 
-    val wristMachine: StateMachine<WristStates> = stateMachine {
+    val wristMachine: StateMachine<WristStates> = commandMachine(
+        stateMap(
+            WristStates.GoTo90 to 90.0.Degrees,
+            WristStates.GoTo180 to 180.0.Degrees,
+            WristStates.GoTo0 to 0.0.Degrees
+        ),
+        { move(value)}
+    ) {
         state (WristStates.CollectFf) {
             var lastVel = 0
             entry {
@@ -57,16 +67,6 @@ object WristSubsystem: Subsystem() {
             exit {
                 rotation.stop()
                 println("Wrist FF: ${0.5 * 1023.0 / lastVel}")
-            }
-        }
-
-        state (WristStates.GoTo90) {
-            entry {
-                move(90.0.Degrees)
-            }
-
-            exit {
-                move(0.0.Degrees)
             }
         }
     }
@@ -100,15 +100,17 @@ object WristSubsystem: Subsystem() {
     }
 
     override fun action() {
-        println(rotation.getPosition().toDegrees())
+        println(rotation.master.sensorCollection.pulseWidthPosition)
+        //println(rotation.getPosition().toDegrees())
     }
 
     override fun setup() {
         rotation.inverted = false
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute)
-        rotation.master.selectedSensorPosition = rotation.master.sensorCollection.pulseWidthPosition - 2305 + (2048)
+        rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2305 + (2048)
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
+        rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
         //rotation.master.setSelectedSensorPosition()
 
         rotation.master.configMotionCruiseVelocity(

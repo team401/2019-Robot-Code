@@ -177,7 +177,7 @@ object SuperstructureMotionPlanner {
      */
     @Synchronized fun requestMove(endPose: Point2d) {
         //TODO actually make sure we can do it
-        commandQueue.clear()
+        reset()
         val currentPose = ArmKinematics.forward(lastObservedArmState)
         if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeWristToolChangeRadius) {
             val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeWristToolChangeRadius, lastObservedArmState.armAngle))

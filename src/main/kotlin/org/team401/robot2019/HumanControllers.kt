@@ -7,6 +7,7 @@ import org.snakeskin.logic.Direction
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.robot2019.subsystems.FloorPickupSubsystem
+import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.geometry.Translation2d
@@ -48,98 +49,22 @@ val RightStick = HumanControls.t16000m(1) {
 }
 
 
-val Gamepad = HumanControls.dualAction(2){
+val Gamepad = HumanControls.f310(0){
+    whenButton(Buttons.Y) {
+        pressed {
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo180)
+        }
+    }
 
-    whenButton(Buttons.X){
+    whenButton(Buttons.B) {
         pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("X button pressed - 1")
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo90)
         }
     }
-    whenButton(Buttons.A){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("A button pressed - 2")
-        }
-    }
-    whenButton(Buttons.B){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("B button pressed - 3")
-        }
-    }
-    whenButton(Buttons.Y){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("Y button pressed - 4")
-        }
-    }
-    whenButton(Buttons.LEFT_BUMPER){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("LB button pressed - 5")
-        }
-    }
-    whenButton(Buttons.RIGHT_BUMPER){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("RB button pressed - 6")
-        }
-    }
-    whenButton(Buttons.LEFT_TRIGGER){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("LT button pressed - 7")
-        }
-    }
-    whenButton(Buttons.RIGHT_TRIGGER){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("RT button pressed - 8")
-        }
-    }
-    whenButton(Buttons.BACK){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("Back button pressed - 9")
-        }
-    }
-    whenButton(Buttons.START){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("Start button pressed - 10")
-        }
-    }
-    whenButton(Buttons.LEFT_STICK){
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("LS button pressed - 11")
-        }
-    }
-    whenButton(Buttons.RIGHT_STICK) {
-        pressed {
-            //ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.E_STOPPED)
-            println("RS button pressed - 12")
-        }
-    }
-    /*
-    whenButton(Buttons.Y){
-        pressed {
-            println("Y button pressed")
-            ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.MANUAL_CONTROL)
-        }
-    }
-    whenButton(Buttons.RIGHT_BUMPER){
-        pressed {
-            // Switch tools
-            println("Right bumper pressed")
-            ArmSubsystem.armMachine.setState(ArmSubsystem.ArmStates.SWITCH_TOOL)
-        }
-    }
-    */
 
-
-    whenHatChanged(Hats.D_PAD){
-
+    whenButton(Buttons.A) {
+        pressed {
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo0)
+        }
     }
 }

@@ -103,6 +103,7 @@ object ClimberSubsystem: Subsystem() {
 
             entry {
                 ticker.reset()
+                homed = false
                 back.set(ControlParameters.ClimberParameters.homingPower)
                 front.set(ControlParameters.ClimberParameters.homingPower)
                 println("Homing arm")
@@ -111,6 +112,10 @@ object ClimberSubsystem: Subsystem() {
             action {
                 ticker.check {
                     //If we've stopped moving, and the time has elapsed, we're done
+                    //TODO ACTUALLY SET THE HOME ON THE TALON
+                    //TODO REALLY DO THIS PLEASE
+                    //TODO IF YOU FORGET THIS DON'T BLAME ME
+                    //TODO EXCEPT THAT I AM ME
                     homed = true
                     setState(ClimberStates.Stowed)
                 }
