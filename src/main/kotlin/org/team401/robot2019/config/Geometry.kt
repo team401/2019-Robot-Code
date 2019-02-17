@@ -67,4 +67,16 @@ object Geometry {
          */
         val extensionAngularToLinearRadius = 0.0.Inches
     }
+
+    object ClimberGeometry {
+        /**
+         * Pitch radius of the front gear, used to convert from angular position to linear position
+         */
+        val frontPitchRadius = 0.45.Inches
+
+        /**
+         * Pitch radius of the back gear, used to convert from angular position to linear position
+         */
+        val backPitchRadius = 0.45.Inches
+    }
 }

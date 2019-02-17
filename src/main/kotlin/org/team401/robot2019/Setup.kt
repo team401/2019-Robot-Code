@@ -1,11 +1,16 @@
 package org.team401.robot2019
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice
+import com.ctre.phoenix.motorcontrol.can.TalonSRX
+import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.controls.ControlPoller
 import org.snakeskin.dsl.*
 import org.snakeskin.measure.*
 import org.snakeskin.registry.Controllers
 import org.snakeskin.rt.RealTimeExecutor
+import org.snakeskin.rt.RealTimeTask
 import org.team401.robot2019.config.Geometry
+import org.team401.robot2019.subsystems.ClimberSubsystem
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.robot2019.subsystems.FloorPickupSubsystem
 
@@ -17,14 +22,10 @@ import org.team401.robot2019.subsystems.FloorPickupSubsystem
 @Setup
 fun setup() {
     ControlPoller.pollInAutonomous = true
-    RealTimeExecutor.rate = 0.01
+    RealTimeExecutor.rate = 0.1
 
-    Subsystems.add(DrivetrainSubsystem, FloorPickupSubsystem)
+    Subsystems.add(DrivetrainSubsystem)
     Controllers.add(LeftStick, RightStick)
 
     RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
-}
-
-fun main(args: Array<String>) {
-    println(0.5.FeetPerSecond.toAngularVelocity(Geometry.DrivetrainGeometry.wheelRadius).toRadiansPerSecond())
 }
