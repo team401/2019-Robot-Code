@@ -53,14 +53,14 @@ object ControlParameters{
     }
 
     object WristParameters{
-        val MAX_ACCELERATION = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
-        val MAX_VELOCITY = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
+        val acceleration = 1.5.RevolutionsPerSecondPerSecond
+        val cruiseVelocity = 1.0.RevolutionsPerSecond
 
         object WristRotationPIDF: PIDFTemplate {
-            override val kP = 0.0
+            override val kP = 2.3
             override val kI = 0.0
-            override val kD = 0.0
-            override val kF = 0.0
+            override val kD = 20.0
+            override val kF = 0.84
         }
     }
     object ArmPositions{

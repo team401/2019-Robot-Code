@@ -1,11 +1,21 @@
 package org.team401.robot2019.subsystems
 
+import com.ctre.phoenix.motorcontrol.ControlMode
+import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.SensorCollection
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.DigitalInput
+import edu.wpi.first.wpilibj.DriverStation
+import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
+import org.snakeskin.event.Events
+import org.snakeskin.measure.Degrees
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
+import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.superstructure.geometry.WristState
+import kotlin.math.roundToInt
 
 /**
  * @author Cameron Earle
@@ -13,13 +23,53 @@ import org.team401.robot2019.control.superstructure.geometry.WristState
  *
  */
 object WristSubsystem: Subsystem() {
-    private val rotationTalon = TalonSRX(50)
-    val leftIntakeTalon = TalonSRX(51)
-    val rightIntakeTalon = TalonSRX(52)
+    private val rotationTalon = TalonSRX(HardwareMap.Arm.wristTalonId)
+    val leftIntakeTalon = TalonSRX(HardwareMap.Arm.leftIntakeWheelTalonId)
+    val rightIntakeTalon = TalonSRX(HardwareMap.Arm.rightIntakeWheelTalonId)
 
     private val rotation = CTRESmartGearbox(rotationTalon)
+    private val leftIntake = CTRESmartGearbox(leftIntakeTalon)
+    private val rightIntake = CTRESmartGearbox(rightIntakeTalon)
 
     private val cargoSensor = DigitalInput(0)
+    private val leftHatchSensor = DigitalInput(1)
+
+    enum class WristStates {
+        CollectFf,
+        GoTo90
+    }
+
+    private fun move(setpoint: AngularDistanceMeasureDegrees) {
+        rotation.set(ControlMode.MotionMagic, setpoint.toMagEncoderTicks().value)
+    }
+
+    val wristMachine: StateMachine<WristStates> = stateMachine {
+        state (WristStates.CollectFf) {
+            var lastVel = 0
+            entry {
+                rotation.set(0.5)
+            }
+
+            action {
+                lastVel = rotation.master.getSelectedSensorVelocity(0)
+            }
+
+            exit {
+                rotation.stop()
+                println("Wrist FF: ${0.5 * 1023.0 / lastVel}")
+            }
+        }
+
+        state (WristStates.GoTo90) {
+            entry {
+                move(90.0.Degrees)
+            }
+
+            exit {
+                move(0.0.Degrees)
+            }
+        }
+    }
 
     /**
      * Returns whether or not the sensor system sees a cargo present in the intake.
@@ -27,7 +77,8 @@ object WristSubsystem: Subsystem() {
      * to both automatically close the intake as well as detect continuous presence.
      */
     private fun systemSeesCargo(): Boolean {
-        return cargoSensor.get() //TODO check polarity of banner sensor
+        //return cargoSensor.get() //TODO check polarity of banner sensor
+        return false
     }
 
     /**
@@ -36,12 +87,7 @@ object WristSubsystem: Subsystem() {
      * of a hatch regardless of orientation or position in the claw
      */
     private fun systemSeesHatch(): Boolean {
-        //We use the limit switch ports on the rotation talon to read the hatch sensors
-        val sc = rotation.getSensorCollection()
-        val hasLeft = sc.isRevLimitSwitchClosed //TODO check polarity
-        val hasRight = sc.isFwdLimitSwitchClosed
-
-        return hasLeft || hasRight //Use or here so that we fail on the safe side and assume we have a stuck gamepiece
+        return false //TODO add sensor
     }
 
     /**
@@ -51,5 +97,34 @@ object WristSubsystem: Subsystem() {
         val wristAngle = rotation.getPosition()
 
         return WristState(wristAngle, systemSeesCargo(), systemSeesHatch())
+    }
+
+    override fun action() {
+        println(rotation.getPosition().toDegrees())
+    }
+
+    override fun setup() {
+        rotation.inverted = false
+        rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
+        rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute)
+        rotation.master.selectedSensorPosition = rotation.master.sensorCollection.pulseWidthPosition - 2305 + (2048)
+        rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
+        //rotation.master.setSelectedSensorPosition()
+
+        rotation.master.configMotionCruiseVelocity(
+            ControlParameters.WristParameters.cruiseVelocity
+                .toMagEncoderTicksPerHundredMilliseconds()
+                .value.roundToInt()
+        )
+
+        rotation.master.configMotionAcceleration(
+            ControlParameters.WristParameters.acceleration
+                .toMagEncoderTicksPerHundredMillisecondsPerSecond()
+                .value.roundToInt()
+        )
+
+        on (Events.TELEOP_ENABLED) {
+            wristMachine.setState(WristStates.GoTo90)
+        }
     }
 }

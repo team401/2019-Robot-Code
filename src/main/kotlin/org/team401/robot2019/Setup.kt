@@ -13,6 +13,7 @@ import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.subsystems.ClimberSubsystem
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.robot2019.subsystems.FloorPickupSubsystem
+import org.team401.robot2019.subsystems.WristSubsystem
 
 /**
  * @author Cameron Earle
@@ -22,10 +23,10 @@ import org.team401.robot2019.subsystems.FloorPickupSubsystem
 @Setup
 fun setup() {
     ControlPoller.pollInAutonomous = true
-    RealTimeExecutor.rate = 0.1
+    RealTimeExecutor.rate = 0.01
 
-    Subsystems.add(DrivetrainSubsystem)
+    Subsystems.add(WristSubsystem)
     Controllers.add(LeftStick, RightStick)
 
-    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
+    //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
 }
