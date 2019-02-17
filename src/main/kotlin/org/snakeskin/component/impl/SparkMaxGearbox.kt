@@ -21,7 +21,13 @@ class SparkMaxGearbox(val master: CANSparkMax, vararg val slaves: CANSparkMax): 
     val pidController = master.pidController
 
     init {
-        joinSlaves()
+        link()
+    }
+
+    override fun link() {
+        slaves.forEach {
+            it.follow(master)
+        }
     }
 
     override fun getMasterOutputCurrent(): Double {
@@ -86,12 +92,6 @@ class SparkMaxGearbox(val master: CANSparkMax, vararg val slaves: CANSparkMax): 
 
     override fun setRampRate(secondsFromNeutralToFull: Double): Boolean {
         return master.setRampRate(secondsFromNeutralToFull) == CANError.kOK
-    }
-
-    fun joinSlaves() {
-        slaves.forEach {
-            it.follow(master)
-        }
     }
 
     override var inverted: Boolean

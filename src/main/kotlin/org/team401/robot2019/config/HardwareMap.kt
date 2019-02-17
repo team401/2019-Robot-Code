@@ -19,12 +19,23 @@ object HardwareMap {
     }
 
     object Arm {
-        const val leftIntakeWheelId = 30
+        const val leftIntakeWheelTalonId = 30
         const val rightIntakeWheelTalonId = 31
+
+        const val pivotLeftTalonId = 20
+        const val pivotRightTalonId = 21
+
+        const val wristTalonId = 24
+        const val extensionTalonId = 25
     }
 
     object FloorPickup {
         const val solenoidId = 1
         const val intakeWheelsTalonId = 31
+    }
+
+    object Climber {
+        const val frontTalonId = 60
+        const val backTalonId = 61
     }
 }

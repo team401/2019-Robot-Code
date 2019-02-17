@@ -3,9 +3,8 @@ package org.team401.robot2019.config
 import org.snakeskin.logic.scalars.Scalar
 import org.snakeskin.logic.scalars.ScalarGroup
 import org.snakeskin.logic.scalars.SquareScalar
-import org.snakeskin.measure.Inches
-import org.snakeskin.measure.Radians
-import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.*
+import org.snakeskin.template.PIDFTemplate
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 
@@ -50,5 +49,61 @@ object ControlParameters{
     object FloorPickupParameters {
         const val intakeSpeed = 0.50
         const val ejectSpeed = -0.50
+    }
+
+    object ClimberParameters {
+        object BackDownPIDF: PIDFTemplate {
+            override val kP = 0.0
+            override val kI = 0.0
+            override val kD = 0.0
+            override val kF = 0.0
+        }
+
+        object BackUpPIDF: PIDFTemplate {
+            override val kP = 0.0
+            override val kI = 0.0
+            override val kD = 0.0
+            override val kF = 0.0
+        }
+
+        object FrontDownPIDF: PIDFTemplate {
+            override val kP = 0.0
+            override val kI = 0.0
+            override val kD = 0.0
+            override val kF = 0.0
+        }
+
+        object FrontUpPIDF: PIDFTemplate {
+            override val kP = 0.0
+            override val kI = 0.0
+            override val kD = 0.0
+            override val kF = 0.0
+        }
+
+        val climberVelocity = 12.0.InchesPerSecond
+        val climberAcceleration = 24.0.InchesPerSecond //per second.  We are using a velocity unit here because the unit library can't convert lin -> ang accel
+
+        /**
+         * Power to apply to the legs to home them.  This should be negative
+         */
+        val homingPower = -0.25
+
+        /**
+         * Number of seconds the legs must be at zero velocity until the system is considered homed
+         */
+        val homingTime = 0.5.Seconds
+    }
+
+    object ClimberPositions {
+        /**
+         * Distance from the ground that the legs are at when homed.  These are used to offset the home position
+         * so that zero is right on the ground.  These constants should be negative
+         */
+        val frontHomeOffset = (-2.5).Inches
+        val backHomeOffset = (-0.5).Inches
+
+        val stowed = (-.5).Inches
+        val l2Climb = (10.0).Inches
+        val l3Climb = (20.0).Inches
     }
 }
