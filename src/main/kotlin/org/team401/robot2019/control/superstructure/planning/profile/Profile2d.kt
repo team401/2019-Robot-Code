@@ -30,6 +30,7 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
         val armRotation = armProfile.getPosition()
 
         val points = ArrayList<Pair<Point2d, PointPolar>>()
+        println("Intersects circle: $intersectsCircle")
         armRotation.forEach {
             //println("Theta: $it, Endpos : ${endPoint.theta}")
             if (intersectsCircle) {
@@ -87,6 +88,8 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
     fun solvePoint(theta: AngularDistanceMeasureRadians): Pair<Point2d, PointPolar>{
         //println("Theta: $theta, Endpos : ${endPoint.theta}")
         lateinit var point: Pair<Point2d, PointPolar>
+        //println("Intersects circle: $intersectsCircle")
+
         if (intersectsCircle) {
             if (startPoint.theta > endPoint.theta) {
                 when { // TODO Configure for forwards and backwards motion

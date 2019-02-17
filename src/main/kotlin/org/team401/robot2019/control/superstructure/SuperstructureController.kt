@@ -10,7 +10,7 @@ import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 object SuperstructureController {
     var output =
-        SuperstructureControlOutput(0.0.Radians, 0.0.Inches, 0.0.Radians, WristMotionPlanner.Tool.CargoTool, 0.0.RadiansPerSecond, 0.0)
+        SuperstructureControlOutput(0.0.Inches, 0.0.Radians, 0.0.Radians, WristMotionPlanner.Tool.CargoTool, 0.0.RadiansPerSecond, 0.0)
     private set
 
     private fun calculateCounterbalanceVoltage(commandedArmState: ArmState): Double {
@@ -51,8 +51,8 @@ object SuperstructureController {
         //Update control output
         output =
                 SuperstructureControlOutput(
-                    commandedArmState.armAngle,
                     commandedArmState.armRadius,
+                    commandedArmState.armAngle,
                     commandedWristState.wristPosition,
                     commandedWristTool,
                     commandedArmState.armVelocity,

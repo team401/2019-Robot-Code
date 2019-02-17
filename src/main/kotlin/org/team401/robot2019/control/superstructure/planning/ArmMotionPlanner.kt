@@ -45,8 +45,7 @@ object ArmMotionPlanner{
         startTheta = ArmKinematics.inverse(ArmMotionPlanner.startPos).theta
         endTheta = ArmKinematics.inverse(ArmMotionPlanner.endPos).theta
 
-        path =
-                calculatePath()
+        path = calculatePath()
         profile = Profile2d(path)
         rotationProfile = TrapezoidalProfileGenerator(
             ControlParameters.ArmParameters.ROTATION_MAX_VELOCITY,

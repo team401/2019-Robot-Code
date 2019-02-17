@@ -25,8 +25,6 @@ class ArmPath(path: LinearProfileSegment){
     fun solve(): Array<ProfileSegment>{
         //println("Distance ")
         val intersectsCircle = findIntersectionPoints()
-        println(intersectsCircle)
-        Thread.sleep(100)
         var segments: Array<ProfileSegment>
 
         if (intersectsCircle) {
@@ -79,7 +77,6 @@ class ArmPath(path: LinearProfileSegment){
         }
         //println("d : $d, e: $e")
         //print("Distance from origin to Tan position : ${Math.sqrt(Math.pow(d, 2.0) + Math.pow(e, 2.0))}")
-        Thread.sleep(100)
 
         return Point2d(d.Inches, e.Inches)
     }
@@ -114,7 +111,7 @@ class ArmPath(path: LinearProfileSegment){
         }
 
         if (!(intX1 >= min && intX1 <= max) && !(intX2 >= min && intX2 <= max)){
-            println("Out of scope")
+            //println("Out of scope")
             return false
         }
         return true

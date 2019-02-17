@@ -60,6 +60,8 @@ object SuperstructureMotionPlanner {
         lastObservedArmState = armState     //Update state variables
         lastObservedWristState = wristState
 
+        //println("updated arm state: $armState")
+
         if (hasTimedOut) { //If we timed out last loop
             reset() //Reset the motion planner
             return //Break execution here
@@ -78,6 +80,21 @@ object SuperstructureMotionPlanner {
                 hasTimedOut = true
             }
         }
+    }
+
+    /**
+     * Sets up the controller and the planner for starting configuration
+     */
+    @Synchronized
+    fun startUp(
+        startArmState: ArmState,
+        startWristState: WristState,
+        startingTool: WristMotionPlanner.Tool = WristMotionPlanner.Tool.HatchPanelTool
+    ){
+        lastObservedArmState = startArmState
+        lastObservedWristState = startWristState
+        SuperstructureController.update(startArmState, startWristState, startingTool)
+
     }
 
     @Synchronized
@@ -160,7 +177,14 @@ object SuperstructureMotionPlanner {
      */
     @Synchronized fun requestMove(endPose: Point2d) {
         //TODO actually make sure we can do it
+        commandQueue.clear()
         val currentPose = ArmKinematics.forward(lastObservedArmState)
-        commandQueue.add(MoveSuperstructureCommand(currentPose, endPose, WristMotionPlanner.Tool.CargoTool))
+        if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeWristToolChangeRadius) {
+            val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeWristToolChangeRadius, lastObservedArmState.armAngle))
+            commandQueue.add(MoveSuperstructureCommand(currentPose, safePoint, activeTool))
+            commandQueue.add(MoveSuperstructureCommand(safePoint, endPose, activeTool))
+        }else {
+            commandQueue.add(MoveSuperstructureCommand(currentPose, endPose, activeTool))
+        }
     }
 }

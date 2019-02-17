@@ -183,7 +183,7 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
                 done = true
             }
         }
-        println("end : $endPos, lastPoint: ${points.last().position}")
+        //println("end : $endPos, lastPoint: ${points.last().position}")
         return points.last()
     }
 
