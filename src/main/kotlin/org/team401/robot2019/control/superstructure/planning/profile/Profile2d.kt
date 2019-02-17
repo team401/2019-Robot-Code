@@ -3,6 +3,7 @@ package org.team401.robot2019.control.superstructure.planning.profile
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.time.TimeMeasureSeconds
+import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
@@ -17,8 +18,8 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
     private val intersectsCircle = segments.size > 1
     // TODO Use real numbers
     private val armProfile = TrapezoidalProfileGenerator(
-        3.14.RadiansPerSecond,
-        3.14.RadiansPerSecond,
+        ControlParameters.ArmParameters.MAX_VELOCITY,
+        ControlParameters.ArmParameters.MAX_ACCELERATION,
         startPoint.theta,
         endPoint.theta
     )

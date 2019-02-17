@@ -16,7 +16,7 @@ class ArmPath(path: LinearProfileSegment){
     private val x1 = path.start.x
     private val x2 = path.end.x
 
-    private val r = Geometry.ArmGeometry.minSafeWristRotationHeight.value
+    private val r = Geometry.ArmGeometry.minSafeWristToolChangeRadius.value
     //private val a = y1 - y2
     //private val b = x2 - x1
     //private val c = (x1 - x2) * y1 + (y2 - y1) * x1

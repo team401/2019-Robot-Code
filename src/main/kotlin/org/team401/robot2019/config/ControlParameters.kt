@@ -4,19 +4,15 @@ import org.snakeskin.logic.scalars.Scalar
 import org.snakeskin.logic.scalars.ScalarGroup
 import org.snakeskin.logic.scalars.SquareScalar
 import org.snakeskin.measure.*
+import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.snakeskin.template.PIDFTemplate
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 
 object ControlParameters{
     object ArmParameters{
-        //val HOMING_VELOCITY = 0.25.RevolutionsPerSecond
-        const val HOMING_CURRENT = 0.8
-        val MAX_ACCELERATION = 3.14.RadiansPerSecond
-        val MAX_VELOCITY = 3.14.RadiansPerSecond
-        const val HOMED_POSITION = 0
-
-        //val DEFAULT_ARM_POSITION = Point2d(0.0.Inches, 4.0.Inches) // Use real numbers
+        val MAX_ACCELERATION = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
+        val MAX_VELOCITY = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
 
         val MIN_POS = 0.57.Radians.value
         val MAX_POS = 3.5.Radians.value
@@ -30,6 +26,32 @@ object ControlParameters{
          * Velocity feedforward voltage.  "Voltage to velocity relationship"
          */
         const val kV = 1.0
+
+        object ArmRotationPIDF: PIDFTemplate{
+            override val kP = 0.0
+            override val kI = 0.0
+            override val kD = 0.0
+            override val kF = 0.0
+        }
+
+        object ArmExtensionPIDF: PIDFTemplate{
+            override val kP = 0.0
+            override val kI = 0.0
+            override val kD = 0.0
+            override val kF = 0.0
+        }
+    }
+
+    object WristParameters{
+        val MAX_ACCELERATION = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
+        val MAX_VELOCITY = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
+
+        object WristRotationPIDF: PIDFTemplate {
+            override val kP = 0.0
+            override val kI = 0.0
+            override val kD = 0.0
+            override val kF = 0.0
+        }
     }
     object ArmPositions{
         val ROCKET_TOP = Point2d(0.0.Inches, 0.0.Inches)
