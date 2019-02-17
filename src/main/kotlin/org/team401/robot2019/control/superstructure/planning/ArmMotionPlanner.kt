@@ -49,8 +49,8 @@ object ArmMotionPlanner{
                 calculatePath()
         profile = Profile2d(path)
         rotationProfile = TrapezoidalProfileGenerator(
-            ControlParameters.ArmParameters.MAX_VELOCITY,
-            ControlParameters.ArmParameters.MAX_ACCELERATION,
+            ControlParameters.ArmParameters.ROTATION_MAX_VELOCITY,
+            ControlParameters.ArmParameters.ROTATION_MAX_ACCELERATION,
             startTheta,
             endTheta
         )

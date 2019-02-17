@@ -29,7 +29,6 @@ import kotlin.math.abs
 object ArmSubsystem: Subsystem() {
     private val rotationMotor = TalonSRX(20)
     private val extensionMotor = TalonSRX(21)
-    private val wristMotor = TalonSRX(22)
 
     private val extension = CTRESmartGearbox(extensionMotor)
     private val rotation = CTRESmartGearbox(rotationMotor)
@@ -79,17 +78,10 @@ object ArmSubsystem: Subsystem() {
         extensionMotor.configPeakCurrentLimit(10)
         extensionMotor.configPeakCurrentDuration(100)
 
-        wristMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-        wristMotor.configPeakCurrentLimit(10)
-        wristMotor.configPeakCurrentDuration(100)
-
-
-        //TODO REMOVE THIS AFTER SIMULATION!!!
-        rotationMotor.selectedSensorPosition = 1024
-        extensionMotor.selectedSensorPosition = 1024
-        wristMotor.selectedSensorPosition = 0
-
         // TODO SET UP MOTION MAGIC
+
+        extensionMotor.configMotionCruiseVelocity(ControlParameters.ArmParameters.EXTENSION_MAX_VELOCITY)
+        extensionMotor.configMotionAcceleration(ControlParameters.ArmParameters.EXTENSION_MAX_ACCELERATION)
 
         on(Events.TELEOP_ENABLED){
             armMachine.setState(ArmStates.HOLDING)
@@ -117,23 +109,12 @@ object ArmSubsystem: Subsystem() {
         armPosition = ArmKinematics.forward(PointPolar((armLength.toLinearDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius) + Geometry.ArmGeometry.minSafeWristRotationHeight), armAngle.toRadians()))
 
 
-        wristAngle = wristMotor.selectedSensorPosition.toDouble().MagEncoderTicks
         val armState = ArmState(
             armLength.toLinearDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius),
             armAngle.toRadians(),
             armVelocity.toRadiansPerSecond()
         ) // Double check superstructure length
-        /*
-        val wristState =
-            WristState(
-                wristAngle.toRadians(),
-                activeTool,
-                hasGamePiece,
-                hasGamePiece
-            ) //TODO update!
 
-        coordinatedControlPoint = SuperstructureMotionPlanner.update(0.01, armState, wristState) //TODO this goes in a dedicated rt task
-        */
     }
 
 
@@ -201,68 +182,6 @@ object ArmSubsystem: Subsystem() {
 
                 extensionMotor.selectProfileSlot(0,0)
                 extensionMotor.set(ControlMode.MotionMagic, armLength.value)
-
-                wristMotor.selectProfileSlot(0, 0)
-                wristMotor.set(ControlMode.MotionMagic, wristAngle.value)
-            }
-        }
-
-        state(ArmStates.SWITCH_TOOL){
-            lateinit var newWristState: WristState
-            entry {
-                rotationMotor.selectProfileSlot(0,0)
-                rotationMotor.set(ControlMode.MotionMagic, armAngle.value)
-
-                extensionMotor.selectProfileSlot(0,0)
-                extensionMotor.set(ControlMode.MotionMagic, armLength.value)
-
-                if (activeTool == WristMotionPlanner.Tool.CargoTool){ // Should probably be a boolean...
-                    //newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.HatchPanelTool)
-                }else{
-                    //newWristState = SuperstructureMotionPlanner.switchTool(WristMotionPlanner.Tool.CargoTool)
-                }
-                wristMotor.set(ControlMode.MotionMagic, newWristState.wristPosition.toMagEncoderTicks().value)
-            }
-            action {
-                if (wristAngle == newWristState.wristPosition.toMagEncoderTicks()){
-                    setState(ArmStates.HOLDING)
-                }
-            }
-        }
-
-        state(ArmStates.HOMING){
-            var velocityCounter = 0
-            entry {
-                velocityCounter = 0
-                rotationMotor.configMotionAcceleration(ArmParameters.MAX_ACCELERATION.value.toInt())
-                rotationMotor.configMotionCruiseVelocity(ArmParameters.MAX_VELOCITY.value.toInt())
-                rotationMotor.selectProfileSlot(1, 0)
-                rotationMotor.set(ControlMode.Velocity, 0.5.RevolutionsPerSecond.toMagEncoderTicksPerHundredMilliseconds().value)
-            }
-            action{
-                println("Homing action")
-
-                var velocity = rotationMotor.selectedSensorVelocity.toDouble().MagEncoderTicksPerHundredMilliseconds
-                var current = rotationMotor.outputCurrent
-
-                println("Velocity revs/s: ${velocity.toRevolutionsPerSecond().value}")
-                println("Current : ${rotationMotor.outputCurrent}")
-
-                if(abs(current) >= ArmParameters.HOMING_CURRENT){
-                    velocityCounter++
-                }else{
-                    velocityCounter = 0
-                }
-
-                if(velocityCounter > 8){
-                    rotationMotor.set(ControlMode.PercentOutput, 0.0)
-                    homed = true
-                    // Homed armAngle for prototype: 215 deg, 3.75 rad
-                    // Homed armAngle is the Rear of the robot. - Motor power
-                    println("Homed armAngle: ${rotationMotor.selectedSensorPosition} ticks")
-                    rotationMotor.selectedSensorPosition = 16.875.Radians.toMagEncoderTicks().value.toInt()
-                    setState(ArmStates.MANUAL_CONTROL)
-                }
             }
         }
     }

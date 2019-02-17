@@ -18,8 +18,8 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
     private val intersectsCircle = segments.size > 1
     // TODO Use real numbers
     private val armProfile = TrapezoidalProfileGenerator(
-        ControlParameters.ArmParameters.MAX_VELOCITY,
-        ControlParameters.ArmParameters.MAX_ACCELERATION,
+        ControlParameters.ArmParameters.ROTATION_MAX_VELOCITY,
+        ControlParameters.ArmParameters.ROTATION_MAX_ACCELERATION,
         startPoint.theta,
         endPoint.theta
     )

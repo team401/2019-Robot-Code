@@ -4,6 +4,7 @@ import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.Seconds
+import org.snakeskin.measure.acceleration.angular.AngularAccelerationMeasureRadiansPerSecondPerSecond
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
@@ -15,7 +16,7 @@ import kotlin.math.abs
  *
  */
 class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerSecond,
-                                  maxAcceleration: AngularVelocityMeasureRadiansPerSecond,
+                                  maxAcceleration: AngularAccelerationMeasureRadiansPerSecondPerSecond,
                                   start: AngularDistanceMeasureRadians,
                                   end: AngularDistanceMeasureRadians){
     // Discrete Form : Pt = Pt + Vt + 1/2A

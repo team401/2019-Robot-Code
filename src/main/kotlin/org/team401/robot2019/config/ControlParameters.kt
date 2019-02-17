@@ -8,11 +8,21 @@ import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSe
 import org.snakeskin.template.PIDFTemplate
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.control.superstructure.geometry.Point2d
+import kotlin.math.roundToInt
 
 object ControlParameters{
     object ArmParameters{
-        val MAX_ACCELERATION = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
-        val MAX_VELOCITY = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
+        /**
+         * Max velocity and acceleration values to configure the extension motion magic controller
+         */
+        val EXTENSION_MAX_ACCELERATION = 6.0.InchesPerSecond.toAngularVelocity(Geometry.ArmGeometry.extensionAngularToLinearRadius)
+            .toMagEncoderTicksPerSecond().value.roundToInt()
+        val EXTENSION_MAX_VELOCITY = 6.0.InchesPerSecond.toAngularVelocity(Geometry.ArmGeometry.extensionAngularToLinearRadius)
+            .toMagEncoderTicksPerSecond().value.roundToInt()
+
+        val ROTATION_MAX_ACCELERATION = 0.25.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
+        val ROTATION_MAX_VELOCITY = 0.25.RevolutionsPerSecond.toRadiansPerSecond()
+
 
         val MIN_POS = 0.57.Radians.value
         val MAX_POS = 3.5.Radians.value
