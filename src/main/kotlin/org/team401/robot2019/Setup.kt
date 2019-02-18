@@ -24,10 +24,10 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Subsystems.add(ArmSubsystem)
+    Subsystems.add(WristSubsystem)
     Controllers.add(Gamepad)
 
-    RealTimeExecutor.addTask(SuperstructureUpdater)
+    //RealTimeExecutor.addTask(SuperstructureUpdater)
 
     SmartDashboard.putNumber("ArmKv", 0.0)
     //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)

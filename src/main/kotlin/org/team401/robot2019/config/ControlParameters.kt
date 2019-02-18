@@ -31,12 +31,12 @@ object ControlParameters{
         /**
          * Voltage required to hold the superstructure static, divided by the cosine of the angle times the radius the test was taken at
          */
-        const val kS = 0.0412
+        const val kS = 0.03
 
         /**
          * Velocity feedforward voltage.  "Voltage to velocity relationship"
          */
-        const val kV = .05
+        const val kV = 2.65
 
         /**
          * Amount of time to home the arm
@@ -49,7 +49,7 @@ object ControlParameters{
         val extensionHomingPower = -0.1
 
         object ArmRotationPIDF: PIDFTemplate{
-            override val kP = 0.0
+            override val kP = 6.0
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!

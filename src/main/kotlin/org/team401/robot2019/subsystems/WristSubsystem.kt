@@ -16,6 +16,7 @@ import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.HardwareMap
+import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import kotlin.math.roundToInt
 
@@ -40,10 +41,13 @@ object WristSubsystem: Subsystem() {
     private val cargoClampSolenoid = Solenoid(HardwareMap.Wrist.cargoClawSolenoidID)
 
     enum class WristStates {
+        EStopped,
         CollectFf,
         GoTo90,
         GoTo0,
-        GoTo180
+        GoTo180,
+        Holding,
+        CoordinatedControl
     }
     enum class ScoringStates {
         CargoClamped,
@@ -53,6 +57,11 @@ object WristSubsystem: Subsystem() {
     }
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
+        if (setpoint >= 210.0.Degrees || setpoint <= (-170.0).Degrees) {
+            println("ILLEGAL WRIST COMMAND $setpoint")
+            wristMachine.setState(WristStates.EStopped)
+            return
+        }
         rotation.set(ControlMode.MotionMagic, setpoint.toMagEncoderTicks().value)
     }
 
@@ -64,6 +73,12 @@ object WristSubsystem: Subsystem() {
         ),
         { move(value)}
     ) {
+        state (WristStates.EStopped) {
+            action {
+                rotation.set(0.0)
+            }
+        }
+
         state (WristStates.CollectFf) {
             var lastVel = 0
             entry {
@@ -77,6 +92,22 @@ object WristSubsystem: Subsystem() {
             exit {
                 rotation.stop()
                 println("Wrist FF: ${0.5 * 1023.0 / lastVel}")
+            }
+        }
+
+        state (WristStates.Holding) {
+            entry {
+                val position = rotation.getPosition().toDegrees()
+                move(position)
+            }
+        }
+
+        state (WristStates.CoordinatedControl) {
+            rtAction {
+                val output = SuperstructureController.output
+                val angle = output.wristTheta.toDegrees()
+
+                move(angle)
             }
         }
     }
@@ -133,18 +164,17 @@ object WristSubsystem: Subsystem() {
     }
 
     override fun action() {
-        println(rotation.master.sensorCollection.pulseWidthPosition)
+        //println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
         //println(rotation.getPosition().toDegrees())
     }
 
     override fun setup() {
         rotation.inverted = false
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
-        rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute)
+        rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
         rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2305 + (2048)
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
-        //rotation.master.setSelectedSensorPosition()
 
         rotation.master.configMotionCruiseVelocity(
             ControlParameters.WristParameters.cruiseVelocity
@@ -158,8 +188,8 @@ object WristSubsystem: Subsystem() {
                 .value.roundToInt()
         )
 
-        on (Events.TELEOP_ENABLED) {
-            //wristMachine.setState(WristStates.GoTo90)
+        on (Events.ENABLED) {
+            wristMachine.setState(WristStates.Holding)
         }
     }
 }

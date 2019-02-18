@@ -27,13 +27,9 @@ object SuperstructureController {
     private fun calculateVelocityVoltage(commandedArmState: ArmState): Double {
         val velocity = commandedArmState.armVelocity.value
 
-        val dashKv = SmartDashboard.getNumber("ArmKv", 0.0)
-
         //Equation: kV * desiredVelocity
         //Constant kV: Voltage to velocity relationship (measured after kS
-        //return ControlParameters.ArmParameters.kV * velocity
-        println("VOLTAGE FROM VELOCITY ${dashKv * velocity}")
-        return dashKv * velocity
+        return ControlParameters.ArmParameters.kV * velocity
     }
 
     /**

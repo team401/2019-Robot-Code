@@ -80,9 +80,10 @@ val Gamepad = HumanControls.f310(0){
     }
     */
 
+    /*
     whenButton(Buttons.B) {
         pressed {
-            SuperstructureMotionPlanner.requestMove(Point2d(0.0.Inches, 35.0.Inches))
+            SuperstructureMotionPlanner.requestMove(Point2d(27.0.Inches, 28.0.Inches))
             ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
             ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
         }
@@ -92,28 +93,30 @@ val Gamepad = HumanControls.f310(0){
             ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.EStopped)
         }
     }
+    */
 
-    /*
     whenButton(Buttons.Y){
         pressed {
-            WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoClamped)
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo180)
+            //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoClamped)
         }
     }
     whenButton(Buttons.B){
         pressed {
-            WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoReleased)
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo90)
+            //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoReleased)
         }
     }
     whenButton(Buttons.X){
         pressed {
-            WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchClamped)
+            //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchClamped)
         }
     }
     whenButton(Buttons.A){
         pressed {
-            WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchReleased)
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo0)
+            //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchReleased)
         }
     }
-    */
 
 }

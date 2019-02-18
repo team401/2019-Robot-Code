@@ -57,32 +57,37 @@ object SuperstructureMotionPlanner {
     //TODO make this class manage timestamp vs dt to detect long pauses in execution (i.e. robot disabled)
     @Synchronized
     fun update(time: Double, dt: Double, armState: ArmState, wristState: WristState) {
-        lastObservedArmState = armState     //Update state variables
-        lastObservedWristState = wristState
+        try {
+            lastObservedArmState = armState     //Update state variables
+            lastObservedWristState = wristState
 
-        //println("updated arm state: $armState")
+            //println("updated arm state: $armState")
 
-        /*
+            /*
         if (hasTimedOut) { //If we timed out last loop
             reset() //Reset the motion planner
             return //Break execution here
         }
         */
-        //Pop the first command from the queue
-        if (commandQueue.isNotEmpty()) { //If there are commands in the queue
-            val currentCommand = commandQueue.pop() //Remove the first element
-            currentCommand.update(dt, armState, wristState) //Update the command
-            if (!currentCommand.isDone()) { //If the command isn't done
-                commandQueue.push(currentCommand) //Put it back at the start of the queue
-            }
+            //Pop the first command from the queue
+            if (commandQueue.isNotEmpty()) { //If there are commands in the queue
+                val currentCommand = commandQueue.pop() //Remove the first element
+                currentCommand.update(dt, armState, wristState) //Update the command
+                if (!currentCommand.isDone()) { //If the command isn't done
+                    commandQueue.push(currentCommand) //Put it back at the start of the queue
+                }
 
-            /*
+                /*
             //If we have commands, we need to update the watchdog
             if (time - lastQueueScheduleTime > queueTimeout.toSeconds().value) {
                 System.err.println("Superstructure reached watchdog timeout!  All mechanisms entering holding.")
                 hasTimedOut = true
             }
             */
+            }
+        } catch (e: Exception) {
+            reset()
+            throw e
         }
     }
 
