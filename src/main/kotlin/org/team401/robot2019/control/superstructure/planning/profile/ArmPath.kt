@@ -43,6 +43,8 @@ class ArmPath(private val path: LinearProfileSegment){
             val firstSegment = LinearProfileSegment(start, tangentPointOne)
             val secondSegment = ArcProfileSegment(tangentPointOne, tangentPointTwo, r)
             val thirdSegment = LinearProfileSegment(tangentPointTwo, end)
+            println("1st tangent : $tangentPointOne, 2nd tangent: $tangentPointTwo")
+            println("end : $end")
 
             segments = arrayOf(firstSegment, secondSegment, thirdSegment)
 
@@ -67,23 +69,32 @@ class ArmPath(private val path: LinearProfileSegment){
         var e1: Double
         var e2: Double
         if (y1 != 0.0) { // There is a plus or minus here, adjust if it becomes a problem
-            e1 = (Math.pow(r, 2.0) - x1 * d1) / y1
-            e2 = (Math.pow(r, 2.0) - x1 * d2) / y1
+            //println("y1 != 0.0")
+            e1 = (Math.pow(r, 2.0) - (x1 * d1)) / y1
+            e2 = (Math.pow(r, 2.0) - (x1 * d2)) / y1
         }else{
             e1 = Math.sqrt(x1 * d1 - Math.pow(d1, 2.0))
             e2 = Math.sqrt(x1 * d2 - Math.pow(d2, 2.0))
         }
 
+        //println("x1 : $x1, x2 : $x2")
+        //if(d2 < 0 && this.x1 < this.x2){
+        //    e1 *= -1
+        //}
+
+        //println("d1 : $d1, d2: $d2")
+        //println("e1 : $e1, e2: $e2")
+
         var d: Double
         var e: Double
-        if(e2 > e1){
+        if(this.x1 < this.x2){
             d = d2
             e = e2
         }else{
             d = d1
             e = e1
         }
-        //println("d : $d, e: $e")
+
         //print("Distance from origin to Tan position : ${Math.sqrt(Math.pow(d, 2.0) + Math.pow(e, 2.0))}")
 
         return Point2d(d.Inches, e.Inches)

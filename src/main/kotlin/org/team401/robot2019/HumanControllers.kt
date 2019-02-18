@@ -50,6 +50,7 @@ val RightStick = HumanControls.t16000m(1) {
 
 
 val Gamepad = HumanControls.f310(0){
+    /*
     whenButton(Buttons.A) {
         pressed {
             //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo0)
@@ -74,4 +75,26 @@ val Gamepad = HumanControls.f310(0){
             ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.GoTo2Foot)
         }
     }
+    */
+    whenButton(Buttons.Y){
+        pressed {
+            WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoClamped)
+        }
+    }
+    whenButton(Buttons.B){
+        pressed {
+            WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoReleased)
+        }
+    }
+    whenButton(Buttons.X){
+        pressed {
+            WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchClamped)
+        }
+    }
+    whenButton(Buttons.A){
+        pressed {
+            WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchReleased)
+        }
+    }
+
 }

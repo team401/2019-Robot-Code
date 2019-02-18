@@ -7,6 +7,8 @@ package org.team401.robot2019.config
  */
 object HardwareMap {
     object Drivetrain {
+        const val shifterSolenoid = 0
+
         const val leftRearSparkMaxId = 1
         const val leftMidSparkMaxId = 2
         const val leftFrontSparkMaxId = 3
@@ -19,6 +21,8 @@ object HardwareMap {
     }
 
     object Arm {
+        const val brakeSolenoidId = 4
+
         const val leftIntakeWheelTalonId = 30
         const val rightIntakeWheelTalonId = 31
 
@@ -29,8 +33,14 @@ object HardwareMap {
         const val extensionTalonId = 25
     }
 
+    object Wrist{
+        const val clawSolenoidID = 1
+        const val cargoClawSolenoidID = 2
+
+    }
+
     object FloorPickup {
-        const val solenoidId = 1
+        const val solenoidId = 3
         const val intakeWheelsTalonId = 31
     }
 

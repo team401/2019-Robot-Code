@@ -30,12 +30,12 @@ object ArmSim {
         val time = ArrayList<Double>()
         var currentTime = 0.0
         val dt = 0.01
-        val startArmState = ArmState(Geometry.ArmGeometry.armBaseLength, 0.0.Radians, 0.0.RadiansPerSecond)
+        val startArmState = ArmState(Geometry.ArmGeometry.armBaseLength, (PI/2).Radians, 0.0.RadiansPerSecond)
         val startWristState = WristState(PI.Radians, false, true)
         val ffVoltage = ArrayList<Double>()
 
         SuperstructureMotionPlanner.startUp(startArmState, startWristState)// TODO In real life, populate this function!!
-        SuperstructureMotionPlanner.requestMove(Point2d((0.0).Inches, Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches))
+        SuperstructureMotionPlanner.requestMove(Point2d((-20.0).Inches, 50.0.Inches))
         SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWristState)
 
         while (!SuperstructureMotionPlanner.isDone()) {

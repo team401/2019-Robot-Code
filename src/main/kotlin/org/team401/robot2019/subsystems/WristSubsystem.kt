@@ -6,6 +6,7 @@ import com.ctre.phoenix.motorcontrol.SensorCollection
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
@@ -35,11 +36,20 @@ object WristSubsystem: Subsystem() {
     private val cargoSensor = DigitalInput(0)
     private val leftHatchSensor = DigitalInput(1)
 
+    private val hatchPanelSolenoid = Solenoid(HardwareMap.Wrist.clawSolenoidID)
+    private val cargoClampSolenoid = Solenoid(HardwareMap.Wrist.cargoClawSolenoidID)
+
     enum class WristStates {
         CollectFf,
         GoTo90,
         GoTo0,
         GoTo180
+    }
+    enum class ScoringStates {
+        CargoClamped,
+        CargoReleased,
+        HatchClamped,
+        HatchReleased
     }
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
@@ -67,6 +77,29 @@ object WristSubsystem: Subsystem() {
             exit {
                 rotation.stop()
                 println("Wrist FF: ${0.5 * 1023.0 / lastVel}")
+            }
+        }
+    }
+
+    val scoringMachine: StateMachine<ScoringStates> = stateMachine {
+        state(ScoringStates.CargoClamped){
+            entry {
+                cargoClampSolenoid.set(true)
+            }
+        }
+        state(ScoringStates.CargoReleased){
+            entry {
+                cargoClampSolenoid.set(false)
+            }
+        }
+        state(ScoringStates.HatchClamped){
+            entry {
+                hatchPanelSolenoid.set(true)
+            }
+        }
+        state(ScoringStates.HatchReleased){
+            entry {
+                hatchPanelSolenoid.set(false)
             }
         }
     }
@@ -126,7 +159,7 @@ object WristSubsystem: Subsystem() {
         )
 
         on (Events.TELEOP_ENABLED) {
-            wristMachine.setState(WristStates.GoTo90)
+            //wristMachine.setState(WristStates.GoTo90)
         }
     }
 }

@@ -98,13 +98,16 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
             if (startPoint.theta > endPoint.theta) {
                 when {
                     ArmKinematics.inverse(segments[0].end).theta < theta -> {
+                        //println("First!")
                         point = Pair(segments[0].solve(theta), ArmKinematics.inverse(segments[0].solve(theta)))
                     }
                     ArmKinematics.inverse(segments[1].end).theta < theta -> {
+                        //println("End theta: ${ArmKinematics.inverse(segments[1].end).theta} vs $theta")
                         point = Pair(segments[1].solve(theta), ArmKinematics.inverse(segments[1].solve(theta)))
                     }
 
                     ArmKinematics.inverse(segments[2].end).theta <= theta -> {
+                        //println("Extension!")
                         point = Pair(segments[2].solve(theta), ArmKinematics.inverse(segments[2].solve(theta)))
                     }
                 }
