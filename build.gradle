@@ -41,8 +41,8 @@ configurations {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile wpi.deps.wpilib()
-    compile "com.ctre.phoenix:api-java:5.13.0"
-    nativeZip "com.ctre.phoenix:cci:5.13.0"
+    compile "com.ctre.phoenix:api-java:5.14.0"
+    nativeZip "com.ctre.phoenix:cci:5.14.0"
     compile "com.revrobotics.frc:SparkMax-java:1.0.28"
     compile "org.team401:Taxis:1.1.dirty"
     compile group: 'org.knowm.xchart', name: 'xchart', version: '3.5.2'

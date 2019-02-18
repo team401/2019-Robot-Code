@@ -129,22 +129,15 @@ object ControlParameters{
         /**
          * Power to apply to the legs to home them.  This should be negative
          */
-        val homingPower = -0.25
+        val homingPower = -0.15
 
         /**
          * Number of seconds the legs must be at zero velocity until the system is considered homed
          */
-        val homingTime = 0.5.Seconds
+        val homingTime = 0.25.Seconds
     }
 
     object ClimberPositions {
-        /**
-         * Distance from the ground that the legs are at when homed.  These are used to offset the home position
-         * so that zero is right on the ground.  These constants should be negative
-         */
-        val frontHomeOffset = (-2.5).Inches
-        val backHomeOffset = (-0.5).Inches
-
         val stowed = (-.5).Inches
         val l2Climb = (10.0).Inches
         val l3Climb = (20.0).Inches

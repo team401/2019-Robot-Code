@@ -3,6 +3,7 @@ package org.team401.robot2019
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.Solenoid
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.controls.ControlPoller
 import org.snakeskin.dsl.*
 import org.snakeskin.measure.*
@@ -23,9 +24,11 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Subsystems.add(WristSubsystem)
+    Subsystems.add(ArmSubsystem)
     Controllers.add(Gamepad)
 
-    //RealTimeExecutor.addTask(SuperstructureUpdater)
+    RealTimeExecutor.addTask(SuperstructureUpdater)
+
+    SmartDashboard.putNumber("ArmKv", 0.0)
     //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
 }
