@@ -10,10 +10,8 @@ import org.snakeskin.registry.Controllers
 import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.rt.RealTimeTask
 import org.team401.robot2019.config.Geometry
-import org.team401.robot2019.subsystems.ClimberSubsystem
-import org.team401.robot2019.subsystems.DrivetrainSubsystem
-import org.team401.robot2019.subsystems.FloorPickupSubsystem
-import org.team401.robot2019.subsystems.WristSubsystem
+import org.team401.robot2019.control.superstructure.SuperstructureUpdater
+import org.team401.robot2019.subsystems.*
 
 /**
  * @author Cameron Earle
@@ -25,8 +23,9 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Subsystems.add(WristSubsystem)
+    Subsystems.add(ArmSubsystem)
     Controllers.add(Gamepad)
 
+    RealTimeExecutor.addTask(SuperstructureUpdater)
     //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
 }

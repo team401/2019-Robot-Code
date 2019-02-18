@@ -59,7 +59,7 @@ object ArmMotionPlanner{
         done = false
     }
 
-    fun isDone(): Boolean{
+    fun isDone(): Boolean {
         return done
     }
 
@@ -68,12 +68,12 @@ object ArmMotionPlanner{
     }
 
     fun update(dt: Double): ArmState {
-        lateinit var currentArmState: TrapezoidalProfilePoint
-        var currentArmPosition: AngularDistanceMeasureRadians
-        var currentArmVelocity: AngularVelocityMeasureRadiansPerSecond
-        var currentRadius: LinearDistanceMeasureInches
+        val currentArmState: TrapezoidalProfilePoint
+        val currentArmPosition: AngularDistanceMeasureRadians
+        val currentArmVelocity: AngularVelocityMeasureRadiansPerSecond
+        val currentRadius: LinearDistanceMeasureInches
 
-        if(startTheta == endTheta){
+        if (startTheta == endTheta) {
             currentArmPosition = startTheta
             currentArmVelocity = 0.0.RadiansPerSecond
             currentRadius = ArmKinematics.inverse(endPos).r
@@ -84,7 +84,6 @@ object ArmMotionPlanner{
             currentArmPosition = currentArmState.position
             currentArmVelocity = currentArmState.velocity
             currentRadius = profile.solvePoint(currentArmPosition).second.r
-            //val currentExtension = (currentRadius - Geometry.ArmGeometry.minArmLength) as LinearDistanceMeasureInches
             currentTime = currentArmState.time
 
             done = rotationProfile.isDone()

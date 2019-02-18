@@ -15,10 +15,10 @@ object ControlParameters{
         /**
          * Max velocity and acceleration values to configure the extension motion magic controller
          */
-        val extensionVelocity = 12.0.InchesPerSecond
+        val extensionVelocity = 36.0.InchesPerSecond
 
 
-        val extensionAcceleration = 12.0.InchesPerSecond //PER SECOND
+        val extensionAcceleration = (36.0 * 3.5).InchesPerSecond //PER SECOND
 
 
         val ROTATION_MAX_ACCELERATION = 0.25.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
@@ -31,22 +31,22 @@ object ControlParameters{
         /**
          * Voltage required to hold the superstructure static, divided by the cosine of the angle times the radius the test was taken at
          */
-        const val kS = 1.0
+        const val kS = 0.0412
 
         /**
          * Velocity feedforward voltage.  "Voltage to velocity relationship"
          */
-        const val kV = 1.0
+        const val kV = .05
 
         /**
          * Amount of time to home the arm
          */
-        val extensionHomingTime = 0.5.Seconds
+        val extensionHomingTime = 0.25.Seconds
 
         /**
          * Power to home the arm at.  This should be negative
          */
-        val extensionHomingPower = -0.25
+        val extensionHomingPower = -0.1
 
         object ArmRotationPIDF: PIDFTemplate{
             override val kP = 0.0
@@ -56,10 +56,10 @@ object ControlParameters{
         }
 
         object ArmExtensionPIDF: PIDFTemplate{
-            override val kP = 0.0
+            override val kP = 0.5
             override val kI = 0.0
             override val kD = 0.0
-            override val kF = 0.0
+            override val kF = 0.24
         }
     }
 

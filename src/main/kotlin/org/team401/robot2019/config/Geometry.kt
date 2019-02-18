@@ -19,7 +19,7 @@ object Geometry {
 
     object ArmGeometry{
         //All values with the pivot as the origin, wrist pivot as the endpoint
-        val maxX = 80.0.Inches
+        val maxX = 50.0.Inches
         val maxY = 100.0.Inches
         val minY = (-20.0).Inches
         val maxExtension = 0.0.Inches
@@ -71,7 +71,7 @@ object Geometry {
         /**
          * The "pitch radius" of the sprocket
          */
-        val extensionAngularToLinearRadius = 0.0.Inches
+        val extensionPitchRadius = 0.720.Inches
     }
 
     object ClimberGeometry {

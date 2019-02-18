@@ -4,10 +4,8 @@ import org.snakeskin.measure.Inches
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.config.Geometry
 
-class ArmPath(path: LinearProfileSegment){
-
+class ArmPath(private val path: LinearProfileSegment){
     // Restricts the bounds of the start and end
-    private val path = path
     private val start = path.start
     private val end = path.end
 
@@ -16,7 +14,7 @@ class ArmPath(path: LinearProfileSegment){
     private val x1 = path.start.x
     private val x2 = path.end.x
 
-    private val r = Geometry.ArmGeometry.minSafeWristToolChangeRadius.value
+    private val r = Geometry.ArmGeometry.minSafeArmLength.value
     //private val a = y1 - y2
     //private val b = x2 - x1
     //private val c = (x1 - x2) * y1 + (y2 - y1) * x1

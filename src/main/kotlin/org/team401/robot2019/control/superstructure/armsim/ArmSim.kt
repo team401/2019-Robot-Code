@@ -29,12 +29,13 @@ object ArmSim {
         val points = ArrayList<PointPolar>()
         val time = ArrayList<Double>()
         var currentTime = 0.0
-        val dt = 0.001
-        val startArmState = ArmState(Geometry.ArmGeometry.armBaseLength, (PI/2.0).Radians, 0.0.RadiansPerSecond)
+        val dt = 0.01
+        val startArmState = ArmState(Geometry.ArmGeometry.armBaseLength, 0.0.Radians, 0.0.RadiansPerSecond)
         val startWristState = WristState(PI.Radians, false, true)
+        val ffVoltage = ArrayList<Double>()
 
         SuperstructureMotionPlanner.startUp(startArmState, startWristState)// TODO In real life, populate this function!!
-        SuperstructureMotionPlanner.requestMove(Point2d(50.0.Inches, 10.0.Inches))
+        SuperstructureMotionPlanner.requestMove(Point2d(0.0.Inches, (Geometry.ArmGeometry.minSafeArmLength + 5.0.Inches)))
         SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWristState)
 
         while (!SuperstructureMotionPlanner.isDone()) {
@@ -50,6 +51,7 @@ object ArmSim {
             val currentWristState = WristState(output.wristTheta, false, false)
 
             SuperstructureMotionPlanner.update(currentTime, dt, currentArmState, currentWristState)
+            ffVoltage.add(SuperstructureController.output.armFeedForwardVoltage)
         }
 
         val xSeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).x.value }
@@ -57,6 +59,7 @@ object ArmSim {
         val rSeries = DoubleArray(points.size) { points[it].r.value }
         val thetaSeries = DoubleArray(points.size) { points[it].theta.value }
         val timeSeries = DoubleArray(time.size) { time[it]}
+        val voltageSeries = DoubleArray(ffVoltage.size) { ffVoltage[it] }
 
         //println("Time series length: ${timeSeries.size}")
         //println("Radius series length: ${rSeries.size}")
@@ -70,9 +73,10 @@ object ArmSim {
         val xyChart = QuickChart.getChart("XY Pose", "x", "y", "y(x)", xSeries, ySeries)
         val rChart = QuickChart.getChart("ArmSubsystem Radius vs Time", "Time", "Radius", "r(t)", timeSeries, rSeries)
         val thetaChart = QuickChart.getChart("ArmSubsystem Angle vs Time", "Time", "Theta", "theta(t)", timeSeries, thetaSeries)
+        val ffChart = QuickChart.getChart("Feedforward Voltages", "Time", "Voltage", "v(t)", timeSeries, voltageSeries)
         SwingWrapper(xyChart).displayChart()
         SwingWrapper(rChart).displayChart()
         SwingWrapper(thetaChart).displayChart()
-
+        SwingWrapper(ffChart).displayChart()
     }
 }

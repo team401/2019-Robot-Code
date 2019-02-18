@@ -43,50 +43,6 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
 
     var time = 0.0
 
-    /*
-    fun generate(){
-        //println("Start : $startPos End : $endPos")
-        points.add(arrayOf(position, velocity, time))
-        while((position < startPos + ((endPos - startPos) / 2.0) && !backwards) ||
-            (position > endPos + ((startPos - endPos)/2.0)) && backwards){ // Generate the first half of the profile
-            //println("Pos: $position, Vel: $velocity, Time: $time")
-            time += rate
-
-            if (abs(velocity) < abs(maxVel)){
-                velocity += maxAccel * rate
-            }else{
-                velocity = maxVel
-            }
-
-            position += velocity * rate
-
-            points.add(arrayOf(position, velocity, time))
-        }
-
-        val temp = points.toList()
-        var i = temp.size - 2
-        //points.removeAt(points.size -1)
-
-        //println("${startPos - (startPos - endPos)/2.0}")
-        //println("Second stage entered")
-        while (points.size < 2 * temp.size - 1){
-            println("Pos: $position, Vel: $velocity, Time: $time")
-
-            time += rate
-
-            velocity = temp[i][1]
-            i--
-
-            position += velocity * rate
-
-            points.add(arrayOf(position, velocity, time))
-        }
-        //println("End theta : $endPos")
-        //println("Final Pos: $position, Vel: $velocity, Time: $time")
-        //println("Points length: ${points.size}")
-        //println("Temp length : ${temp.size}")
-    }
-    */
     fun reset(){
         time = 0.0
         position = 0.0
@@ -194,19 +150,4 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
     fun getTime(): Array<TimeMeasureSeconds>{
         return Array(points.size){points[i].time}
     }
-    /*
-    fun graph(graphVelocity: Boolean){
-        val positionSeries = DoubleArray(points.size){points[it][0]}
-        val velocitySeries = DoubleArray(points.size){points[it][1]}
-        val timeSeries = DoubleArray(points.size){points[it][2]}
-
-        val positionGraph = QuickChart.getChart("Position vs Time", "Time", "Position", "x(t)", timeSeries, positionSeries)
-        val velocityGraph = QuickChart.getChart("Velocity vs Time", "Time", "Velocity", "v(t)", timeSeries, velocitySeries)
-
-        SwingWrapper(positionGraph).displayChart()
-        if (graphVelocity){
-            SwingWrapper(velocityGraph).displayChart()
-        }
-    }
-    */
 }

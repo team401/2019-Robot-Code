@@ -23,7 +23,6 @@ class MoveSuperstructureCommand(val start: Point2d, val end: Point2d, val tool: 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {
         val armCommand = ArmMotionPlanner.update(dt) //Update the arm motion planner
         val wristCommand = WristMotionPlanner.update(armState, wristState)
-        //println(armCommand)
         SuperstructureController.update(armCommand, wristCommand, tool)
     }
 

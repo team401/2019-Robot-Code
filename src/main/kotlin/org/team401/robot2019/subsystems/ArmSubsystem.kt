@@ -2,17 +2,21 @@ package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.rtAction
 import org.snakeskin.dsl.stateMachine
+import org.snakeskin.event.Events
 import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.*
 import org.snakeskin.state.StateMachine
 import org.snakeskin.subsystem.Subsystem
 import org.snakeskin.utility.Ticker
-import org.team401.robot2019.Gamepad
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
@@ -21,12 +25,15 @@ import org.team401.robot2019.control.superstructure.geometry.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
+import org.snakeskin.dsl.*
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+
 object ArmSubsystem: Subsystem() {
     private val pivotLeftTalon = TalonSRX(HardwareMap.Arm.pivotLeftTalonId)
     private val pivotRightTalon = TalonSRX(HardwareMap.Arm.pivotRightTalonId)
     private val extensionTalon = TalonSRX(HardwareMap.Arm.extensionTalonId)
 
-    private val pivot = CTRESmartGearbox(pivotLeftTalon, pivotRightTalon)
+    private val pivot = CTRESmartGearbox(pivotRightTalon, pivotLeftTalon)
     private val extension = CTRESmartGearbox(extensionTalon)
 
     var extensionHomed by LockingDelegate(false)
@@ -35,10 +42,9 @@ object ArmSubsystem: Subsystem() {
      * Gets the current state of the arm as measured by sensors
      */
     fun getCurrentArmState(): ArmState {
-        val extensionLength = extension.getPosition()
-            .toLinearDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius)
+        val radius = extension.getPosition()
+            .toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius)
             .toInches()
-        val radius = extensionLength + Geometry.ArmGeometry.armBaseLength
 
         val armAngle = pivot.getPosition()
         val armVelocity = pivot.getVelocity()
@@ -50,6 +56,7 @@ object ArmSubsystem: Subsystem() {
         EStopped, //System is stopped.  No commands sent to motors
         Holding, //System is holding its current position.
         CoordinatedControl, //System is being controlled by the motion planner.
+        TuneKs, //Tunes the gain required to hold the arm
     }
 
     enum class ArmExtensionStates {
@@ -57,7 +64,12 @@ object ArmSubsystem: Subsystem() {
         Homing, //System is homing.  This means that it is slowly retracted to locate its home position
         Holding, //System is holding its current position
         GoToSafe, //System moves to and holds the safe position.  In this case, it is the minimum radius
-        CoordinatedControl, //System is being controlled by the motion planner.
+        CoordinatedControl, //System is being controlled by the motion planner.,
+        TuneFf,
+        GoTo1Foot,
+        GoTo1Point5Foot,
+        GoTo2Foot,
+        GoTo1Inch,
     }
 
     private fun withinTolerance(target: Double, pos: Double, tolerance: Double): Boolean{
@@ -90,6 +102,27 @@ object ArmSubsystem: Subsystem() {
                 pivot.set(ControlMode.Position, angle, ffPercent)
             }
         }
+
+        state (ArmPivotStates.TuneKs) {
+            entry {
+                SmartDashboard.setDefaultNumber("armKsSetpoint", 0.0)
+            }
+
+            action {
+                val setpoint = SmartDashboard.getNumber("armKsSetpoint", 0.0)
+                pivot.set(setpoint)
+                val armState = getCurrentArmState()
+                val outVolt = pivot.getOutputVoltage()
+                val r = armState.armRadius.value
+                val theta = armState.armAngle.value
+                val ff = outVolt / (r * Math.cos(theta))
+                println("arm ks: $ff")
+            }
+
+            exit {
+                pivot.stop()
+            }
+        }
     }
 
     val armExtensionMachine: StateMachine<ArmExtensionStates> = stateMachine {
@@ -114,13 +147,12 @@ object ArmSubsystem: Subsystem() {
 
             action {
                 ticker.check {
-                    extension.setPosition(
-                        Geometry.ArmGeometry.armExtensionStickout
-                            .toAngularDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius)
-                            .toRadians()
-                    )
+                    extension.master.selectedSensorPosition = Geometry.ArmGeometry.armBaseLength
+                        .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
+                        .toMagEncoderTicks().value.roundToInt()
                     extensionHomed = true
                     setState(ArmExtensionStates.GoToSafe)
+                    setState(ArmExtensionStates.EStopped)
                 }
             }
 
@@ -138,8 +170,8 @@ object ArmSubsystem: Subsystem() {
 
         state (ArmExtensionStates.GoToSafe) {
             entry {
-                val target = (Geometry.ArmGeometry.minSafeWristRotationHeight - Geometry.ArmGeometry.armBaseLength)
-                    .toAngularDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius)
+                val target = Geometry.ArmGeometry.minSafeArmLength
+                    .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
                     .toMagEncoderTicks().value
 
                 extension.set(ControlMode.MotionMagic, target)
@@ -149,35 +181,122 @@ object ArmSubsystem: Subsystem() {
         state (ArmExtensionStates.CoordinatedControl) {
             rtAction {
                 val output = SuperstructureController.output
-                val target = (output.armRadius - Geometry.ArmGeometry.armBaseLength)
-                    .toAngularDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius)
+                val target = output.armRadius
+                    .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
                     .toMagEncoderTicks().value
 
                 extension.set(ControlMode.MotionMagic, target)
             }
         }
+
+        state (ArmExtensionStates.TuneFf) {
+            var lastVel = 0
+
+            entry {
+                extension.set(.5)
+            }
+
+            action {
+                lastVel = extension.master.selectedSensorVelocity
+            }
+
+            exit {
+                extension.stop()
+                println("Extension FF: ${.5 * 1023.0 / lastVel}")
+            }
+        }
+
+        state (ArmExtensionStates.GoTo1Foot) {
+            entry {
+                val target = (Geometry.ArmGeometry.armBaseLength + 1.0.Feet).toAngularDistance(
+                    Geometry.ArmGeometry.extensionPitchRadius
+                ).toMagEncoderTicks().value
+                extension.set(ControlMode.MotionMagic, target)
+            }
+        }
+
+        state (ArmExtensionStates.GoTo1Point5Foot) {
+            entry {
+                val target = (Geometry.ArmGeometry.armBaseLength + 1.5.Feet).toAngularDistance(
+                    Geometry.ArmGeometry.extensionPitchRadius
+                ).toMagEncoderTicks().value
+                extension.set(ControlMode.MotionMagic, target)
+            }
+        }
+
+        state (ArmExtensionStates.GoTo2Foot) {
+            entry {
+                val target = (Geometry.ArmGeometry.armBaseLength + 2.0.Feet).toAngularDistance(
+                    Geometry.ArmGeometry.extensionPitchRadius
+                ).toMagEncoderTicks().value
+                extension.set(ControlMode.MotionMagic, target)
+            }
+        }
+
+        state (ArmExtensionStates.GoTo1Inch) {
+            entry {
+                val target = (Geometry.ArmGeometry.armBaseLength + 1.0.Inches).toAngularDistance(
+                    Geometry.ArmGeometry.extensionPitchRadius
+                ).toMagEncoderTicks().value
+                extension.set(ControlMode.MotionMagic, target)
+            }
+        }
+
+        disabled {
+            action {
+                extension.set(0.0)
+            }
+        }
     }
 
     override fun action() {
-        println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionAngularToLinearRadius))
+        val armState = getCurrentArmState()
+        println(ArmKinematics.forward(armState))
+        //println(pivot.getPosition().toDegrees())
+        //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
     }
 
     override fun setup() {
+        pivotLeftTalon.inverted = true
+        pivotRightTalon.inverted = false
+
+        pivot.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
+        pivot.setForwardLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
+        pivot.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
+        pivot.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
+        pivot.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
+        pivot.master.selectedSensorPosition = Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - 1800 + 1024
+
+        pivot.setPIDF(ControlParameters.ArmParameters.ArmRotationPIDF)
+
         extension.inverted = false
+        extension.setSensorPhase(true)
+        extension.setForwardLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
+        extension.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
 
         extension.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         extension.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
         extension.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
 
         val nativeVelocity = ControlParameters.ArmParameters.extensionVelocity
-            .toAngularVelocity(Geometry.ArmGeometry.extensionAngularToLinearRadius)
+            .toAngularVelocity(Geometry.ArmGeometry.extensionPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
 
         val nativeAcceleration = ControlParameters.ArmParameters.extensionAcceleration
-            .toAngularVelocity(Geometry.ArmGeometry.extensionAngularToLinearRadius)
+            .toAngularVelocity(Geometry.ArmGeometry.extensionPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
         extension.master.configMotionCruiseVelocity(nativeVelocity)
         extension.master.configMotionAcceleration(nativeAcceleration)
+
+        extension.setPIDF(ControlParameters.ArmParameters.ArmExtensionPIDF)
+
+        on (Events.ENABLED) {
+            if (!extensionHomed) {
+                armExtensionMachine.setState(ArmExtensionStates.Homing)
+            } else {
+                armExtensionMachine.setState(ArmExtensionStates.GoToSafe)
+            }
+        }
     }
 }

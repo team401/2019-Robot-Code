@@ -92,7 +92,7 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
 
         if (intersectsCircle) {
             if (startPoint.theta > endPoint.theta) {
-                when { // TODO Configure for forwards and backwards motion
+                when {
                     ArmKinematics.inverse(segments[0].end).theta < theta -> {
                         point = Pair(segments[0].solve(theta), ArmKinematics.inverse(segments[0].solve(theta)))
                     }
@@ -106,7 +106,7 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
                 }
             }else {
                 // Switch for different types of function
-                when { // TODO Configure for forwards and backwards motion
+                when {
                     ArmKinematics.inverse(segments[0].end).theta > theta -> {
                         point = Pair(segments[0].solve(theta), ArmKinematics.inverse(segments[0].solve(theta)))
                     }

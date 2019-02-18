@@ -62,10 +62,12 @@ object SuperstructureMotionPlanner {
 
         //println("updated arm state: $armState")
 
+        /*
         if (hasTimedOut) { //If we timed out last loop
             reset() //Reset the motion planner
             return //Break execution here
         }
+        */
         //Pop the first command from the queue
         if (commandQueue.isNotEmpty()) { //If there are commands in the queue
             val currentCommand = commandQueue.pop() //Remove the first element
@@ -74,11 +76,13 @@ object SuperstructureMotionPlanner {
                 commandQueue.push(currentCommand) //Put it back at the start of the queue
             }
 
+            /*
             //If we have commands, we need to update the watchdog
             if (time - lastQueueScheduleTime > queueTimeout.toSeconds().value) {
                 System.err.println("Superstructure reached watchdog timeout!  All mechanisms entering holding.")
                 hasTimedOut = true
             }
+            */
         }
     }
 
@@ -93,7 +97,8 @@ object SuperstructureMotionPlanner {
     ){
         lastObservedArmState = startArmState
         lastObservedWristState = startWristState
-        SuperstructureController.update(startArmState, startWristState, startingTool)
+        activeTool = startingTool
+        reset()
 
     }
 
@@ -176,14 +181,13 @@ object SuperstructureMotionPlanner {
      * Asks the system to move to a new pose, while following a series of constraints.
      */
     @Synchronized fun requestMove(endPose: Point2d) {
-        //TODO actually make sure we can do it
         reset()
         val currentPose = ArmKinematics.forward(lastObservedArmState)
-        if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeWristToolChangeRadius) {
-            val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeWristToolChangeRadius, lastObservedArmState.armAngle))
+        if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeArmLength) {
+            val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength, lastObservedArmState.armAngle))
             commandQueue.add(MoveSuperstructureCommand(currentPose, safePoint, activeTool))
             commandQueue.add(MoveSuperstructureCommand(safePoint, endPose, activeTool))
-        }else {
+        } else {
             commandQueue.add(MoveSuperstructureCommand(currentPose, endPose, activeTool))
         }
     }
