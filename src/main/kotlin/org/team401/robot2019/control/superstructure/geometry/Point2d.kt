@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure.geometry
 
+import org.snakeskin.measure.Inches
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.config.Geometry
 
@@ -42,6 +43,7 @@ data class Point2d(val x: LinearDistanceMeasureInches, val y: LinearDistanceMeas
         if (Math.abs(value - r) < 0.1){
             return false
         }
+
         return value < r
     }
 }

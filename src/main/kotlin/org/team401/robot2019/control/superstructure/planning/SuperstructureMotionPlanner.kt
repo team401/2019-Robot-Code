@@ -184,7 +184,7 @@ object SuperstructureMotionPlanner {
         reset()
         val currentPose = ArmKinematics.forward(lastObservedArmState)
         if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeArmLength) {
-            val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength, lastObservedArmState.armAngle))
+            val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 0.01.Inches, lastObservedArmState.armAngle))
             commandQueue.add(MoveSuperstructureCommand(currentPose, safePoint, activeTool))
             commandQueue.add(MoveSuperstructureCommand(safePoint, endPose, activeTool))
         } else {

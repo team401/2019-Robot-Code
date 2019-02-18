@@ -30,7 +30,7 @@ class ArmPath(private val path: LinearProfileSegment){
 
         if (start.withinCircle()) {
             val pointPolar = ArmKinematics.inverse(start)
-            val out = PointPolar(Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches, pointPolar.theta)
+            val out = PointPolar(Geometry.ArmGeometry.minSafeArmLength, pointPolar.theta)
             //println("Within circle")
             return arrayOf(LinearProfileSegment(start, ArmKinematics.forward(out)))
         }
@@ -43,8 +43,8 @@ class ArmPath(private val path: LinearProfileSegment){
             val firstSegment = LinearProfileSegment(start, tangentPointOne)
             val secondSegment = ArcProfileSegment(tangentPointOne, tangentPointTwo, r)
             val thirdSegment = LinearProfileSegment(tangentPointTwo, end)
-            println("1st tangent : $tangentPointOne, 2nd tangent: $tangentPointTwo")
-            println("end : $end")
+            //println("1st tangent : $tangentPointOne, 2nd tangent: $tangentPointTwo")
+            //println("end : $end")
 
             segments = arrayOf(firstSegment, secondSegment, thirdSegment)
 
