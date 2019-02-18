@@ -151,8 +151,7 @@ object ArmSubsystem: Subsystem() {
                         .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
                         .toMagEncoderTicks().value.roundToInt()
                     extensionHomed = true
-                    setState(ArmExtensionStates.GoToSafe)
-                    setState(ArmExtensionStates.EStopped)
+                    setState(ArmExtensionStates.GoTo1Inch)
                 }
             }
 
@@ -164,7 +163,7 @@ object ArmSubsystem: Subsystem() {
         state (ArmExtensionStates.Holding) {
             entry {
                 val currentPosition = extension.getPosition().toMagEncoderTicks().value
-                extension.set(ControlMode.Position, currentPosition)
+                extension.set(ControlMode.MotionMagic, currentPosition)
             }
         }
 
@@ -181,9 +180,16 @@ object ArmSubsystem: Subsystem() {
         state (ArmExtensionStates.CoordinatedControl) {
             rtAction {
                 val output = SuperstructureController.output
+                if (output.armRadius > 47.0.Inches) {
+                    println("ARM EXTENSION OVERTRAVEL!  STOPPING MOTION")
+                    setState(ArmExtensionStates.EStopped)
+                    armPivotMachine.setState(ArmPivotStates.EStopped)
+                }
+
                 val target = output.armRadius
                     .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
                     .toMagEncoderTicks().value
+
 
                 extension.set(ControlMode.MotionMagic, target)
             }
@@ -250,8 +256,8 @@ object ArmSubsystem: Subsystem() {
     }
 
     override fun action() {
-        val armState = getCurrentArmState()
-        println(ArmKinematics.forward(armState))
+        //val armState = getCurrentArmState()
+        //println(SuperstructureController.output.armFeedForwardVoltage)
         //println(pivot.getPosition().toDegrees())
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
     }
@@ -295,8 +301,10 @@ object ArmSubsystem: Subsystem() {
             if (!extensionHomed) {
                 armExtensionMachine.setState(ArmExtensionStates.Homing)
             } else {
-                armExtensionMachine.setState(ArmExtensionStates.GoToSafe)
+                armExtensionMachine.setState(ArmExtensionStates.GoTo1Inch)
             }
+            armPivotMachine.setState(ArmPivotStates.Holding
+            )
         }
     }
 }

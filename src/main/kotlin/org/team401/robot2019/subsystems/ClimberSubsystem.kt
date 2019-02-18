@@ -6,11 +6,13 @@ import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.logic.LockingDelegate
+import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Milliseconds
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.Seconds
@@ -34,6 +36,8 @@ object ClimberSubsystem: Subsystem() {
     private val front = CTRESmartGearbox(frontTalon)
 
     enum class ClimberStates {
+        Disabled,
+        TestDown,
         Homing, //Home both sets of legs,  by driving them up at a fixed voltage until they stop moving
         Stowed, //Move both legs to their stowed position
         DownL2, //Moves both legs down to the position required to fall on to level 2
@@ -68,7 +72,7 @@ object ClimberSubsystem: Subsystem() {
     }
 
     private fun downwardsMoveBack(setpointBack: LinearDistanceMeasureInches) {
-        back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF)
+        //back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF) //TODO PUT ME BACK
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -78,7 +82,7 @@ object ClimberSubsystem: Subsystem() {
     }
 
     private fun downwardsMoveFront(setpointFront: LinearDistanceMeasureInches) {
-        front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF)
+        //front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF) //TODO PUT ME BACK
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -93,29 +97,75 @@ object ClimberSubsystem: Subsystem() {
      */
     var homed by LockingDelegate(false)
 
-    private val climberMachine: StateMachine<ClimberStates> = stateMachine {
+    val climberMachine: StateMachine<ClimberStates> = stateMachine {
+        state(ClimberStates.Disabled) {
+            action {
+                front.stop()
+                back.stop()
+            }
+        }
+        
+        state(ClimberStates.TestDown) {
+            entry {
+                println("back: ${SmartDashboard.getNumber("ffBack", 0.0)}")
+                println(back.master.config_kF(0, SmartDashboard.getNumber("ffBack", 0.0), 100))
+                println(front.master.config_kF(0, SmartDashboard.getNumber("ffFront", 0.0), 100))
+                downwardsMoveBack(4.0.Inches)
+                downwardsMoveFront(4.0.Inches)
+            }
+
+            exit {
+                front.stop()
+                back.stop()
+            }
+        }
+        
         state (ClimberStates.Homing) {
-            val ticker = Ticker(
-                {back.getVelocity() == 0.0.RadiansPerSecond && front.getVelocity() == 0.0.RadiansPerSecond},
+            val backTicker = Ticker(
+                { back.getVelocity() == 0.0.RadiansPerSecond },
                 ControlParameters.ClimberParameters.homingTime,
                 20.0.Milliseconds.toSeconds()
             )
+            
+            val frontTicker = Ticker(
+                { front.getVelocity() == 0.0.RadiansPerSecond },
+                ControlParameters.ClimberParameters.homingTime,
+                20.0.Milliseconds.toSeconds()
+            )
+            
+            var backDone = false
+            var frontDone = false
 
             entry {
-                ticker.reset()
+                backTicker.reset()
+                frontTicker.reset()
                 homed = false
                 back.set(ControlParameters.ClimberParameters.homingPower)
                 front.set(ControlParameters.ClimberParameters.homingPower)
-                println("Homing arm")
+                println("Homing climber")
             }
 
             action {
-                ticker.check {
+                backTicker.check {
                     //If we've stopped moving, and the time has elapsed, we're done
-                    //TODO ACTUALLY SET THE HOME ON THE TALON
-                    //TODO REALLY DO THIS PLEASE
-                    //TODO IF YOU FORGET THIS DON'T BLAME ME
-                    //TODO EXCEPT THAT I AM ME
+                    back.master.selectedSensorPosition = Geometry.ClimberGeometry.backHomeOffset
+                        .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
+                        .toMagEncoderTicks().value.roundToInt()
+                    
+                    back.stop()
+                    backDone = true
+                }
+                
+                frontTicker.check {
+                    front.master.selectedSensorPosition = Geometry.ClimberGeometry.frontHomeOffset
+                        .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
+                        .toMagEncoderTicks().value.roundToInt()
+                    
+                    front.stop()
+                    frontDone = true
+                }
+                
+                if (backDone && frontDone) {
                     homed = true
                     setState(ClimberStates.Stowed)
                 }
@@ -124,7 +174,7 @@ object ClimberSubsystem: Subsystem() {
             exit {
                 back.stop()
                 front.stop()
-                println("Arm homed")
+                println("Climber homed")
             }
         }
 
@@ -252,5 +302,8 @@ object ClimberSubsystem: Subsystem() {
                 climberMachine.setState(ClimberStates.Stowed)
             }
         }
+        
+        SmartDashboard.putNumber("ffBack", 0.0)
+        SmartDashboard.putNumber("ffFront", 0.0)
     }
 }

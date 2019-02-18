@@ -15,7 +15,7 @@ import org.team401.robot2019.config.HardwareMap
  *
  */
 object FloorPickupSubsystem: Subsystem() {
-    //private val piston = Solenoid(HardwareMap.FloorPickup.solenoidId)
+    private val piston = Solenoid(HardwareMap.FloorPickup.solenoidId)
     private val wheels = TalonSRX(HardwareMap.FloorPickup.intakeWheelsTalonId)
 
     enum class PickupStates {
@@ -29,16 +29,14 @@ object FloorPickupSubsystem: Subsystem() {
         Eject
     }
 
-    /*
     val pickupMachine: StateMachine<PickupStates> = commandMachine(
         stateMap(
             PickupStates.Stowed to false,
             PickupStates.Deployed to true
         )
     ) {
-        //piston.set(value)
+        piston.set(value)
     }
-    */
 
 
     val wheelsMachine: StateMachine<WheelsStates> = commandMachine(
@@ -50,29 +48,6 @@ object FloorPickupSubsystem: Subsystem() {
     ) {
         wheels.set(ControlMode.PercentOutput, value)
     }
-
-
-    /*
-    val wheelsMachine: StateMachine<WheelsStates> = stateMachine {
-        state(WheelsStates.Idle) {
-            action {
-                wheels.set(ControlMode.PercentOutput, 0.0)
-            }
-        }
-
-        state(WheelsStates.Eject) {
-            action {
-                wheels.set(ControlMode.PercentOutput, ControlParameters.FloorPickupParameters.ejectSpeed)
-            }
-        }
-
-        state(WheelsStates.Intake) {
-            action {
-                wheels.set(ControlMode.PercentOutput, ControlParameters.FloorPickupParameters.intakeSpeed)
-            }
-        }
-    }
-    */
 
     override fun setup() {
         wheels.inverted = false
