@@ -17,7 +17,11 @@ import org.team401.robot2019.control.superstructure.planning.profile.ProfileSegm
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.planning.profile.TrapezoidalProfilePoint
-
+/**
+ * @author Eli Jelesko
+ * @version 1/19/2019
+ *
+ */
 object ArmMotionPlanner{
     // 1. Calculate Path
     // 2. Calculate Point

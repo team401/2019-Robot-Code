@@ -9,7 +9,11 @@ import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import kotlin.math.abs
 
-
+/**
+ * @author Eli Jelesko
+ * @version 1/19/2019
+ *
+ */
 class Profile2d(private val segments: Array<ProfileSegment>) {
     // Find the two end points for superstructure profile generation
     private val startPoint = ArmKinematics.inverse(segments.first().start)

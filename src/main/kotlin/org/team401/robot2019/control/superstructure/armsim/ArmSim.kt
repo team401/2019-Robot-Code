@@ -35,7 +35,7 @@ object ArmSim {
         val ffVoltage = ArrayList<Double>()
 
         SuperstructureMotionPlanner.startUp(startArmState, startWristState)// TODO In real life, populate this function!!
-        SuperstructureMotionPlanner.requestMove(Point2d(0.0.Inches, (Geometry.ArmGeometry.minSafeArmLength + 5.0.Inches)))
+        SuperstructureMotionPlanner.requestMove(Point2d((0.0).Inches, Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches))
         SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWristState)
 
         while (!SuperstructureMotionPlanner.isDone()) {
