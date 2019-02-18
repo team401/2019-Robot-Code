@@ -13,7 +13,7 @@ import org.team401.robot2019.control.superstructure.planning.command.Superstruct
 import java.util.*
 
 object SuperstructureMotionPlanner {
-    private val commandQueue = LinkedList<SuperstructureCommand>()
+    val commandQueue = LinkedList<SuperstructureCommand>()
 
     /**
      * Maximum time in seconds that a command queue is allowed to run.
@@ -184,7 +184,7 @@ object SuperstructureMotionPlanner {
         reset()
         val currentPose = ArmKinematics.forward(lastObservedArmState)
         if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeArmLength) {
-            val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 0.01.Inches, lastObservedArmState.armAngle))
+            val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches, lastObservedArmState.armAngle))
             commandQueue.add(MoveSuperstructureCommand(currentPose, safePoint, activeTool))
             commandQueue.add(MoveSuperstructureCommand(safePoint, endPose, activeTool))
         } else {

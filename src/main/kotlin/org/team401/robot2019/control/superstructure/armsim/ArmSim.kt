@@ -15,6 +15,8 @@ import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.control.superstructure.planning.command.MoveSuperstructureCommand
 import kotlin.math.PI
 
 /**
@@ -30,13 +32,21 @@ object ArmSim {
         val time = ArrayList<Double>()
         var currentTime = 0.0
         val dt = 0.01
-        val startPoint = ArmKinematics.inverse(Point2d((-33.32845758162599).Inches, 3.385840402286736.Inches))
+        val startPoint = ArmKinematics.inverse(Point2d(14.527886757347915.Inches, 22.406082488310304.Inches))
         val startArmState = ArmState(startPoint.r, startPoint.theta, 0.0.RadiansPerSecond)
         val startWristState = WristState(PI.Radians, false, true)
         val ffVoltage = ArrayList<Double>()
 
         SuperstructureMotionPlanner.startUp(startArmState, startWristState)// TODO In real life, populate this function!!
-        SuperstructureMotionPlanner.requestMove(Point2d((0.0).Inches, 35.0.Inches))
+        SuperstructureMotionPlanner.requestMove(Point2d((27.0).Inches, 28.0.Inches))
+        /*
+        SuperstructureMotionPlanner.commandQueue.clear()
+        SuperstructureMotionPlanner.commandQueue.add(MoveSuperstructureCommand(
+            Point2d(14.527886757347916.Inches, 22.406082488310304.Inches),
+            Point2d(18.2796944981577.Inches, 28.192423965562504.Inches),
+            WristMotionPlanner.Tool.HatchPanelTool)
+        )
+        */
         SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWristState)
 
         while (!SuperstructureMotionPlanner.isDone()) {

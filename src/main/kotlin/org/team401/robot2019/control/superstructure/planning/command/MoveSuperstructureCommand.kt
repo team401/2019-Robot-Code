@@ -18,6 +18,7 @@ class MoveSuperstructureCommand(val start: Point2d, val end: Point2d, val tool: 
         ArmMotionPlanner.setDesiredTrajectory(start, end)
         //Tell the wrist motion planner to
         WristMotionPlanner.setToParallelMode(tool, end)
+        //println("Move set up")
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {

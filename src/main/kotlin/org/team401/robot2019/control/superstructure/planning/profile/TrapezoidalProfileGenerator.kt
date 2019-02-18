@@ -59,6 +59,8 @@ class TrapezoidalProfileGenerator(maxVelocity: AngularVelocityMeasureRadiansPerS
      * @param dt The time delta between now and the last time the function was called, in seconds
      */
     fun update(dt: Double): TrapezoidalProfilePoint {
+        //println("update started")
+        //println("start theta : $startPos, end theta : $endPos")
         when {
             !firstPhaseDone -> {
                 if((position < startPos + ((endPos - startPos) / 2.0) && !backwards) ||

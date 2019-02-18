@@ -77,7 +77,7 @@ object ArmMotionPlanner{
         val currentArmVelocity: AngularVelocityMeasureRadiansPerSecond
         val currentRadius: LinearDistanceMeasureInches
 
-        if (startTheta == endTheta) {
+        if (Math.abs(startTheta.value - endTheta.value) < 0.01) {
             currentArmPosition = startTheta
             currentArmVelocity = 0.0.RadiansPerSecond
             currentRadius = ArmKinematics.inverse(endPos).r
