@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure.planning
 
+import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.Seconds
@@ -15,6 +16,7 @@ import org.team401.robot2019.control.superstructure.planning.profile.LinearProfi
 import org.team401.robot2019.control.superstructure.planning.profile.Profile2d
 import org.team401.robot2019.control.superstructure.planning.profile.ProfileSegment
 import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.planning.profile.TrapezoidalProfilePoint
 /**
@@ -41,7 +43,7 @@ object ArmMotionPlanner{
 
     private var done = false
 
-    fun setDesiredTrajectory(startPos: Point2d, endPos: Point2d){
+    fun setDesiredTrajectory(startPos: Point2d, endPos: Point2d, minimumRadius: LinearDistanceMeasureInches){
         reset()
         ArmMotionPlanner.startPos = startPos
         ArmMotionPlanner.endPos = endPos
@@ -49,7 +51,7 @@ object ArmMotionPlanner{
         startTheta = ArmKinematics.inverse(ArmMotionPlanner.startPos).theta
         endTheta = ArmKinematics.inverse(ArmMotionPlanner.endPos).theta
 
-        path = calculatePath()
+        path = calculatePath(minimumRadius)
         profile = Profile2d(path)
         rotationProfile = TrapezoidalProfileGenerator(
             ControlParameters.ArmParameters.ROTATION_MAX_VELOCITY,
@@ -100,11 +102,12 @@ object ArmMotionPlanner{
         )
     }
 
-    private fun calculatePath(): Array<ProfileSegment>{
-        val armPath = ArmPath(LinearProfileSegment(
-            startPos,
-            endPos
-        ))
+    private fun calculatePath(minimumRadius: LinearDistanceMeasureInches): Array<ProfileSegment>{
+        val armPath = ArmPath(
+            LinearProfileSegment(startPos, endPos),
+            //Geometry.ArmGeometry.minSafeArmLength
+            minimumRadius
+        )
         println("start: $startPos, end: $endPos")
         return armPath.solve()
     }

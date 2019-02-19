@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure.planning.command
 
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.Point2d
@@ -12,10 +13,10 @@ import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
  * @version 2/12/2019
  *
  */
-class MoveSuperstructureCommand(val start: Point2d, val end: Point2d, val tool: WristMotionPlanner.Tool): SuperstructureCommand() {
+class MoveSuperstructureCommand(val start: Point2d, val end: Point2d, val tool: WristMotionPlanner.Tool, val minimumRadius: LinearDistanceMeasureInches): SuperstructureCommand() {
     override fun entry() {
         //Set the waypoints for the arm motion planner.  This should also reset it
-        ArmMotionPlanner.setDesiredTrajectory(start, end)
+        ArmMotionPlanner.setDesiredTrajectory(start, end, minimumRadius)
         //Tell the wrist motion planner to
         WristMotionPlanner.setToParallelMode(tool, end)
 

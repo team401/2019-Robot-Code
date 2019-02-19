@@ -1,12 +1,13 @@
 package org.team401.robot2019.control.superstructure.planning.profile
 
 import org.snakeskin.measure.Inches
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
-class ArmPath(private val path: LinearProfileSegment){
+class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDistanceMeasureInches){
     // Restricts the bounds of the start and end
     private val start = path.start
     private val end = path.end
@@ -16,7 +17,7 @@ class ArmPath(private val path: LinearProfileSegment){
     private val x1 = path.start.x
     private val x2 = path.end.x
 
-    private val r = Geometry.ArmGeometry.minSafeArmLength.value
+    private val r = minimumRadius.value
     //private val a = y1 - y2
     //private val b = x2 - x1
     //private val c = (x1 - x2) * y1 + (y2 - y1) * x1
@@ -28,9 +29,9 @@ class ArmPath(private val path: LinearProfileSegment){
         //println("intersects Circle : $intersectsCircle")
         var segments: Array<ProfileSegment>
 
-        if (start.withinCircle()) {
+        if (withinCircle(start)) {
             val pointPolar = ArmKinematics.inverse(start)
-            val out = PointPolar(Geometry.ArmGeometry.minSafeArmLength, pointPolar.theta)
+            val out = PointPolar(r.Inches, pointPolar.theta)
             //println("Within circle")
             return arrayOf(LinearProfileSegment(start, ArmKinematics.forward(out)))
         }
@@ -147,5 +148,13 @@ class ArmPath(private val path: LinearProfileSegment){
             return false
         }
         return true
+    }
+    private fun withinCircle(point: Point2d): Boolean{
+        val value = Math.sqrt(Math.pow(point.x.value, 2.0) + Math.pow(point.y.value, 2.0))
+        if (Math.abs(value - r) < 0.1){
+            return false
+        }
+
+        return value < r
     }
 }

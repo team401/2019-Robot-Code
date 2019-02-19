@@ -16,7 +16,6 @@ data class Point2d(val x: LinearDistanceMeasureInches, val y: LinearDistanceMeas
     private val MIN_X = MAX_X * -1.0
     private val MAX_Y = Geometry.ArmGeometry.maxY.value
     private val MIN_Y = Geometry.ArmGeometry.minY.value
-    private val r = Geometry.ArmGeometry.minSafeArmLength.value
 
     init {
         if (!withinBounds(x.value, MIN_X, MAX_X)){
@@ -24,10 +23,6 @@ data class Point2d(val x: LinearDistanceMeasureInches, val y: LinearDistanceMeas
         }
         if (!withinBounds(y.value, MIN_Y, MAX_Y)){
             throw InvalidPointException("Y coordinate is out of bounds. y = ${y.value}")
-        }
-
-        if (withinCircle()){
-            //throw InvalidPointException("Point ($x, $y) is within minimum circle")
         }
     }
 
@@ -38,12 +33,5 @@ data class Point2d(val x: LinearDistanceMeasureInches, val y: LinearDistanceMeas
     private fun withinBounds(value: Double, min: Double, max: Double):Boolean{
         return value >= min && value <= max
     }
-    fun withinCircle(): Boolean{
-        val value = Math.sqrt(Math.pow(x.value, 2.0) + Math.pow(y.value, 2.0))
-        if (Math.abs(value - r) < 0.1){
-            return false
-        }
 
-        return value < r
-    }
 }

@@ -11,6 +11,7 @@ import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.control.superstructure.planning.command.MoveSuperstructureCommand
 import org.team401.robot2019.control.superstructure.planning.command.SuperstructureCommand
 import java.util.*
+import kotlin.math.min
 
 object SuperstructureMotionPlanner {
     val commandQueue = LinkedList<SuperstructureCommand>()
@@ -171,13 +172,13 @@ object SuperstructureMotionPlanner {
         }
         if (startArmPose.y < Geometry.ArmGeometry.minSafeWristRotationHeight) { //If the arm is below the "virtual floor"
             //Before changing tools we need to raise up to the minimum height.  We'll stay at the same x-coordinate:
-            commandQueue.add(MoveSuperstructureCommand(startArmPose, adjustedArmPose, tool))
+            commandQueue.add(MoveSuperstructureCommand(startArmPose, adjustedArmPose, tool, Geometry.ArmGeometry.minSafeArmLength))
         }
         //Schedule the command to rotate the wrist
         //TODO add wrist command
         if (startArmPose.y < Geometry.ArmGeometry.minSafeWristRotationHeight) { //If the arm was below the "virtual floor"
             //Now that we've changed tools, we need to move back down to the original pose
-            commandQueue.add(MoveSuperstructureCommand(adjustedArmPose, startArmPose, tool))
+            commandQueue.add(MoveSuperstructureCommand(adjustedArmPose, startArmPose, tool, Geometry.ArmGeometry.minSafeArmLength))
         }
     }
 
@@ -187,12 +188,13 @@ object SuperstructureMotionPlanner {
     @Synchronized fun requestMove(endPose: Point2d) {
         reset()
         val currentPose = ArmKinematics.forward(lastObservedArmState)
+        val minimumRadius = Geometry.ArmGeometry.minSafeArmLength
         if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeArmLength) {
-            val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches, lastObservedArmState.armAngle))
-            commandQueue.add(MoveSuperstructureCommand(currentPose, safePoint, activeTool))
-            commandQueue.add(MoveSuperstructureCommand(safePoint, endPose, activeTool))
+            val safePoint = ArmKinematics.forward(PointPolar(minimumRadius + 0.1.Inches, lastObservedArmState.armAngle))
+            commandQueue.add(MoveSuperstructureCommand(currentPose, safePoint, activeTool, minimumRadius))
+            commandQueue.add(MoveSuperstructureCommand(safePoint, endPose, activeTool, minimumRadius))
         } else {
-            commandQueue.add(MoveSuperstructureCommand(currentPose, endPose, activeTool))
+            commandQueue.add(MoveSuperstructureCommand(currentPose, endPose, activeTool, minimumRadius))
         }
     }
 }

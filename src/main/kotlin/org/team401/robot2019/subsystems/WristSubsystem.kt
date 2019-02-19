@@ -57,6 +57,7 @@ object WristSubsystem: Subsystem() {
         EjectCargo,
         IntakeHatchPanel,
         ReleaseHatchPanel,
+        Idle,
         CargoClamped,
         CargoReleased,
         HatchClamped,
@@ -134,7 +135,7 @@ object WristSubsystem: Subsystem() {
         }
         state(ScoringStates.IntakeCargo){
             val sensingTimeout = Ticker(
-                {cargoSensor.get()},
+                { systemSeesCargo()},
                 ControlParameters.WristParameters.hasCargoTime,
                 20.0.Milliseconds.toSeconds()
             )
@@ -146,13 +147,41 @@ object WristSubsystem: Subsystem() {
             }
             action{
                 sensingTimeout.check {
-                    cargoSensor.get()
+                    systemSeesCargo()
+                    setState(ScoringStates.Idle)
                 }
+            }
+        }
+        state(ScoringStates.EjectCargo){
+            entry {
+                leftIntake.set(ControlMode.PercentOutput, 1.0)
+                rightIntake.set(ControlMode.PercentOutput, 1.0)
+                setState(ScoringStates.Idle)
             }
         }
         state(ScoringStates.IntakeHatchPanel){
             entry {
-
+                hatchPanelSolenoid.set(false)
+            }
+            action{
+                if(systemSeesHatch()){
+                    hatchPanelSolenoid.set(true)
+                    setState(ScoringStates.Idle)
+                }
+            }
+        }
+        state(ScoringStates.ReleaseHatchPanel){
+            entry {
+                hatchPanelSolenoid.set(false)
+                setState(ScoringStates.Idle)
+            }
+        }
+        state(ScoringStates.Idle){
+            entry {
+                hatchPanelSolenoid.set(true)
+                cargoClampSolenoid.set(true)
+                leftIntake.set(ControlMode.PercentOutput, 0.0)
+                rightIntake.set(ControlMode.PercentOutput, 0.0)
             }
         }
 
