@@ -65,7 +65,7 @@ object WristSubsystem: Subsystem() {
     }
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
-        if (setpoint >= 210.0.Degrees || setpoint <= (-170.0).Degrees) {
+        if (setpoint >= 210.0.Degrees || setpoint <= (-180.0).Degrees) {
             println("ILLEGAL WRIST COMMAND $setpoint")
             wristMachine.setState(WristStates.EStopped)
             return

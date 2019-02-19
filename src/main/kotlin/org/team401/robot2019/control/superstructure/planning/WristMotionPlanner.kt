@@ -3,6 +3,7 @@ package org.team401.robot2019.control.superstructure.planning
 import org.jetbrains.annotations.TestOnly
 import org.snakeskin.measure.*
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerMillisecond
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.geometry.ArmState
@@ -17,33 +18,40 @@ object WristMotionPlanner {
     private val NEGATIVE_X_OFFSET = (Math.PI).Radians
 
     //Tools on the wrist
-    enum class Tool(val angularOffset: AngularDistanceMeasureRadians) {
-        CargoTool((-Math.PI).Radians),
-        HatchPanelTool(0.0.Radians)
+    enum class Tool(val angularOffset: AngularDistanceMeasureRadians, val minimumRadius: LinearDistanceMeasureInches) {
+        CargoTool((-Math.PI).Radians, Geometry.ArmGeometry.cargoToolMinSafeLength),
+        HatchPanelTool(0.0.Radians, Geometry.ArmGeometry.hatchPanelToolMinSafeLength)
     }
 
     //Control modes for the wrist
     enum class ControlMode {
-        ParallelToFloor,
+        MaintainAngle,
         AngleCommand
     }
 
-    private var commandedMode = ControlMode.ParallelToFloor
+    private var commandedMode = ControlMode.MaintainAngle
     private var commandedAngle = 0.0.Radians
     private var commandedTool = Tool.HatchPanelTool
     private var commandedArmState = PointPolar(0.0.Inches, 0.0.Radians)
     private var commandedArmStateRectangular = Point2d(0.0.Inches, 0.0.Inches)
 
     /**
-     * Configures the wrist planner to keep the wrist parallel to the floor,
+     * Configures the wrist planner to keep the wrist at a set angle from the floor,
      * or snap to safe angles during periods where a gamepiece would be crushed between the wrist and the arm
      */
-    fun setToParallelMode(tool: Tool, finalState: Point2d) {
-        commandedMode = ControlMode.ParallelToFloor
-        commandedAngle = 0.0.Radians
+    fun setToMaintainAngleMode(angle: AngularDistanceMeasureRadians, tool: Tool, finalState: Point2d) {
+        commandedMode = ControlMode.MaintainAngle
+        commandedAngle = angle
         commandedTool = tool
         commandedArmStateRectangular = finalState
         commandedArmState = ArmKinematics.inverse(finalState)
+    }
+
+    /**
+     * Configures the wrist planner to keep the wrist parallel to the floor
+     */
+    fun setToParallelMode(tool: Tool, finalState: Point2d) {
+        setToMaintainAngleMode(0.0.Radians, tool, finalState)
     }
 
     /**
@@ -59,16 +67,6 @@ object WristMotionPlanner {
         commandedTool = tool
         commandedArmStateRectangular = finalState
         commandedArmState = ArmKinematics.inverse(finalState)
-    }
-
-    /**
-     * Switches the commanded tool, while keeping all other settings the same as the last command.
-     */
-    fun setToOppositeTool() {
-        commandedTool = when (commandedTool) {
-            Tool.CargoTool -> Tool.HatchPanelTool
-            Tool.HatchPanelTool -> Tool.CargoTool
-        }
     }
 
     private fun calculateFloorAngle(armAngle: AngularDistanceMeasureRadians,
@@ -101,7 +99,7 @@ object WristMotionPlanner {
                 )
             }
 
-            ControlMode.ParallelToFloor -> {
+            ControlMode.MaintainAngle -> {
                 val currentArmRectangular = ArmKinematics.forward(armState)
                 val sideOffset = when {
                     currentArmRectangular.x >= Geometry.ArmGeometry.wristParallelCollisionAngle -> POSITIVE_X_OFFSET
@@ -120,7 +118,7 @@ object WristMotionPlanner {
 
                 calculateFloorAngle(
                     armState.armAngle,
-                    0.0.Radians, //Parallel is always 0 relative to the floor
+                    commandedAngle,
                     commandedTool.angularOffset,
                     sideOffset
                 )

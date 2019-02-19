@@ -97,14 +97,28 @@ val Gamepad = HumanControls.f310(0){
 
     whenButton(Buttons.Y){
         pressed {
-            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo180)
+            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo180)
             //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoClamped)
         }
     }
+
+
+
     whenButton(Buttons.B){
         pressed {
-            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo90)
+            //SuperstructureMotionPlanner.reset()
+            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
+            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.CoordinatedControl)
+            //SuperstructureMotionPlanner.requestMove(Point2d(0.0.Inches, 40.0.Inches))
+            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo90)
             //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoReleased)
+        }
+
+        released {
+            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.EStopped)
+            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.EStopped)
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.EStopped)
         }
     }
     whenButton(Buttons.X){
@@ -114,7 +128,7 @@ val Gamepad = HumanControls.f310(0){
     }
     whenButton(Buttons.A){
         pressed {
-            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo0)
+            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo0)
             //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchReleased)
         }
     }

@@ -4,10 +4,13 @@ import org.snakeskin.logic.scalars.Scalar
 import org.snakeskin.logic.scalars.ScalarGroup
 import org.snakeskin.logic.scalars.SquareScalar
 import org.snakeskin.measure.*
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.snakeskin.template.PIDFTemplate
 import org.snakeskin.utility.CheesyDriveController
+import org.team401.robot2019.control.superstructure.geometry.ArmSetpoint
 import org.team401.robot2019.control.superstructure.geometry.Point2d
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import kotlin.math.roundToInt
 
 object ControlParameters{
@@ -76,13 +79,23 @@ object ControlParameters{
             override val kF = 0.84
         }
     }
-    object ArmPositions{
-        val ROCKET_TOP = Point2d(0.0.Inches, 0.0.Inches)
-        val ROCKET_MID = Point2d(0.0.Inches, 0.0.Inches)
-        val ROCKET_LOW = Point2d(0.0.Inches, 0.0.Inches)
-        val CARGO_SHIP = Point2d(0.0.Inches, 0.0.Inches)
-        val LOADING_STATION = Point2d(0.0.Inches, 0.0.Inches)
-        val HATCH_FLOOR_PICKUP = Point2d(0.0.Inches, 0.0.Inches)
+
+    /**
+     * All positions defined for scoring on the "front" (floor pickup side) of the robot.
+     * The motion planner will flip the setpoints automatically for the opposite side.
+     */
+    object ArmPositions {
+        //Rocket cargo positions
+        val rocketCargoBottom = ArmSetpoint(
+            Point2d(25.0.Inches, (-5.0).Inches),
+            WristMotionPlanner.Tool.CargoTool,
+            0.0.Radians
+        )
+        val rocketCargoMid = rocketCargoBottom.upBy(28.0.Inches)
+        val rocketCargoHigh = rocketCargoMid.upBy(28.0.Inches).withAngle(30.0.Degrees.toRadians())
+
+        //Floor pickup position
+
     }
 
     object DrivetrainCheesyDriveParameters: CheesyDriveController.DefaultParameters() {

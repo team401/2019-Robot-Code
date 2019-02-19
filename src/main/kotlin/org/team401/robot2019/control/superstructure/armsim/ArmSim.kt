@@ -39,7 +39,8 @@ object ArmSim {
         val ffVoltage = ArrayList<Double>()
 
         SuperstructureMotionPlanner.startUp(startArmState, startWristState)// TODO In real life, populate this function!!
-        SuperstructureMotionPlanner.requestMove(Point2d((0.0).Inches, 35.0.Inches))
+        //SuperstructureMotionPlanner.requestMove(Point2d((0.0).Inches, 35.0.Inches))
+        SuperstructureMotionPlanner.testRotationOnly((Math.PI).Radians)
         /*
         SuperstructureMotionPlanner.commandQueue.clear()
         SuperstructureMotionPlanner.commandQueue.add(MoveSuperstructureCommand(

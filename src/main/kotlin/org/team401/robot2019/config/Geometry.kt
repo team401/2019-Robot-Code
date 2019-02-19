@@ -19,9 +19,9 @@ object Geometry {
 
     object ArmGeometry{
         //All values with the pivot as the origin, wrist pivot as the endpoint
-        val maxX = 50.0.Inches
-        val maxY = 100.0.Inches
-        val minY = (-20.0).Inches
+        val maxX = 55.0.Inches
+        val maxY = 55.0.Inches
+        val minY = (-25.0).Inches
         val maxExtension = 0.0.Inches
         val maxArmLength = 0.0.Inches
 
@@ -29,7 +29,7 @@ object Geometry {
          * Distance that the reference point on the extension sticks out from the base when fully retracted.
          * This is used when homing the extension to set the right offset distance.
          */
-        val armExtensionStickout = 1.0.Inches
+        val armExtensionStickout = 2.125.Inches
 
         /**
          * Length of the fixed part of the arm in inches, plus the minimum possible extension length
@@ -43,11 +43,15 @@ object Geometry {
          */
         val minSafeArmLength = armBaseLength + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
+        val hatchPanelToolMinSafeLength = armBaseLength + 5.0.Inches
+        val cargoToolMinSafeLength = armBaseLength + 12.0.Inches
+
+
         /**
          * Maximum distance down from the pivot that the wrist is safe to rotate at
          * Essentially lowest y coordinate that it is safe to rotate the wrist at
          */
-        val minSafeWristRotationHeight = (-5.0).Inches
+        val minSafeWristRotationHeight = (-15.0).Inches
 
         /**
          * Minimum safe radius that it is safe to change tools at.  This allows an additional safety

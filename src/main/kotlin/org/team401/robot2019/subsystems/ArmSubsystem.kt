@@ -77,7 +77,7 @@ object ArmSubsystem: Subsystem() {
     }
 
     val armPivotMachine: StateMachine<ArmPivotStates> = stateMachine {
-        rejectAllIf(*ArmPivotStates.values()) {isInState(ArmPivotStates.EStopped)}
+        //rejectAllIf(*ArmPivotStates.values()) {isInState(ArmPivotStates.EStopped)}
 
         state (ArmPivotStates.EStopped) {
             action {
@@ -151,7 +151,8 @@ object ArmSubsystem: Subsystem() {
                         .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
                         .toMagEncoderTicks().value.roundToInt()
                     extensionHomed = true
-                    setState(ArmExtensionStates.GoTo1Inch)
+                    //setState(ArmExtensionStates.GoToSafe)
+                    setState(ArmExtensionStates.EStopped)
                 }
             }
 
@@ -169,7 +170,7 @@ object ArmSubsystem: Subsystem() {
 
         state (ArmExtensionStates.GoToSafe) {
             entry {
-                val target = Geometry.ArmGeometry.minSafeArmLength
+                val target = (Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches)
                     .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
                     .toMagEncoderTicks().value
 
@@ -180,7 +181,7 @@ object ArmSubsystem: Subsystem() {
         state (ArmExtensionStates.CoordinatedControl) {
             rtAction {
                 val output = SuperstructureController.output
-                if (output.armRadius > 47.0.Inches) {
+                if (output.armRadius > 50.0.Inches) {
                     println("ARM EXTENSION OVERTRAVEL!  STOPPING MOTION")
                     setState(ArmExtensionStates.EStopped)
                     armPivotMachine.setState(ArmPivotStates.EStopped)
@@ -256,8 +257,8 @@ object ArmSubsystem: Subsystem() {
     }
 
     override fun action() {
-        //val armState = getCurrentArmState()
-        //println(ArmKinematics.forward(armState))
+        val armState = getCurrentArmState()
+        println(ArmKinematics.forward(armState))
         //println(SuperstructureController.output.armFeedForwardVoltage)
         //println(pivot.getPosition().toDegrees())
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
@@ -267,7 +268,7 @@ object ArmSubsystem: Subsystem() {
         pivotLeftTalon.inverted = true
         pivotRightTalon.inverted = false
 
-        pivot.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
+        pivot.setNeutralMode(ISmartGearbox.CommonNeutralMode.COAST)
         pivot.setForwardLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         pivot.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         pivot.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
@@ -281,7 +282,7 @@ object ArmSubsystem: Subsystem() {
         extension.setForwardLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         extension.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
 
-        extension.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
+        extension.setNeutralMode(ISmartGearbox.CommonNeutralMode.COAST)
         extension.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
         extension.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
 
@@ -302,9 +303,10 @@ object ArmSubsystem: Subsystem() {
             if (!extensionHomed) {
                 armExtensionMachine.setState(ArmExtensionStates.Homing)
             } else {
-                armExtensionMachine.setState(ArmExtensionStates.GoToSafe)
+                //armExtensionMachine.setState(ArmExtensionStates.GoToSafe)
+                armExtensionMachine.setState(ArmExtensionStates.EStopped)
             }
-            armPivotMachine.setState(ArmPivotStates.Holding)
+            //armPivotMachine.setState(ArmPivotStates.Holding)
         }
     }
 }
