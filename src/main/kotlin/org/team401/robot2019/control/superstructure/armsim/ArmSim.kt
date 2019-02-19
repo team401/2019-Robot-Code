@@ -32,13 +32,14 @@ object ArmSim {
         val time = ArrayList<Double>()
         var currentTime = 0.0
         val dt = 0.01
-        val startPoint = ArmKinematics.inverse(Point2d(14.527886757347915.Inches, 22.406082488310304.Inches))
+        //val startPoint = ArmKinematics.inverse(Point2d(34.55772987804611.Inches, 0.2650596661423766.Inches))
+        val startPoint = ArmKinematics.inverse(Point2d((20.0).Inches, 0.0.Inches))
         val startArmState = ArmState(startPoint.r, startPoint.theta, 0.0.RadiansPerSecond)
         val startWristState = WristState(PI.Radians, false, true)
         val ffVoltage = ArrayList<Double>()
 
         SuperstructureMotionPlanner.startUp(startArmState, startWristState)// TODO In real life, populate this function!!
-        SuperstructureMotionPlanner.requestMove(Point2d((27.0).Inches, 28.0.Inches))
+        SuperstructureMotionPlanner.requestMove(Point2d((0.0).Inches, 35.0.Inches))
         /*
         SuperstructureMotionPlanner.commandQueue.clear()
         SuperstructureMotionPlanner.commandQueue.add(MoveSuperstructureCommand(

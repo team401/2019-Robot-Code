@@ -12,8 +12,10 @@ import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.measure.Degrees
+import org.snakeskin.measure.Milliseconds
 import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
+import org.snakeskin.utility.Ticker
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.superstructure.SuperstructureController
@@ -50,6 +52,11 @@ object WristSubsystem: Subsystem() {
         CoordinatedControl
     }
     enum class ScoringStates {
+        EStopped,
+        IntakeCargo,
+        EjectCargo,
+        IntakeHatchPanel,
+        ReleaseHatchPanel,
         CargoClamped,
         CargoReleased,
         HatchClamped,
@@ -73,6 +80,8 @@ object WristSubsystem: Subsystem() {
         ),
         { move(value)}
     ) {
+        rejectAllIf(*WristStates.values()){isInState(WristStates.EStopped)}
+
         state (WristStates.EStopped) {
             action {
                 rotation.set(0.0)
@@ -113,6 +122,40 @@ object WristSubsystem: Subsystem() {
     }
 
     val scoringMachine: StateMachine<ScoringStates> = stateMachine {
+        rejectAllIf(*ScoringStates.values()){isInState(ScoringStates.EStopped)}
+
+        state(ScoringStates.EStopped){
+            entry{
+                leftIntake.stop()
+                rightIntake.stop()
+                cargoClampSolenoid.set(true)
+                hatchPanelSolenoid.set(true)
+            }
+        }
+        state(ScoringStates.IntakeCargo){
+            val sensingTimeout = Ticker(
+                {cargoSensor.get()},
+                ControlParameters.WristParameters.hasCargoTime,
+                20.0.Milliseconds.toSeconds()
+            )
+            entry {
+                sensingTimeout.reset()
+                cargoClampSolenoid.set(false)
+                leftIntake.set(ControlMode.PercentOutput, -0.8)
+                rightIntake.set(ControlMode.PercentOutput, -0.8)
+            }
+            action{
+                sensingTimeout.check {
+                    cargoSensor.get()
+                }
+            }
+        }
+        state(ScoringStates.IntakeHatchPanel){
+            entry {
+
+            }
+        }
+
         state(ScoringStates.CargoClamped){
             entry {
                 cargoClampSolenoid.set(true)

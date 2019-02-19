@@ -58,17 +58,26 @@ class ArmPath(private val path: LinearProfileSegment){
 
     private fun findTangentPoint(x1: Double, y1: Double): Point2d {
         // x coordinate of tangent position
+        val B = -2 * x1 * Math.pow(r, 2.0)
+        val A = (Math.pow(y1, 2.0) + Math.pow(x1, 2.0))
+        val C =  -(Math.pow(y1, 2.0) * Math.pow(r, 2.0)) + (Math.pow(r, 4.0))
+        /*
         val d1 = (2 * x1 * Math.pow(r, 2.0) + Math.sqrt(Math.pow(2 * x1 * Math.pow(r, 2.0), 2.0)
                 - 4 * ((Math.pow(y1, 2.0) + Math.pow(x1, 2.0)) * (Math.pow(r, 4.0) - (Math.pow(y1, 2.0) * Math.pow(r, 2.0))))))/ (2 * (Math.pow(y1, 2.0) + Math.pow(x1, 2.0)))
 
 
         val d2 = (2 * x1 * Math.pow(r, 2.0) - Math.sqrt(Math.pow(2 * x1 * Math.pow(r, 2.0), 2.0)
                 - 4 * ((Math.pow(y1, 2.0) + Math.pow(x1, 2.0)) * (Math.pow(r, 4.0) - (Math.pow(y1, 2.0) * Math.pow(r, 2.0))))))/ (2 * (Math.pow(y1, 2.0) + Math.pow(x1, 2.0)))
+        */
+
+        val d1 = (-B + Math.sqrt(Math.pow(B, 2.0) - 4 * A * C))/ (2 * A)
+        val d2 = (-B - Math.sqrt(Math.pow(B, 2.0) - 4 * A * C))/ (2 * A)
 
         // y coordinate of tangent position
         var e1: Double
         var e2: Double
-        if (y1 != 0.0) { // There is a plus or minus here, adjust if it becomes a problem
+        if(y1 >= 0.001 || y1 <= -0.001){
+        //if (y1 != 0.0) { // There is a plus or minus here, adjust if it becomes a problem
             //println("y1 != 0.0")
             e1 = (Math.pow(r, 2.0) - (x1 * d1)) / y1
             e2 = (Math.pow(r, 2.0) - (x1 * d2)) / y1
@@ -87,13 +96,14 @@ class ArmPath(private val path: LinearProfileSegment){
 
         var d: Double
         var e: Double
-        if(this.x1 < this.x2){
+        if(this.x1 < this.x2 || e1 < e2){
             d = d2
             e = e2
         }else{
             d = d1
             e = e1
         }
+        //println("d : $d, e : $e")
 
         //print("Distance from origin to Tan position : ${Math.sqrt(Math.pow(d, 2.0) + Math.pow(e, 2.0))}")
 
@@ -103,7 +113,7 @@ class ArmPath(private val path: LinearProfileSegment){
     private fun findIntersectionPoints(): Boolean{
         val m = path.getM()
         val b = path.getB()
-        //println("m : $m, b : $b")
+        println("m : $m, b : $b")
         val Ay = Math.pow(m, 2.0) + 1
         val By = 2 * b
         val Cy = Math.pow(b, 2.0) - Math.pow(m, 2.0) * Math.pow(r, 2.0)

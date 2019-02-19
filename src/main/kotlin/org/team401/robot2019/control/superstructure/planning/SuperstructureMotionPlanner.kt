@@ -104,7 +104,6 @@ object SuperstructureMotionPlanner {
         lastObservedWristState = startWristState
         activeTool = startingTool
         reset()
-
     }
 
     @Synchronized

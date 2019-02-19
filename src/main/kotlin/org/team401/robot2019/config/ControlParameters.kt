@@ -67,6 +67,8 @@ object ControlParameters{
         val acceleration = 2.0.RevolutionsPerSecondPerSecond
         val cruiseVelocity = 2.0.RevolutionsPerSecond
 
+        val hasCargoTime = 0.25.Seconds
+
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 2.3
             override val kI = 0.0
