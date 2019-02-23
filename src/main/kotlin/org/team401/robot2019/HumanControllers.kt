@@ -5,6 +5,7 @@ import org.snakeskin.dsl.HumanControls
 import org.snakeskin.logic.Direction
 import org.snakeskin.measure.Inches
 import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.subsystems.*
@@ -31,119 +32,51 @@ val LeftStick = HumanControls.t16000m(0) {
 
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
-            DrivetrainSubsystem.setPose(Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(0.0)))
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing)
+        }
+        released {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
         }
     }
 }
 
 val RightStick = HumanControls.t16000m(1) {
 
-    /*
-    whenButton(Buttons.STICK_RIGHT) {
-        pressed {
-            FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Intake)
-        }
-        released {
-            FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
-        }
-    }
-
-    whenButton(Buttons.STICK_LEFT) {
-        pressed {
-            FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Eject)
-        }
-        released {
-            FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
-        }
-    }
-    */
 }
 
 
-val Gamepad = HumanControls.f310(0){
-    /*
-    whenButton(Buttons.A) {
+val Gamepad = HumanControls.f310(2){
+    whenButton(Buttons.Y) {
         pressed {
-            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.GoTo1Point5Foot)
+            SuperstructureRoutines.enterCC()
+            SuperstructureMotionPlanner.goHome()
         }
     }
 
     whenButton(Buttons.X) {
         pressed {
-            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.GoTo1Foot)
+            SuperstructureRoutines.switchTool()
         }
     }
 
-    whenButton(Buttons.Y) {
-        pressed {
-            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.GoTo1Inch)
-        }
-    }
+    //TODO floor pickup is button A
 
     whenButton(Buttons.B) {
         pressed {
-            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.GoTo2Foot)
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
-        }
-        released {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
-        }
-    }
-    */
-
-    /*
-    whenButton(Buttons.B) {
-        pressed {
-            SuperstructureMotionPlanner.requestMove(Point2d(27.0.Inches, 28.0.Inches))
-            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
-            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
+            SuperstructureRoutines.intake()
         }
 
         released {
-            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.EStopped)
-            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.EStopped)
-        }
-    }
-    */
-
-    whenButton(Buttons.Y){
-        pressed {
-            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo180)
-            //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoClamped)
+            SuperstructureRoutines.stopIntake()
         }
     }
 
-
-
-    whenButton(Buttons.B){
-        pressed {
-            //ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
-            //SuperstructureMotionPlanner.reset()
-            //ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
-            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
-            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.CoordinatedControl)
-            //SuperstructureMotionPlanner.requestMove(Point2d(0.0.Inches, 40.0.Inches))
-            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo90)
-            //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoReleased)
-        }
-
-        released {
-            //ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
-            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.EStopped)
-            //ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.EStopped)
-            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.EStopped)
+    whenHatChanged(Hats.D_PAD) {
+        when (it) {
+            Direction.NORTH -> SuperstructureRoutines.goToHigh(true) //TODO add in accessor
+            Direction.WEST -> SuperstructureRoutines.goToMid(true)
+            Direction.SOUTH -> SuperstructureRoutines.goToLow(true)
+            //TODO add cargo ship
         }
     }
-    whenButton(Buttons.X){
-        pressed {
-            //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchClamped)
-        }
-    }
-    whenButton(Buttons.A){
-        pressed {
-            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo0)
-            //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.HatchReleased)
-        }
-    }
-
 }

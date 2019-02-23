@@ -43,7 +43,7 @@ class SparkMaxGearbox(val master: CANSparkMax, vararg val slaves: CANSparkMax): 
     }
 
     override fun getOutputVoltage(): Double {
-        return master.appliedOutput
+        return master.busVoltage * master.appliedOutput
     }
 
     override fun set(controlMode: ISmartGearbox.CommonControlMode, setpoint: Double) {

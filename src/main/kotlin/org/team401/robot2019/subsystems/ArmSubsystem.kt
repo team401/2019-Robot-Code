@@ -151,8 +151,7 @@ object ArmSubsystem: Subsystem() {
                         .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
                         .toMagEncoderTicks().value.roundToInt()
                     extensionHomed = true
-                    //setState(ArmExtensionStates.GoToSafe)
-                    setState(ArmExtensionStates.EStopped)
+                    setState(ArmExtensionStates.GoToSafe)
                 }
             }
 
@@ -268,7 +267,7 @@ object ArmSubsystem: Subsystem() {
         pivotLeftTalon.inverted = true
         pivotRightTalon.inverted = false
 
-        pivot.setNeutralMode(ISmartGearbox.CommonNeutralMode.COAST)
+        pivot.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         pivot.setForwardLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         pivot.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         pivot.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
@@ -282,7 +281,7 @@ object ArmSubsystem: Subsystem() {
         extension.setForwardLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         extension.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
 
-        extension.setNeutralMode(ISmartGearbox.CommonNeutralMode.COAST)
+        extension.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         extension.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
         extension.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
 
@@ -299,16 +298,13 @@ object ArmSubsystem: Subsystem() {
 
         extension.setPIDF(ControlParameters.ArmParameters.ArmExtensionPIDF)
 
-        /*
         on (Events.ENABLED) {
             if (!extensionHomed) {
                 armExtensionMachine.setState(ArmExtensionStates.Homing)
             } else {
-                //armExtensionMachine.setState(ArmExtensionStates.GoToSafe)
-                armExtensionMachine.setState(ArmExtensionStates.EStopped)
+                armExtensionMachine.setState(ArmExtensionStates.GoToSafe)
             }
-            //armPivotMachine.setState(ArmPivotStates.Holding)
+            armPivotMachine.setState(ArmPivotStates.Holding)
         }
-        */
     }
 }

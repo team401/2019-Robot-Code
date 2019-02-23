@@ -14,7 +14,7 @@ import kotlin.math.atan2
 object Geometry {
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
         override val wheelRadius = 3.062954.Inches
-        override val wheelbase = 25.625.Inches
+        override val wheelbase = 26.5.Inches
     }
 
     object ArmGeometry{
@@ -24,6 +24,7 @@ object Geometry {
         val minY = (-25.0).Inches
         val maxExtension = 0.0.Inches
         val maxArmLength = 0.0.Inches
+
 
         /**
          * Distance that the reference point on the extension sticks out from the base when fully retracted.
@@ -58,6 +59,9 @@ object Geometry {
          * factor for switching tools.
          */
         val minSafeWristToolChangeRadius = minSafeArmLength + 1.0.Inches
+
+        val minToolChangeX = minSafeWristToolChangeRadius
+        val minToolChangeY = 0.0.Inches
 
         /**
          * Linear range around the origin in x of the arm to swap sides when entered.

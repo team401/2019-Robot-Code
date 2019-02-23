@@ -5,20 +5,12 @@ import org.knowm.xchart.SwingWrapper
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
-import org.snakeskin.measure.time.TimeMeasureSeconds
-import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.SuperstructureController
-import org.team401.robot2019.control.superstructure.planning.ArmMotionPlanner
-import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
-import org.team401.robot2019.control.superstructure.geometry.Point2d
-import org.team401.robot2019.control.superstructure.geometry.PointPolar
-import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
-import org.team401.robot2019.control.superstructure.planning.command.MoveSuperstructureCommand
-import org.team401.robot2019.control.superstructure.planning.command.SuperstructureCommand
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 import kotlin.math.PI
@@ -37,18 +29,24 @@ object ArmSim {
         var currentTime = 0.0
         val dt = 0.01
         //val startPoint = ArmKinematics.inverse(Point2d(34.55772987804611.Inches, 0.2650596661423766.Inches))
-        val startPoint = ArmKinematics.inverse(Point2d((20.0).Inches, 0.0.Inches))
+        val startPoint = ArmKinematics.inverse(Point2d(0.5774780124957187.Inches, 34.22012776342432.Inches))
         val startArmState = ArmState(startPoint.r, startPoint.theta, 0.0.RadiansPerSecond)
-        val startWristState = WristState(PI.Radians, false, true)
+        val startWristState = WristState(PI.Radians, false, false)
         val ffVoltage = ArrayList<Double>()
         val commands = hashMapOf<Double, SuperstructureControlOutput>()
 
-        SuperstructureMotionPlanner.startUp(startArmState, startWristState)// TODO In real life, populate this function!!
-        //SuperstructureMotionPlanner.requestMove(Point2d((0.0).Inches, 35.0.Inches))
-        SuperstructureMotionPlanner.testRotationOnly((Math.PI).Radians)
+        SuperstructureMotionPlanner.startUp(startArmState, startWristState, WristMotionPlanner.Tool.CargoTool)// TODO In real life, populate this function!!
+        SuperstructureMotionPlanner.requestMove(ArmSetpoint(Point2d(25.0.Inches, (-5.0).Inches), WristMotionPlanner.Tool.CargoTool, 0.0.Radians ))
+
+        /*
+        SuperstructureMotionPlanner.requestMove(
+            ArmSetpoint(Point2d((0.0).Inches, 35.0.Inches), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians))
+            */
+        //SuperstructureMotionPlanner.requestToolChange(WristMotionPlanner.Tool.CargoTool)
+
         /*
         SuperstructureMotionPlanner.commandQueue.clear()
-        SuperstructureMotionPlanner.commandQueue.add(MoveSuperstructureCommand(
+        SuperstructureMotionPlanner.commandQueue.add(MoveSuperstructureCommandStaticWrist(
             Point2d(14.527886757347916.Inches, 22.406082488310304.Inches),
             Point2d(18.2796944981577.Inches, 28.192423965562504.Inches),
             WristMotionPlanner.Tool.HatchPanelTool)

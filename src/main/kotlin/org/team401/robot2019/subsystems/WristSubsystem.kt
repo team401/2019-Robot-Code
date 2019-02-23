@@ -66,7 +66,7 @@ object WristSubsystem: Subsystem() {
     }
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
-        if (setpoint >= 210.0.Degrees || setpoint <= (-180.0).Degrees) {
+        if (setpoint > 210.0.Degrees || setpoint < (-185.0).Degrees) {
             println("ILLEGAL WRIST COMMAND $setpoint")
             wristMachine.setState(WristStates.EStopped)
             return
@@ -237,7 +237,7 @@ object WristSubsystem: Subsystem() {
     }
 
     override fun action() {
-        println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
+        //println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
         //println(rotation.getPosition().toDegrees())
     }
 
@@ -245,7 +245,7 @@ object WristSubsystem: Subsystem() {
         rotation.inverted = false
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-        rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2305 + (2048)
+        rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2396 + (2048)
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
 
@@ -261,10 +261,8 @@ object WristSubsystem: Subsystem() {
                 .value.roundToInt()
         )
 
-        /*
         on (Events.ENABLED) {
             wristMachine.setState(WristStates.Holding)
         }
-        */
     }
 }

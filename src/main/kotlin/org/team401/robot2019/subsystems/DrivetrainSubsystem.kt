@@ -4,12 +4,15 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
+import com.revrobotics.ControlType
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.RadiansPerSecondPerSecond
 import org.snakeskin.measure.RevolutionsPerMinute
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.LeftStick
@@ -21,7 +24,15 @@ import org.team401.robot2019.config.Physics
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.FeedforwardOnlyPathController
+import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
 import org.team401.taxis.diffdrive.odometry.OdometryTracker
+import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.geometry.Rotation2d
+import org.team401.taxis.geometry.Translation2d
+import org.team401.taxis.trajectory.TimedView
+import org.team401.taxis.trajectory.TrajectoryIterator
+import org.team401.taxis.trajectory.TrajectoryView
+import org.team401.taxis.trajectory.timing.TimedState
 
 /**
  * @author Cameron Earle
@@ -45,7 +56,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     PigeonIMU(HardwareMap.Drivetrain.pigeonImuId),
     Geometry.DrivetrainGeometry,
     Physics.DrivetrainDynamics,
-    FeedforwardOnlyPathController()
+    NonlinearFeedbackPathController(2.0, 0.7)
 ) {
     object ShifterStates: ShifterState(false, false)
 
@@ -57,7 +68,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
     enum class DriveStates {
         DisabedForFault,
-        OpenLoopOperatorControl
+        OpenLoopOperatorControl,
+        PathFollowing
     }
 
     enum class DriveFaults {
@@ -67,6 +79,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     private val cheesyController = CheesyDriveController(ControlParameters.DrivetrainCheesyDriveParameters)
 
     val stateEstimator = OdometryTracker(this)
+
+    const val gearRatioHigh = (50.0/28.0) * (64.0 / 15.0)
 
     val driveMachine: StateMachine<DriveStates> = stateMachine {
         state(DriveStates.DisabedForFault) {
@@ -91,16 +105,57 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
                 tank(output.left, output.right)
 
-                val leftWheelSpeed = Math.abs(left.getVelocity().value).RadiansPerSecond
-                val rightWheelSpeed = Math.abs(right.getVelocity().value).RadiansPerSecond
-                val leftMotorSpeed = Math.abs(left.master.encoder.velocity / 7.619048).RevolutionsPerMinute
-                val rightMotorSpeed = Math.abs(right.master.encoder.velocity / 7.619048).RevolutionsPerMinute
+                println(driveState.getLatestFieldToVehicle())
+            }
+        }
 
-                val leftDelta = leftMotorSpeed - leftWheelSpeed
-                val rightDelta = rightMotorSpeed - rightWheelSpeed
+        state (DrivetrainSubsystem.DriveStates.PathFollowing) {
+            entry {
+                DrivetrainSubsystem.setPose(Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(0.0)))
+                pathManager.reset()
+                pathManager.setTrajectory(
+                    TrajectoryIterator(TimedView(
+                        pathManager.generateTrajectory(
+                            false,
+                            listOf(
+                                Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)),
+                                Pose2d(10.0 * 12.0, 0.0, Rotation2d.fromDegrees(0.0))
+                            ),
+                            listOf(),
+                            14.0 * 12.0,
+                            14.0 * 12.0,
+                            10.0
+                        )
+                    ))
+                )
+            }
 
-                println("Left: ${leftDelta.toLinearVelocity(wheelRadius).toFeetPerSecond()}  ${leftDelta.toRadiansPerSecond()}\tRight: ${rightDelta.toLinearVelocity(
-                    wheelRadius).toFeetPerSecond()}  ${rightDelta.toRadiansPerSecond()}")
+            rtAction {
+                val output = pathManager.update(time, driveState.getFieldToVehicle(time))
+
+                val leftVelocityRpm = output.left_velocity.RadiansPerSecond.toRevolutionsPerMinute().value * gearRatioHigh
+                val rightVelocityRpm = output.right_velocity.RadiansPerSecond.toRevolutionsPerMinute().value * gearRatioHigh
+
+                val leftAccelRpmPerMs = output.left_accel.RadiansPerSecondPerSecond.toRevolutionsPerMinutePerMillisecond().value * gearRatioHigh
+                val rightAccelRpmPerMs = output.right_accel.RadiansPerSecondPerSecond.toRevolutionsPerMinutePerMillisecond().value * gearRatioHigh
+
+                val leftFfVolts = output.left_feedforward_voltage
+                val rightFfVolts = output.right_feedforward_voltage
+
+                val totalFfLeft = leftFfVolts + (ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD * leftAccelRpmPerMs)
+                val totalFfRight = rightFfVolts + (ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD * rightAccelRpmPerMs)
+
+                left.master.pidController.setReference(leftVelocityRpm, ControlType.kVelocity, 0, totalFfLeft)
+                right.master.pidController.setReference(rightVelocityRpm, ControlType.kVelocity, 0, totalFfRight)
+
+                SmartDashboard.putNumber("leftDesired", leftVelocityRpm)
+                SmartDashboard.putNumber("rightDesired", rightVelocityRpm)
+                SmartDashboard.putNumber("leftActual", left.master.encoder.velocity)
+                SmartDashboard.putNumber("rightActual", right.master.encoder.velocity)
+            }
+
+            exit {
+                stop()
             }
         }
 
@@ -115,7 +170,12 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         both {
             master.idleMode = CANSparkMax.IdleMode.kBrake
             master.setSmartCurrentLimit(40)
-            master.openLoopRampRate = .25
+            master.openLoopRampRate = 0.0//.25
+            master.closedLoopRampRate = 0.0
+            master.pidController.p = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kP
+            master.pidController.i = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kI
+            master.pidController.d = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD
+            master.pidController.ff = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kF
             master.motorType = CANSparkMaxLowLevel.MotorType.kBrushless
             slaves.forEach {
                 it.idleMode = CANSparkMax.IdleMode.kBrake

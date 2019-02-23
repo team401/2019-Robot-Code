@@ -80,22 +80,31 @@ object ControlParameters{
         }
     }
 
-    /**
-     * All positions defined for scoring on the "front" (floor pickup side) of the robot.
-     * The motion planner will flip the setpoints automatically for the opposite side.
-     */
     object ArmPositions {
         //Rocket cargo positions
-        val rocketCargoBottom = ArmSetpoint(
-            Point2d(25.0.Inches, (-5.0).Inches),
+        val rocketCargoBottomFront = ArmSetpoint(
+            Point2d(30.0.Inches, (-5.0).Inches),
             WristMotionPlanner.Tool.CargoTool,
             0.0.Radians
         )
-        val rocketCargoMid = rocketCargoBottom.upBy(28.0.Inches)
-        val rocketCargoHigh = rocketCargoMid.upBy(28.0.Inches).withAngle(30.0.Degrees.toRadians())
+        val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.0.Inches)
+        val rocketCargoHighFront = rocketCargoMidFront.upBy(28.0.Inches).withAngle(30.0.Degrees.toRadians())
+
+        val rocketCargoBottomBack = rocketCargoBottomFront.flipped()
+        val rocketCargoMidBack = rocketCargoMidFront.flipped()
+        val rocketCargoHighBack = rocketCargoHighFront.flipped()
 
         //Floor pickup position
 
+    }
+
+    object DrivetrainParameters {
+        object VelocityPIDFHigh: PIDFTemplate {
+            override val kP = 0.0
+            override val kI = 0.0
+            override val kD = 0.0
+            override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
+        }
     }
 
     object DrivetrainCheesyDriveParameters: CheesyDriveController.DefaultParameters() {

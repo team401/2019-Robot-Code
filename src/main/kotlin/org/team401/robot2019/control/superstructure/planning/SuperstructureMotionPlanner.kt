@@ -1,9 +1,6 @@
 package org.team401.robot2019.control.superstructure.planning
 
-import org.snakeskin.measure.Inches
-import org.snakeskin.measure.Radians
-import org.snakeskin.measure.RadiansPerSecond
-import org.snakeskin.measure.Seconds
+import org.snakeskin.measure.*
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.config.Geometry
@@ -49,14 +46,16 @@ object SuperstructureMotionPlanner {
     /**
      * Active "target" tool for the system.
      */
-    private var activeTool = WristMotionPlanner.Tool.HatchPanelTool
+    var activeTool = WristMotionPlanner.Tool.HatchPanelTool
+    private set
+    @Synchronized get
 
     /**
      * Active "target" tool angle for the system.
      */
     private var activeToolAngle = 0.0.Radians
 
-    private fun notActiveTool(): WristMotionPlanner.Tool {
+    @Synchronized fun notActiveTool(): WristMotionPlanner.Tool {
         return when (activeTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> WristMotionPlanner.Tool.CargoTool
             WristMotionPlanner.Tool.CargoTool -> WristMotionPlanner.Tool.HatchPanelTool
@@ -209,29 +208,82 @@ object SuperstructureMotionPlanner {
             }
         }
 
+        if (!isDone()) return //Don't do this unless our other steps are done
+        reset()
 
         val startArmPose = ArmKinematics.forward(lastObservedArmState) //Calculate the current arm pose
-        val adjustedArmPose = if (startArmPose.x < 0.0.Inches) { //TODO measure an actual valid x coordinate for tool change position
-            Point2d(
-                Math.min(startArmPose.x.toInches().value, -Geometry.ArmGeometry.minSafeWristToolChangeRadius.toInches().value).Inches,
-                Geometry.ArmGeometry.minSafeWristRotationHeight.toInches()
-            )
+        var hadToMove = false
+
+        val safeToolChangePolar =
+            if (startArmPose.x >= 0.0.Inches) {
+                ArmKinematics.inverse(Point2d(Geometry.ArmGeometry.minToolChangeX, Geometry.ArmGeometry.minToolChangeY))
+            } else {
+                ArmKinematics.inverse(Point2d((-1.0).Unitless * Geometry.ArmGeometry.minToolChangeX, Geometry.ArmGeometry.minToolChangeY))
+            }
+
+        if (startArmPose.x < Geometry.ArmGeometry.minToolChangeX) {
+            //Do a rotation only move from current pose to new pose
+            commandQueue.add(RotationOnlyCommand(safeToolChangePolar.theta, activeTool))
+            hadToMove = true
+        }
+
+        if (lastObservedArmState.armRadius <= safeToolChangePolar.r) {
+            //Do an extension only move from current pose to new pose
+            commandQueue.add(ExtensionOnlyCommand(safeToolChangePolar.r, activeTool))
+            hadToMove = true
+        }
+
+        //Change the tool
+        activeTool = notActiveTool()
+        commandQueue.add(SetWristAngleCommand(activeTool, lastObservedWristState.wristPosition, startArmPose))
+
+        if (hadToMove) {
+            //TODO move back, skipping for now
+        }
+    }
+
+    /**
+     * Forces the system to stop its current action and go to the safe home position.
+     */
+    @Synchronized fun goHome() {
+        reset()
+
+        //Determine the active tool from the current angle of the system.  This acts as a tool "reset" if something goes wrong
+        val currentPose = ArmKinematics.forward(lastObservedArmState)
+        //TODO fix this logic
+
+        /*
+        activeTool = if (currentPose.x >= 0.0.Inches) {
+            //We're on the right, so 0 to 180 is the hatch tool
+            if (lastObservedWristState.wristPosition.value in (-Math.PI / 2.0)..(Math.PI / 2.0)) {
+                //Active tool is hatch tool
+                WristMotionPlanner.Tool.HatchPanelTool
+            } else {
+                //Active tool is cargo tool
+                WristMotionPlanner.Tool.CargoTool
+            }
         } else {
-            Point2d(
-                Math.max(startArmPose.x.toInches().value, Geometry.ArmGeometry.minSafeWristToolChangeRadius.toInches().value).Inches,
-                Geometry.ArmGeometry.minSafeWristRotationHeight.toInches()
-            )
+            //We're on the left
+            if (lastObservedWristState.wristPosition.value in (-Math.PI / 2.0)..(Math.PI / 2.0)) {
+                //Active tool is cargo tool
+                WristMotionPlanner.Tool.CargoTool
+            } else {
+                //Active tool is hatch tool
+                WristMotionPlanner.Tool.HatchPanelTool
+            }
         }
-        if (startArmPose.y < Geometry.ArmGeometry.minSafeWristRotationHeight) { //If the arm is below the "virtual floor"
-            //Before changing tools we need to raise up to the minimum height.  We'll stay at the same x-coordinate:
-            commandQueue.add(MoveSuperstructureCommand(startArmPose, adjustedArmPose, tool, Geometry.ArmGeometry.minSafeArmLength))
+        */
+
+        activeTool = WristMotionPlanner.Tool.CargoTool
+
+        if (lastObservedArmState.armRadius < activeTool.minimumRadius) {
+            //We need to extend out to the minimum radius first
+            commandQueue.add(ExtensionOnlyCommand(activeTool.minimumRadius, activeTool))
         }
-        //Schedule the command to rotate the wrist
-        commandQueue.add(SetWristAngleCommand(notActiveTool(), lastObservedWristState.wristPosition, adjustedArmPose))
-        if (startArmPose.y < Geometry.ArmGeometry.minSafeWristRotationHeight) { //If the arm was below the "virtual floor"
-            //Now that we've changed tools, we need to move back down to the original pose
-            commandQueue.add(MoveSuperstructureCommand(adjustedArmPose, startArmPose, tool, Geometry.ArmGeometry.minSafeArmLength))
-        }
+        val safePoint = ArmKinematics.forward(PointPolar(activeTool.minimumRadius + 0.1.Inches, lastObservedArmState.armAngle))
+
+        //Now we need to move the arm to the safe location
+        commandQueue.add(MoveSuperstructureCommandStaticWrist(safePoint, Point2d(0.0.Inches, activeTool.minimumRadius + 0.1.Inches), activeTool, 0.0.Radians, activeTool.minimumRadius))
     }
 
     /**
@@ -243,23 +295,37 @@ object SuperstructureMotionPlanner {
             return
         }
 
+        if (!isDone()) return
         reset()
+
+        //TODO there is definitely a case here where we could end up pushing the extension into the floor.
+        //TODO if the radius is too short and we are already on the floor, this will happen
+        //TODO add checks to prevent this
         val currentPose = ArmKinematics.forward(lastObservedArmState)
         val targetPose = setpoint.point
-        val targetToolAngle = setpoint.toolAngle
         val minimumRadius = activeTool.minimumRadius + 1.0.Inches //TODO test if this is really necessary
         if (lastObservedArmState.armRadius < minimumRadius) {
             val safePoint = ArmKinematics.forward(PointPolar(minimumRadius + 0.1.Inches, lastObservedArmState.armAngle))
             commandQueue.add(ExtensionOnlyCommand(minimumRadius, activeTool))
-            commandQueue.add(MoveSuperstructureCommand(safePoint, targetPose, activeTool, minimumRadius))
+            commandQueue.add(
+                MoveSuperstructureCommandStaticWrist(
+                    safePoint,
+                    targetPose,
+                    activeTool,
+                    setpoint.toolAngle,
+                    minimumRadius
+                )
+            )
         } else {
-            commandQueue.add(MoveSuperstructureCommand(currentPose, targetPose, activeTool, minimumRadius))
+            commandQueue.add(
+                MoveSuperstructureCommandStaticWrist(
+                    currentPose,
+                    targetPose,
+                    activeTool,
+                    setpoint.toolAngle,
+                    minimumRadius
+                )
+            )
         }
-        commandQueue.add(SetWristAngleCommand(activeTool, targetToolAngle, targetPose))
-    }
-
-    @Synchronized fun testRotationOnly(angleSetpoint: AngularDistanceMeasureRadians) {
-        reset()
-        commandQueue.add(RotationOnlyCommand(angleSetpoint, activeTool))
     }
 }
