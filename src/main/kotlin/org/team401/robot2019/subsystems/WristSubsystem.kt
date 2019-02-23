@@ -15,6 +15,7 @@ import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Milliseconds
 import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
+import org.snakeskin.subsystem.SubsystemCheckContext
 import org.snakeskin.utility.Ticker
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.HardwareMap
@@ -236,7 +237,7 @@ object WristSubsystem: Subsystem() {
     }
 
     override fun action() {
-        //println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
+        println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
         //println(rotation.getPosition().toDegrees())
     }
 
@@ -260,8 +261,10 @@ object WristSubsystem: Subsystem() {
                 .value.roundToInt()
         )
 
+        /*
         on (Events.ENABLED) {
             wristMachine.setState(WristStates.Holding)
         }
+        */
     }
 }

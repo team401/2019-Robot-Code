@@ -258,7 +258,7 @@ object ArmSubsystem: Subsystem() {
 
     override fun action() {
         val armState = getCurrentArmState()
-        println(ArmKinematics.forward(armState))
+        //println(ArmKinematics.forward(armState))
         //println(SuperstructureController.output.armFeedForwardVoltage)
         //println(pivot.getPosition().toDegrees())
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
@@ -299,6 +299,7 @@ object ArmSubsystem: Subsystem() {
 
         extension.setPIDF(ControlParameters.ArmParameters.ArmExtensionPIDF)
 
+        /*
         on (Events.ENABLED) {
             if (!extensionHomed) {
                 armExtensionMachine.setState(ArmExtensionStates.Homing)
@@ -308,5 +309,6 @@ object ArmSubsystem: Subsystem() {
             }
             //armPivotMachine.setState(ArmPivotStates.Holding)
         }
+        */
     }
 }

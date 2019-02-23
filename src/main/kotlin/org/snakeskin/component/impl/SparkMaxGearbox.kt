@@ -91,7 +91,8 @@ class SparkMaxGearbox(val master: CANSparkMax, vararg val slaves: CANSparkMax): 
     }
 
     override fun setRampRate(secondsFromNeutralToFull: Double): Boolean {
-        return master.setRampRate(secondsFromNeutralToFull) == CANError.kOK
+        return master.setOpenLoopRampRate(secondsFromNeutralToFull) == CANError.kOK
+        && master.setClosedLoopRampRate(secondsFromNeutralToFull) == CANError.kOK
     }
 
     override var inverted: Boolean

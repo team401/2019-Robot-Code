@@ -1,8 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.20'
-    id "edu.wpi.first.GradleRIO" version "2019.2.1"
+    id "edu.wpi.first.GradleRIO" version "2019.3.2"
     id 'org.snakeskin.snakeskin-gradle' version '1.4'
-    id "com.snobot.simulator.plugin.SnobotSimulatorPlugin" version "2019-1.0.0" apply false
 }
 
 group 'org.team401'
@@ -32,26 +31,24 @@ repositories {
     }
 }
 
-apply plugin: com.snobot.simulator.plugin.SnobotSimulatorPlugin
-
-configurations {
-    snobotSimCompile
-}
-
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    
     compile wpi.deps.wpilib()
+    
     compile "com.ctre.phoenix:api-java:5.14.0"
-    nativeZip "com.ctre.phoenix:cci:5.14.0"
-    compile "com.revrobotics.frc:SparkMax-java:1.0.28"
-    compile "org.team401:Taxis:1.1.dirty"
+    nativeLib "com.ctre.phoenix:cci:5.14.0"
+    
+    compile "com.revrobotics.frc:SparkMax-java:1.1.9"
+    nativeLib "com.revrobotics.frc:SparkMax-driver:1.1.9"
+    
+    compile "org.team401:Taxis:1.2.dirty"
+    
     compile group: 'org.knowm.xchart', name: 'xchart', version: '3.5.2'
-
-    snobotSimCompile snobotSimJava()
 }
 
 snakeskin {
-    version "2.0rc5a"
+    version "2.0rc6"
     modules {
         core()
         frc()

@@ -118,6 +118,46 @@ object SuperstructureMotionPlanner {
         reset()
     }
 
+    /**
+     * Hacky solution to a dumb problem.  It appears that the motion command classes not being initially JIT compiled
+     * causes jerky motion on the first command submitted to the queue upon startup.  This function creates a fake
+     * profile and executes it 1000 times, which should be enough to cause the JIT compiler to statically compile the
+     * class.  It is entirely possible that there is a bug in the motion planner that causes this until a command is run,
+     * but this is unlikely as we are perfect and never make mistakes (please ignore 2017 robot).
+     */
+    @Synchronized fun preCompile() {
+        startUp(
+            ArmState(
+                Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches,
+                0.0.Radians,
+                0.0.RadiansPerSecond
+            ),
+            WristState(0.0.Radians, false, false),
+            WristMotionPlanner.Tool.HatchPanelTool
+        )
+
+        requestMove(ArmSetpoint(ArmKinematics.forward(
+            PointPolar(
+                Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches,
+                Math.PI.Radians
+            )), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians))
+
+        var time = 0.0
+        val dt = 0.1
+
+        for (i in 0 until 1000) {
+            SuperstructureMotionPlanner.update(time, dt,  ArmState(
+                Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches,
+                0.0.Radians,
+                0.0.RadiansPerSecond
+            ), WristState(0.0.Radians, false, false))
+            time += dt
+        }
+
+        startUp(ArmState(0.0.Inches, 0.0.Radians, 0.0.RadiansPerSecond),
+            WristState(0.0.Radians, false, false), WristMotionPlanner.Tool.HatchPanelTool)
+    }
+
     @Synchronized
     private fun reset(){
         commandQueue.clear()

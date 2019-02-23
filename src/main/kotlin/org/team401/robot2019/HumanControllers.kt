@@ -20,6 +20,15 @@ import org.team401.taxis.geometry.Translation2d
 val LeftStick = HumanControls.t16000m(0) {
     invertAxis(Axes.PITCH)
 
+    whenButton(Buttons.TRIGGER) {
+        pressed {
+            DrivetrainSubsystem.shift(DrivetrainSubsystem.ShifterStates.LOW)
+        }
+        released {
+            DrivetrainSubsystem.shift(DrivetrainSubsystem.ShifterStates.HIGH)
+        }
+    }
+
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
             DrivetrainSubsystem.setPose(Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(0.0)))
@@ -29,6 +38,7 @@ val LeftStick = HumanControls.t16000m(0) {
 
 val RightStick = HumanControls.t16000m(1) {
 
+    /*
     whenButton(Buttons.STICK_RIGHT) {
         pressed {
             FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Intake)
@@ -46,6 +56,7 @@ val RightStick = HumanControls.t16000m(1) {
             FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
         }
     }
+    */
 }
 
 
@@ -106,19 +117,21 @@ val Gamepad = HumanControls.f310(0){
 
     whenButton(Buttons.B){
         pressed {
+            //ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
             //SuperstructureMotionPlanner.reset()
-            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
-            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
-            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.CoordinatedControl)
+            //ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
+            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
+            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.CoordinatedControl)
             //SuperstructureMotionPlanner.requestMove(Point2d(0.0.Inches, 40.0.Inches))
             //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.GoTo90)
             //WristSubsystem.scoringMachine.setState(WristSubsystem.ScoringStates.CargoReleased)
         }
 
         released {
-            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.EStopped)
-            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.EStopped)
-            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.EStopped)
+            //ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
+            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.EStopped)
+            //ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.EStopped)
+            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.EStopped)
         }
     }
     whenButton(Buttons.X){

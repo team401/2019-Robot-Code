@@ -107,11 +107,12 @@ object ClimberSubsystem: Subsystem() {
         
         state(ClimberStates.TestDown) {
             entry {
-                println("back: ${SmartDashboard.getNumber("ffBack", 0.0)}")
-                println(back.master.config_kF(0, SmartDashboard.getNumber("ffBack", 0.0), 100))
-                println(front.master.config_kF(0, SmartDashboard.getNumber("ffFront", 0.0), 100))
-                downwardsMoveBack(4.0.Inches)
-                downwardsMoveFront(4.0.Inches)
+                back.master.config_kF(0, SmartDashboard.getNumber("ffBack", 0.0), 100)
+                front.master.config_kF(0, SmartDashboard.getNumber("ffFront", 0.0), 100)
+                back.master.config_kP(0, SmartDashboard.getNumber("pBack", 0.0), 100)
+                front.master.config_kP(0, SmartDashboard.getNumber("pFront", 0.0), 100)
+                downwardsMoveBack(10.0.Inches)
+                downwardsMoveFront(10.0.Inches)
             }
 
             exit {
@@ -251,6 +252,11 @@ object ClimberSubsystem: Subsystem() {
             clearFault(ClimberFaults.HomeLost)
             println("[Fault Cleared] Climber is homing")
         }
+
+
+        //debug
+        println("Back: ${back.getPosition().toLinearDistance(Geometry.ClimberGeometry.backPitchRadius).toInches()}\tFront: ${front.getPosition().toLinearDistance(Geometry.ClimberGeometry.frontPitchRadius).toInches()}")
+
     }
 
     private fun configureClimberMotorControllers() {
@@ -305,5 +311,7 @@ object ClimberSubsystem: Subsystem() {
         
         SmartDashboard.putNumber("ffBack", 0.0)
         SmartDashboard.putNumber("ffFront", 0.0)
+        SmartDashboard.putNumber("pBack", 0.0)
+        SmartDashboard.putNumber("pFront", 0.0)
     }
 }

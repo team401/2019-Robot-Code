@@ -7,6 +7,7 @@ import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.team401.robot2019.config.Geometry
+import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.planning.ArmMotionPlanner
 import org.team401.robot2019.control.superstructure.geometry.ArmState
@@ -17,6 +18,9 @@ import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.command.MoveSuperstructureCommand
+import org.team401.robot2019.control.superstructure.planning.command.SuperstructureCommand
+import javax.swing.JFrame
+import javax.swing.SwingUtilities
 import kotlin.math.PI
 
 /**
@@ -37,6 +41,7 @@ object ArmSim {
         val startArmState = ArmState(startPoint.r, startPoint.theta, 0.0.RadiansPerSecond)
         val startWristState = WristState(PI.Radians, false, true)
         val ffVoltage = ArrayList<Double>()
+        val commands = hashMapOf<Double, SuperstructureControlOutput>()
 
         SuperstructureMotionPlanner.startUp(startArmState, startWristState)// TODO In real life, populate this function!!
         //SuperstructureMotionPlanner.requestMove(Point2d((0.0).Inches, 35.0.Inches))
@@ -52,9 +57,10 @@ object ArmSim {
         SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWristState)
 
         while (!SuperstructureMotionPlanner.isDone()) {
-            currentTime += dt
 
             val output = SuperstructureController.output
+            commands[currentTime] = output
+            currentTime += dt
             //println("Radius: ${output.armRadius}, Angle: ${output.armAngle}")
 
             points.add(PointPolar(output.armRadius, output.armAngle))
@@ -91,5 +97,33 @@ object ArmSim {
         SwingWrapper(rChart).displayChart()
         SwingWrapper(thetaChart).displayChart()
         SwingWrapper(ffChart).displayChart()
+
+        val frame = JFrame("Graphics")
+        val canvas = SuperstructureCanvas(3.0)
+        canvas.setSize(400, 400)
+        frame.add(canvas)
+        frame.pack()
+        SwingUtilities.invokeLater {
+            frame.isVisible = true
+        }
+
+        commands.forEach {
+            SwingUtilities.invokeLater {
+                canvas.update(
+                    ArmState(
+                        it.value.armRadius,
+                        it.value.armAngle,
+                        it.value.armVelocity
+                    ),
+                    WristState(
+                        it.value.wristTheta,
+                        false, false
+                    )
+                )
+                println("repaint")
+
+                canvas.repaint()
+            }
+        }
     }
 }

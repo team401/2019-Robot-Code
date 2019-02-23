@@ -5,6 +5,7 @@ import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
@@ -30,13 +31,13 @@ import org.team401.taxis.diffdrive.odometry.OdometryTracker
 
 object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox> by PigeonPathFollowingDiffDrive(
     SparkMaxCTRESensoredGearbox(
-        TalonSRX(0), //TODO grab these from the ArmSubsystem subsystem
+        WristSubsystem.leftIntakeTalon,
         CANSparkMax(HardwareMap.Drivetrain.leftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.Drivetrain.leftMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.Drivetrain.leftRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
     ),
     SparkMaxCTRESensoredGearbox(
-        TalonSRX(0), //TODO grab these from the superstructure subsystem
+        WristSubsystem.rightIntakeTalon,
         CANSparkMax(HardwareMap.Drivetrain.rightFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.Drivetrain.rightMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.Drivetrain.rightRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
@@ -46,6 +47,14 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     Physics.DrivetrainDynamics,
     FeedforwardOnlyPathController()
 ) {
+    object ShifterStates: ShifterState(false, false)
+
+    private val shifter = Solenoid(0) //TODO hardware map
+
+    fun shift(state: Boolean) {
+        shifter.set(state)
+    }
+
     enum class DriveStates {
         DisabedForFault,
         OpenLoopOperatorControl
@@ -69,6 +78,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         state(DriveStates.OpenLoopOperatorControl) {
             entry {
                 cheesyController.reset()
+                shift(ShifterStates.HIGH)
             }
 
             action {
@@ -105,7 +115,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         both {
             master.idleMode = CANSparkMax.IdleMode.kBrake
             master.setSmartCurrentLimit(40)
-            master.rampRate = .25
+            master.openLoopRampRate = .25
             master.motorType = CANSparkMaxLowLevel.MotorType.kBrushless
             slaves.forEach {
                 it.idleMode = CANSparkMax.IdleMode.kBrake
@@ -142,10 +152,15 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
             println("[Fault Cleared] Drive motor controllers reconfigured")
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)
         }
+
+        //debug
+        //println("Left: ${left.getPosition().toDegrees()}\t Right: ${right.getPosition().toDegrees()}")
     }
 
     override fun setup() {
         configureDriveMotorControllers()
+
+        WristSubsystem.leftIntakeTalon.setSensorPhase(true) //TODO if we invert this in wrist, remove
 
         on(Events.TELEOP_ENABLED) {
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)
