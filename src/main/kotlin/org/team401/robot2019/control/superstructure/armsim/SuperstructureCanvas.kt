@@ -1,8 +1,6 @@
 package org.team401.robot2019.control.superstructure.armsim
 
-import org.snakeskin.measure.Inches
-import org.snakeskin.measure.Radians
-import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.*
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.geometry.ArmState
@@ -21,6 +19,15 @@ import kotlin.math.roundToInt
  *
  */
 class SuperstructureCanvas(val ppi: Double): Canvas() {
+    companion object {
+        private val cargoToolLength = 14.0.Inches
+        private val hatchToolLength = 12.0.Inches
+        private val upIndicatorLength = 3.0.Inches
+
+        private val originToFloor = (-23.0).Inches
+        private val originToFrame = 14.5.Inches
+    }
+
     private var armState = ArmState(0.0.Inches, 0.0.Radians, 0.0.RadiansPerSecond)
     private var wristState = WristState(0.0.Radians, false, false)
 
@@ -46,13 +53,33 @@ class SuperstructureCanvas(val ppi: Double): Canvas() {
     }
 
     /**
-     * Draws the coordinate grid on the graphics canvas
+     * Draws the coordinate grid on the graphics canvas, as well as the floor, frame perimeter, and extension limits
      */
     private fun drawWcs(g: Graphics2D) {
         g.stroke = BasicStroke(1.0f)
         g.color = Color.gray //Set to gray color
         g.drawLine(getOriginX(), 0, getOriginX(), size.height) //Draw y axis
-        g.drawLine(0, getOriginY(), size.width, getOriginY()) //Draw y axis
+        g.drawLine(0, getOriginY(), size.width, getOriginY()) //Draw x axis
+
+        g.stroke = BasicStroke(2.0f)
+        g.color = Color.cyan
+
+        val floorY = yToFrame(originToFloor)
+        g.drawLine(0, floorY, size.width, floorY)
+
+        val frameXRight = xToFrame(originToFrame)
+        val frameXLeft = xToFrame((-1.0).Unitless * originToFrame)
+
+        g.drawLine(frameXLeft, 0, frameXLeft, size.height)
+        g.drawLine(frameXRight, 0, frameXRight, size.height)
+
+        g.color = Color.red
+
+        val limitXRight = xToFrame(30.0.Inches + originToFrame)
+        val limitXLeft = xToFrame((-1.0).Unitless * (30.0.Inches + originToFrame))
+
+        g.drawLine(limitXLeft, 0, limitXLeft, size.height)
+        g.drawLine(limitXRight, 0, limitXRight, size.height)
     }
 
     /**
@@ -87,9 +114,43 @@ class SuperstructureCanvas(val ppi: Double): Canvas() {
         }
     }
 
+    /**
+     * Draws the wrist on the grid of the graphics canvas
+     */
+    private fun drawWrist(g: Graphics2D) {
+        val armEndpoint = ArmKinematics.forward(armState)
+
+        val endpointX = xToFrame(armEndpoint.x)
+        val endpointY = yToFrame(armEndpoint.y)
+
+        val wristAngleAdjusted = wristState.wristPosition - (Math.PI / 2.0).Radians + armState.armAngle
+        val upIndicatorAngle = wristAngleAdjusted + (Math.PI / 2.0).Radians
+        val hatchX = xToFrame((armEndpoint.x.value + (hatchToolLength.value * Math.cos(wristAngleAdjusted.value))).Inches)
+        val hatchY = yToFrame((armEndpoint.y.value + (hatchToolLength.value * Math.sin(wristAngleAdjusted.value))).Inches)
+
+        val cargoX = xToFrame((armEndpoint.x.value - (cargoToolLength.value * Math.cos(wristAngleAdjusted.value))).Inches)
+        val cargoY = yToFrame((armEndpoint.y.value - (cargoToolLength.value * Math.sin(wristAngleAdjusted.value))).Inches)
+
+        val upX = xToFrame((armEndpoint.x.value + (upIndicatorLength.value * Math.cos(upIndicatorAngle.value))).Inches)
+        val upY = yToFrame((armEndpoint.y.value + (upIndicatorLength.value * Math.sin(upIndicatorAngle.value))).Inches)
+
+        g.stroke = BasicStroke((1.0 * ppi).toFloat())
+        g.color = Color.yellow
+        g.drawLine(endpointX, endpointY, hatchX, hatchY)
+
+        g.stroke = BasicStroke((1.0 * ppi).toFloat())
+        g.color = Color.orange
+        g.drawLine(endpointX, endpointY, cargoX, cargoY)
+
+        g.stroke = BasicStroke((1.0 * ppi).toFloat())
+        g.color = Color.green
+        g.drawLine(endpointX, endpointY, upX, upY)
+    }
+
     override fun paint(g: Graphics) {
         val g2d = g as Graphics2D
         drawWcs(g2d)
         drawArm(g2d)
+        drawWrist(g2d)
     }
 }

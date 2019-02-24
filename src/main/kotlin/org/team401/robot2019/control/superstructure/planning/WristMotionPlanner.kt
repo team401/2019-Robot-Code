@@ -91,9 +91,15 @@ object WristMotionPlanner {
                     NEGATIVE_X_OFFSET
                 }
 
+                val commandMultiplier = if (sideOffset == POSITIVE_X_OFFSET) {
+                    1.0.Unitless
+                } else {
+                    (-1.0).Unitless
+                }
+
                 calculateFloorAngle(
                     commandedArmState.theta,
-                    commandedAngle,
+                    commandMultiplier * commandedAngle,
                     commandedTool.angularOffset,
                     sideOffset
                 )
@@ -107,18 +113,24 @@ object WristMotionPlanner {
                     else -> {
                         //In this case, we want to identify the direction of movement, and pick a flip this way
                         if (currentArmRectangular.x >= commandedArmStateRectangular.x) {
-                            //We're moving negative ("left"), so we want to switch tool offset now to the negative one
-                            NEGATIVE_X_OFFSET
-                        } else {
-                            //We're moving positive ("right"), so we want to switch tool offset now to the positive one
+                            //We're moving negative ("left"), so we want to switch tool offset now to the positive one
                             POSITIVE_X_OFFSET
+                        } else {
+                            //We're moving positive ("right"), so we want to switch tool offset now to the negative one
+                            NEGATIVE_X_OFFSET
                         }
                     }
                 }
 
+                val commandMultiplier = if (sideOffset == POSITIVE_X_OFFSET) {
+                    1.0.Unitless
+                } else {
+                    (-1.0).Unitless
+                }
+
                 calculateFloorAngle(
                     armState.armAngle,
-                    commandedAngle,
+                    commandMultiplier * commandedAngle,
                     commandedTool.angularOffset,
                     sideOffset
                 )

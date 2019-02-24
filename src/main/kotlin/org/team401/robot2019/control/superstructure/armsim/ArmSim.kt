@@ -2,6 +2,7 @@ package org.team401.robot2019.control.superstructure.armsim
 
 import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
+import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
@@ -26,7 +27,7 @@ object ArmSim {
 
     fun runSimulation(startPose: Point2d,
                       goal: ArmSetpoint,
-                      startWrist: WristState = WristState(PI.Radians, false, false),
+                      startWrist: WristState = WristState(0.0.Radians, false, false),
                       startTool: WristMotionPlanner.Tool = WristMotionPlanner.Tool.CargoTool): List<SimFrame> {
         val frames = arrayListOf<SimFrame>()
 
@@ -80,7 +81,7 @@ object ArmSim {
     }
 
     fun createSimulationGraphics(ppi: Double, data: List<SimFrame>) {
-        val frame = SuperstructureGraphicsFrame(ppi, 0.01, 24.0, data)
+        val frame = SuperstructureGraphicsFrame(ppi, 0.01, 15.0, data)
         SwingUtilities.invokeLater {
             frame.pack()
             frame.isVisible = true
@@ -96,6 +97,6 @@ object ArmSim {
 
 
         graphData(output)
-        createSimulationGraphics(4.0, output)
+        createSimulationGraphics(5.0, output)
     }
 }

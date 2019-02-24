@@ -18,7 +18,9 @@ class MoveSuperstructureCommandStaticWrist(val start: Point2d, val end: Point2d,
     override fun entry() {
         //Set the waypoints for the arm motion planner.  This should also reset it
         ArmMotionPlanner.setDesiredTrajectory(start, end, minimumRadius)
-        WristMotionPlanner.setToAngleMode(tool, wristAngle, end)
+        //WristMotionPlanner.setToAngleMode(tool, wristAngle, end)
+        //WristMotionPlanner.setToParallelMode(tool, end)
+        WristMotionPlanner.setToMaintainAngleMode(wristAngle, tool, end)
 
         println("STARTING MOVE: $start to $end")
     }
