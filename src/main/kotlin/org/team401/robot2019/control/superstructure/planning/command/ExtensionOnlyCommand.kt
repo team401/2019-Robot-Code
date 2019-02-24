@@ -20,6 +20,7 @@ class ExtensionOnlyCommand(val radius: LinearDistanceMeasureInches, val tool: Wr
     var armInitial: ArmState? = null
 
     override fun entry() {
+        println("Extending to ${radius}")
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {

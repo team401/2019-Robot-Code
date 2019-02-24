@@ -32,7 +32,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         if (withinCircle(start)) {
             val pointPolar = ArmKinematics.inverse(start)
             val out = PointPolar(r.Inches, pointPolar.theta)
-            //println("Within circle")
+            println("Within circle")
             return arrayOf(LinearProfileSegment(start, ArmKinematics.forward(out)))
         }
 

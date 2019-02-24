@@ -16,60 +16,51 @@ import javax.swing.SwingUtilities
 import kotlin.math.PI
 
 /**
- * @author Cameron Earle
+ * @author Eli Jelesko and Cameron Earle
  * @version 1/19/2019
  *
  */
 object ArmSim {
-    @JvmStatic
-    fun main(args: Array<String>) {
+    data class SimFrame(val time: Double,
+                        val command: SuperstructureControlOutput)
 
-        val points = ArrayList<PointPolar>()
-        val time = ArrayList<Double>()
+    fun runSimulation(startPose: Point2d,
+                      goal: ArmSetpoint,
+                      startWrist: WristState = WristState(PI.Radians, false, false),
+                      startTool: WristMotionPlanner.Tool = WristMotionPlanner.Tool.CargoTool): List<SimFrame> {
+        val frames = arrayListOf<SimFrame>()
+
         var currentTime = 0.0
         val dt = 0.01
-        //val startPoint = ArmKinematics.inverse(Point2d(34.55772987804611.Inches, 0.2650596661423766.Inches))
-        val startPoint = ArmKinematics.inverse(Point2d(0.5774780124957187.Inches, 34.22012776342432.Inches))
+
+        val startPoint = ArmKinematics.inverse(startPose)
         val startArmState = ArmState(startPoint.r, startPoint.theta, 0.0.RadiansPerSecond)
-        val startWristState = WristState(PI.Radians, false, false)
-        val ffVoltage = ArrayList<Double>()
-        val commands = hashMapOf<Double, SuperstructureControlOutput>()
 
-        SuperstructureMotionPlanner.startUp(startArmState, startWristState, WristMotionPlanner.Tool.CargoTool)// TODO In real life, populate this function!!
-        SuperstructureMotionPlanner.requestMove(ArmSetpoint(Point2d(25.0.Inches, (-5.0).Inches), WristMotionPlanner.Tool.CargoTool, 0.0.Radians ))
+        SuperstructureMotionPlanner.startUp(startArmState, startWrist, startTool)
+        SuperstructureMotionPlanner.requestMove(goal)
 
-        /*
-        SuperstructureMotionPlanner.requestMove(
-            ArmSetpoint(Point2d((0.0).Inches, 35.0.Inches), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians))
-            */
-        //SuperstructureMotionPlanner.requestToolChange(WristMotionPlanner.Tool.CargoTool)
-
-        /*
-        SuperstructureMotionPlanner.commandQueue.clear()
-        SuperstructureMotionPlanner.commandQueue.add(MoveSuperstructureCommandStaticWrist(
-            Point2d(14.527886757347916.Inches, 22.406082488310304.Inches),
-            Point2d(18.2796944981577.Inches, 28.192423965562504.Inches),
-            WristMotionPlanner.Tool.HatchPanelTool)
-        )
-        */
-        SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWristState)
+        SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWrist)
 
         while (!SuperstructureMotionPlanner.isDone()) {
-
             val output = SuperstructureController.output
-            commands[currentTime] = output
+            frames.add(SimFrame(currentTime, output))
+
             currentTime += dt
             //println("Radius: ${output.armRadius}, Angle: ${output.armAngle}")
-
-            points.add(PointPolar(output.armRadius, output.armAngle))
-            time.add(currentTime)
 
             val currentArmState = ArmState(output.armRadius, output.armAngle, output.armVelocity)
             val currentWristState = WristState(output.wristTheta, false, false)
 
             SuperstructureMotionPlanner.update(currentTime, dt, currentArmState, currentWristState)
-            ffVoltage.add(SuperstructureController.output.armFeedForwardVoltage)
         }
+
+        return frames
+    }
+
+    fun graphData(frames: List<SimFrame>) {
+        val time = frames.map { it.time }
+        val points = frames.map { PointPolar(it.command.armRadius, it.command.armAngle) }
+        val ffVoltage = frames.map { it.command.armFeedForwardVoltage }
 
         val xSeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).x.value }
         val ySeries = DoubleArray(points.size) { ArmKinematics.forward(points[it]).y.value }
@@ -77,15 +68,6 @@ object ArmSim {
         val thetaSeries = DoubleArray(points.size) { points[it].theta.value }
         val timeSeries = DoubleArray(time.size) { time[it]}
         val voltageSeries = DoubleArray(ffVoltage.size) { ffVoltage[it] }
-
-        //println("Time series length: ${timeSeries.size}")
-        //println("Radius series length: ${rSeries.size}")
-
-
-        //val sliceSeries = DoubleArray(polar.size) { polar[it].first }
-        //val rSeries = DoubleArray(points.size) { points[it].second.r }
-        //val thetaSeries = DoubleArray(points.size) { Math.toDegrees(points[it].second.theta) }
-
 
         val xyChart = QuickChart.getChart("XY Pose", "x", "y", "y(x)", xSeries, ySeries)
         val rChart = QuickChart.getChart("ArmSubsystem Radius vs Time", "Time", "Radius", "r(t)", timeSeries, rSeries)
@@ -95,33 +77,25 @@ object ArmSim {
         SwingWrapper(rChart).displayChart()
         SwingWrapper(thetaChart).displayChart()
         SwingWrapper(ffChart).displayChart()
+    }
 
-        val frame = JFrame("Graphics")
-        val canvas = SuperstructureCanvas(3.0)
-        canvas.setSize(400, 400)
-        frame.add(canvas)
-        frame.pack()
+    fun createSimulationGraphics(ppi: Double, data: List<SimFrame>) {
+        val frame = SuperstructureGraphicsFrame(ppi, 0.01, 24.0, data)
         SwingUtilities.invokeLater {
+            frame.pack()
             frame.isVisible = true
         }
+    }
 
-        commands.forEach {
-            SwingUtilities.invokeLater {
-                canvas.update(
-                    ArmState(
-                        it.value.armRadius,
-                        it.value.armAngle,
-                        it.value.armVelocity
-                    ),
-                    WristState(
-                        it.value.wristTheta,
-                        false, false
-                    )
-                )
-                println("repaint")
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val output = runSimulation(Point2d(30.0.Inches, 0.0.Inches), ArmSetpoint(
+            Point2d(0.0.Inches, 55.0.Inches), WristMotionPlanner.Tool.CargoTool, 0.0.Radians
+        )
+        )
 
-                canvas.repaint()
-            }
-        }
+
+        graphData(output)
+        createSimulationGraphics(4.0, output)
     }
 }

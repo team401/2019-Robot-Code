@@ -15,6 +15,7 @@ abstract class SuperstructureCommand() {
 
     fun update(dt: Double, armState: ArmState, wristState: WristState) {
         if (!isStarted) {
+            println("Starting ${javaClass.simpleName}")
             entry()
             isStarted = true
         } else {
