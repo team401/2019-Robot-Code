@@ -6,6 +6,7 @@ import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
+import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.*
@@ -90,13 +91,13 @@ object ArmSim {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val output = runSimulation(Point2d((0.0).Inches, 40.0.Inches), ArmSetpoint(
+        val output = runSimulation(Point2d((0.0).Inches, Geometry.ArmGeometry.maxY), ArmSetpoint(
             Point2d((40.0).Inches, 0.0.Inches), WristMotionPlanner.Tool.CargoTool, 0.0.Radians
         )
         )
 
 
         graphData(output)
-        createSimulationGraphics(5.0, output)
+        createSimulationGraphics(3.0, output)
     }
 }
