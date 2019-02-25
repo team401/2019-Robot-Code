@@ -3,7 +3,6 @@ package org.team401.robot2019.control.superstructure.planning.profile
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.control.superstructure.geometry.Point2d
-import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
@@ -34,6 +33,9 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
             val out = PointPolar(r.Inches, pointPolar.theta)
             println("Within circle")
             return arrayOf(LinearProfileSegment(start, ArmKinematics.forward(out)))
+        }
+        if(withinCircle(end)){
+            throw Point2d.InvalidPointException("End point is within minimum circle")
         }
 
         if (intersectsCircle) {
@@ -71,8 +73,17 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
                 - 4 * ((Math.pow(y1, 2.0) + Math.pow(x1, 2.0)) * (Math.pow(r, 4.0) - (Math.pow(y1, 2.0) * Math.pow(r, 2.0))))))/ (2 * (Math.pow(y1, 2.0) + Math.pow(x1, 2.0)))
         */
 
-        val d1 = (-B + Math.sqrt(Math.pow(B, 2.0) - 4 * A * C))/ (2 * A)
-        val d2 = (-B - Math.sqrt(Math.pow(B, 2.0) - 4 * A * C))/ (2 * A)
+        val discriminant = Math.pow(B, 2.0) - 4 * A * C
+        var d1: Double
+        var d2: Double
+
+        if( discriminant < 0.0 && discriminant >= -0.000001) {
+            d1 = -B / (2 * A)
+            d2 = d1
+        }else{
+            d1 = (-B + Math.sqrt(Math.pow(B, 2.0) - 4 * A * C))/ (2 * A)
+            d2 = (-B - Math.sqrt(Math.pow(B, 2.0) - 4 * A * C))/ (2 * A)
+        }
 
         // y coordinate of tangent position
         var e1: Double
@@ -83,6 +94,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
             e1 = (Math.pow(r, 2.0) - (x1 * d1)) / y1
             e2 = (Math.pow(r, 2.0) - (x1 * d2)) / y1
         }else{
+            //println("y1 == 0.0")
             e1 = Math.sqrt(x1 * d1 - Math.pow(d1, 2.0))
             e2 = Math.sqrt(x1 * d2 - Math.pow(d2, 2.0))
         }
@@ -97,12 +109,37 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
 
         var d: Double
         var e: Double
+        /*
         if(this.x1 < this.x2 || e1 < e2){
             d = d2
             e = e2
         }else{
             d = d1
             e = e1
+        }
+        */
+        if(e1 <= e2){ // Going "backwards"
+            e = e2
+            if(withinTolerance(x1, 0.0, 0.0001)) {
+                if (this.x1 < this.x2) {
+                    d = if (d1 < d2) {
+                        d2
+                    } else {
+                        d1
+                    }
+                } else {
+                    d = if (d1 < d2) {
+                        d1
+                    } else {
+                        d2
+                    }
+                }
+            }else{
+                d = d2
+            }
+        }else{
+            e = e1
+            d = d1
         }
         //println("d : $d, e : $e")
 
@@ -114,7 +151,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
     private fun findIntersectionPoints(): Boolean{
         val m = path.getM()
         val b = path.getB()
-        println("m : $m, b : $b")
+        //println("m : $m, b : $b")
         val Ay = Math.pow(m, 2.0) + 1
         val By = 2 * b
         val Cy = Math.pow(b, 2.0) - Math.pow(m, 2.0) * Math.pow(r, 2.0)
@@ -156,5 +193,9 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         }
 
         return value < r
+    }
+    private fun withinTolerance(value: Double, target: Double, tolerance: Double): Boolean{
+        return Math.abs(value - target) < Math.abs(tolerance)
+
     }
 }

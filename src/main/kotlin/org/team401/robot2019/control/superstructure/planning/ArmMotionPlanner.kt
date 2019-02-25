@@ -108,7 +108,7 @@ object ArmMotionPlanner{
             //Geometry.ArmGeometry.minSafeArmLength
             minimumRadius
         )
-        println("start: $startPos, end: $endPos")
+        //println("start: $startPos, end: $endPos")
         return armPath.solve()
     }
 

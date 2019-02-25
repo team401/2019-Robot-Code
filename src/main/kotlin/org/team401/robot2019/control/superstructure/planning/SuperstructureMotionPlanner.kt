@@ -306,7 +306,7 @@ object SuperstructureMotionPlanner {
         val minimumRadius = activeTool.minimumRadius + 1.0.Inches //TODO test if this is really necessary
         if (lastObservedArmState.armRadius < minimumRadius) {
             val safePoint = ArmKinematics.forward(PointPolar(minimumRadius + 0.1.Inches, lastObservedArmState.armAngle))
-            commandQueue.add(ExtensionOnlyCommand(minimumRadius, activeTool))
+            commandQueue.add(ExtensionOnlyCommand(minimumRadius + 0.1.Inches, activeTool))
             commandQueue.add(
                 MoveSuperstructureCommandStaticWrist(
                     safePoint,

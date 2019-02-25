@@ -90,8 +90,8 @@ object ArmSim {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val output = runSimulation(Point2d(30.0.Inches, 0.0.Inches), ArmSetpoint(
-            Point2d(0.0.Inches, 55.0.Inches), WristMotionPlanner.Tool.CargoTool, 0.0.Radians
+        val output = runSimulation(Point2d((0.0).Inches, 40.0.Inches), ArmSetpoint(
+            Point2d((40.0).Inches, 0.0.Inches), WristMotionPlanner.Tool.CargoTool, 0.0.Radians
         )
         )
 
