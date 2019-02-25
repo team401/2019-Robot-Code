@@ -4,6 +4,7 @@ import org.snakeskin.logic.LowPass
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.WristState
@@ -24,7 +25,13 @@ import kotlin.math.roundToLong
  * @version 2/23/2019
  *
  */
-class SuperstructureGraphicsFrame(ppi: Double, val dt: Double, fps: Double, val data: List<ArmSim.SimFrame>): JFrame("Arm Simulation") {
+class SuperstructureGraphicsFrame(ppi: Double,
+                                  val dt: Double,
+                                  fps: Double,
+                                  val data: List<ArmSim.SimFrame>,
+                                  cargoToolLength: LinearDistanceMeasureInches,
+                                  hatchToolLength: LinearDistanceMeasureInches
+): JFrame("Arm Simulation") {
     companion object {
         val fakeWristVelocity = (2.0 * Math.PI).RadiansPerSecond //Velocity to rotate the wrist at during snaps
     }
@@ -40,9 +47,9 @@ class SuperstructureGraphicsFrame(ppi: Double, val dt: Double, fps: Double, val 
     private val stepFwdButton = JButton("❚▶")
     private val resetButton = JButton("Reset")
     private val speedSpinner = JSpinner(SpinnerNumberModel(1.0, 0.0, Double.POSITIVE_INFINITY, 0.1))
-    private val dataLabel = JLabel("Arm Length: 000.000 in  Arm Angle: 000.000 deg  Wrist Angle: 000.000 deg")
+    private val dataLabel = JLabel("T: 000.000 sec  Arm Length: 000.000 in  Arm Angle: 000.000 deg  Wrist Angle: 000.000 deg")
 
-    private val canvas = SuperstructureCanvas(ppi)
+    private val canvas = SuperstructureCanvas(ppi, cargoToolLength, hatchToolLength)
 
     private val decFmt = DecimalFormat("###.###")
 
@@ -62,7 +69,7 @@ class SuperstructureGraphicsFrame(ppi: Double, val dt: Double, fps: Double, val 
         val point = data.first { it.time >= activeTime }
         val armState = ArmState(point.command.armRadius, point.command.armAngle, point.command.armVelocity)
         val wristState = WristState(point.command.wristTheta, false, false)
-        dataLabel.text = "Arm Length: ${decFmt.format(armState.armRadius.value)} in  Arm Angle: ${decFmt.format(armState.armAngle.toDegrees().value)} deg  Wrist Angle: ${decFmt.format(wristState.wristPosition.toDegrees().value)} deg"
+        dataLabel.text = "T: ${decFmt.format(point.time)}  Arm Length: ${decFmt.format(armState.armRadius.value)} in  Arm Angle: ${decFmt.format(armState.armAngle.toDegrees().value)} deg  Wrist Angle: ${decFmt.format(wristState.wristPosition.toDegrees().value)} deg"
         canvas.update(armState, wristState)
         canvas.repaint()
         validate()
@@ -103,13 +110,15 @@ class SuperstructureGraphicsFrame(ppi: Double, val dt: Double, fps: Double, val 
         canvasPane.add(canvas, BorderLayout.CENTER)
         add(canvasPane, BorderLayout.CENTER)
 
-        val lowerPane = JPanel()
+        val lowerPane = JPanel(BorderLayout())
+
+        val controlsPane = JPanel()
         lowerPane.border = BorderFactory.createLineBorder(Color.black)
-        lowerPane.add(stepRevButton)
-        lowerPane.add(playButton)
-        lowerPane.add(pauseButton)
-        lowerPane.add(stepFwdButton)
-        lowerPane.add(resetButton)
+        controlsPane.add(stepRevButton)
+        controlsPane.add(playButton)
+        controlsPane.add(pauseButton)
+        controlsPane.add(stepFwdButton)
+        controlsPane.add(resetButton)
 
         (speedSpinner.editor as JSpinner.NumberEditor).textField.columns = 4
 
@@ -117,8 +126,9 @@ class SuperstructureGraphicsFrame(ppi: Double, val dt: Double, fps: Double, val 
         speedPane.add(JLabel("Playback Speed:"))
         speedPane.add(speedSpinner)
 
-        lowerPane.add(speedPane)
-        lowerPane.add(dataLabel)
+        controlsPane.add(speedPane)
+        lowerPane.add(controlsPane, BorderLayout.PAGE_START)
+        lowerPane.add(dataLabel, BorderLayout.PAGE_END)
 
         add(lowerPane, BorderLayout.PAGE_END)
 

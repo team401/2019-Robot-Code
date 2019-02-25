@@ -6,6 +6,7 @@ import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.SuperstructureController
@@ -81,8 +82,8 @@ object ArmSim {
         SwingWrapper(ffChart).displayChart()
     }
 
-    fun createSimulationGraphics(ppi: Double, data: List<SimFrame>) {
-        val frame = SuperstructureGraphicsFrame(ppi, 0.01, 15.0, data)
+    fun createSimulationGraphics(ppi: Double, data: List<SimFrame>, cargoToolLength: LinearDistanceMeasureInches, hatchToolLength: LinearDistanceMeasureInches) {
+        val frame = SuperstructureGraphicsFrame(ppi, 0.01, 15.0, data, cargoToolLength, hatchToolLength)
         SwingUtilities.invokeLater {
             frame.pack()
             frame.isVisible = true
@@ -98,6 +99,6 @@ object ArmSim {
 
 
         graphData(output)
-        createSimulationGraphics(3.0, output)
+        createSimulationGraphics(3.0, output, 14.0.Inches, 10.0.Inches)
     }
 }

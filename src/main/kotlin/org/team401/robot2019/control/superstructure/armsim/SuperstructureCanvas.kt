@@ -18,10 +18,8 @@ import kotlin.math.roundToInt
  * @version 2/19/2019
  *
  */
-class SuperstructureCanvas(val ppi: Double): Canvas() {
+class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceMeasureInches, val hatchToolLength: LinearDistanceMeasureInches): Canvas() {
     companion object {
-        private val cargoToolLength = 14.0.Inches
-        private val hatchToolLength = 12.0.Inches
         private val upIndicatorLength = 3.0.Inches
 
         private val originToFloor = (-23.0).Inches
