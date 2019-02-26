@@ -81,6 +81,15 @@ object ControlParameters{
     }
 
     object ArmPositions {
+        //Floor pickup positions
+        val cargoFloorPickupFront = ArmSetpoint.fromFloor(
+            Point2d(30.0.Inches, 6.5.Inches),
+            WristMotionPlanner.Tool.CargoTool,
+            0.0.Radians
+        )
+
+        val cargoFloorPickupBack = cargoFloorPickupFront.flipped()
+
         //Rocket cargo positions
         val rocketCargoBottomFront = ArmSetpoint(
             Point2d(30.0.Inches, (-5.0).Inches),
@@ -93,8 +102,6 @@ object ControlParameters{
         val rocketCargoBottomBack = rocketCargoBottomFront.flipped()
         val rocketCargoMidBack = rocketCargoMidFront.flipped()
         val rocketCargoHighBack = rocketCargoHighFront.flipped()
-
-        //Floor pickup position
 
     }
 

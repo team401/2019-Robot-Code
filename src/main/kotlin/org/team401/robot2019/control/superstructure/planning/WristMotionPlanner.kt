@@ -14,8 +14,8 @@ import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
 object WristMotionPlanner {
     private val PI_2 = (Math.PI / 2.0).Radians
-    private val POSITIVE_X_OFFSET = 0.0.Radians
-    private val NEGATIVE_X_OFFSET = (Math.PI).Radians
+    val POSITIVE_X_OFFSET = 0.0.Radians
+    val NEGATIVE_X_OFFSET = (Math.PI).Radians
 
     //Tools on the wrist
     enum class Tool(val angularOffset: AngularDistanceMeasureRadians, val minimumRadius: LinearDistanceMeasureInches) {
@@ -69,7 +69,7 @@ object WristMotionPlanner {
         commandedArmState = ArmKinematics.inverse(finalState)
     }
 
-    private fun calculateFloorAngle(armAngle: AngularDistanceMeasureRadians,
+    fun calculateFloorAngle(armAngle: AngularDistanceMeasureRadians,
                                     wristCommmandAngle: AngularDistanceMeasureRadians,
                                     toolOffset: AngularDistanceMeasureRadians,
                                     sideOffset: AngularDistanceMeasureRadians

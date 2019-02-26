@@ -3,6 +3,7 @@ package org.team401.robot2019.control.superstructure.geometry
 import org.snakeskin.measure.Unitless
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 /**
@@ -13,6 +14,13 @@ import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 data class ArmSetpoint(val point: Point2d,
                        val tool: WristMotionPlanner.Tool,
                        val toolAngle: AngularDistanceMeasureRadians) {
+    companion object {
+        fun fromFloor(point: Point2d, tool: WristMotionPlanner.Tool, toolAngle: AngularDistanceMeasureRadians): ArmSetpoint {
+            return ArmSetpoint(Point2d(point.x, point.y + Geometry.ArmGeometry.floorOffset), tool, toolAngle)
+        }
+    }
+
+
     fun upBy(distance: LinearDistanceMeasureInches): ArmSetpoint {
         return ArmSetpoint(Point2d(point.x, point.y + distance), tool, toolAngle)
     }

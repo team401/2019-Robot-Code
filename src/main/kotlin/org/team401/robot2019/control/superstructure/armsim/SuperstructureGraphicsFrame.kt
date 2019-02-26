@@ -66,13 +66,18 @@ class SuperstructureGraphicsFrame(ppi: Double,
     }
 
     fun draw() {
-        val point = data.first { it.time >= activeTime }
-        val armState = ArmState(point.command.armRadius, point.command.armAngle, point.command.armVelocity)
-        val wristState = WristState(point.command.wristTheta, false, false)
-        dataLabel.text = "T: ${decFmt.format(point.time)}  Arm Length: ${decFmt.format(armState.armRadius.value)} in  Arm Angle: ${decFmt.format(armState.armAngle.toDegrees().value)} deg  Wrist Angle: ${decFmt.format(wristState.wristPosition.toDegrees().value)} deg"
-        canvas.update(armState, wristState)
-        canvas.repaint()
-        validate()
+        try {
+            val point = data.first { it.time >= activeTime }
+            val armState = ArmState(point.command.armRadius, point.command.armAngle, point.command.armVelocity)
+            val wristState = WristState(point.command.wristTheta, false, false)
+            dataLabel.text =
+                "T: ${decFmt.format(point.time)}  Arm Length: ${decFmt.format(armState.armRadius.value)} in  Arm Angle: ${decFmt.format(
+                    armState.armAngle.toDegrees().value
+                )} deg  Wrist Angle: ${decFmt.format(wristState.wristPosition.toDegrees().value)} deg"
+            canvas.update(armState, wristState)
+            canvas.repaint()
+            validate()
+        } catch (e: Exception) {}
     }
 
     fun advance(time: Double) {

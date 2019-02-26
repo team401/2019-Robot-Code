@@ -36,16 +36,16 @@ object Geometry {
          * Length of the fixed part of the arm in inches, plus the minimum possible extension length
          * Essentially represents the distance from the arm pivot to the wrist pivot at minimum extension
          */
-        val armBaseLength = 19.0.Inches + armExtensionStickout //Arm radius + minimum extension stickout
+        val armBaseLength = 19.0.Inches //Arm radius + minimum extension stickout
 
         /**
          * Minimum effective radius of the system that allows the wrist to rotate (i.e. not collide with the base)
          * Measured by rotating the longest side of the wrist towards the end of the arm
          */
-        val minSafeArmLength = armBaseLength + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
+        val minSafeArmLength = armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
-        val hatchPanelToolMinSafeLength = armBaseLength + 5.0.Inches
-        val cargoToolMinSafeLength = armBaseLength + 12.0.Inches
+        val hatchPanelToolMinSafeLength = armBaseLength + armExtensionStickout + 5.0.Inches
+        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 12.0.Inches
 
 
         /**
@@ -70,7 +70,11 @@ object Geometry {
          */
         val wristParallelCollisionAngle = 12.0.Inches
 
-        val pivotHeight = 0.0.Inches
+
+        /**
+         * Negative distance from the origin to the floor.
+         */
+        val floorOffset = (-23.0).Inches
 
         val maxTheta = atan2(maxY.value, maxX.value) // From -Pi to Pi
 

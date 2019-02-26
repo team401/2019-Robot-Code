@@ -21,8 +21,10 @@ import kotlin.math.roundToInt
 class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceMeasureInches, val hatchToolLength: LinearDistanceMeasureInches): Canvas() {
     companion object {
         private val upIndicatorLength = 3.0.Inches
+        private val cargoPortDiameter = 16.0.Inches
+        private val cargoPortOffset = 28.0.Inches
+        private val cargoPortHeight = 27.5.Inches - (cargoPortDiameter / 2.0.Unitless)
 
-        private val originToFloor = (-23.0).Inches
         private val originToFrame = 14.5.Inches
     }
 
@@ -51,6 +53,14 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
     }
 
     /**
+     * Draws a horizontal line at the given height
+     */
+    private fun drawHorizontal(y: LinearDistanceMeasureInches, g: Graphics2D) {
+        val yPix = yToFrame(y)
+        g.drawLine(0, yPix, size.width, yPix)
+    }
+
+    /**
      * Draws the coordinate grid on the graphics canvas, as well as the floor, frame perimeter, and extension limits
      */
     private fun drawWcs(g: Graphics2D) {
@@ -62,7 +72,7 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         g.stroke = BasicStroke(2.0f)
         g.color = Color.cyan
 
-        val floorY = yToFrame(originToFloor)
+        val floorY = yToFrame(Geometry.ArmGeometry.floorOffset)
         g.drawLine(0, floorY, size.width, floorY)
 
         val frameXRight = xToFrame(originToFrame)
@@ -145,9 +155,40 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         g.drawLine(endpointX, endpointY, upX, upY)
     }
 
+    /**
+     * Draws lines across the entire screen showing the cargo ports
+     */
+    private fun drawCargoShipLines(g: Graphics2D) {
+        g.stroke = BasicStroke((1.0 * ppi).toFloat(), BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, FloatArray(1) {10.0f}, 0.0f)
+        g.color = Color.black
+
+        //First cargo port
+        val firstCargoPortBottomHeight = Geometry.ArmGeometry.floorOffset + cargoPortHeight
+        val firstCargoPortTopHeight = firstCargoPortBottomHeight + cargoPortDiameter
+
+        val secondCargoPortBottomHeight = firstCargoPortBottomHeight + cargoPortOffset
+        val secondCargoPortTopHeight = secondCargoPortBottomHeight + cargoPortDiameter
+        
+        val thirdCargoPortBottomHeight = secondCargoPortBottomHeight + cargoPortOffset
+        val thirdCargoPortTopHeight = thirdCargoPortBottomHeight + cargoPortDiameter
+
+        g.color = Color.green
+        drawHorizontal(firstCargoPortBottomHeight, g)
+        drawHorizontal(firstCargoPortTopHeight, g)
+
+        g.color = Color.yellow
+        drawHorizontal(secondCargoPortBottomHeight, g)
+        drawHorizontal(secondCargoPortTopHeight, g)
+
+        g.color = Color.red
+        drawHorizontal(thirdCargoPortBottomHeight, g)
+        drawHorizontal(thirdCargoPortTopHeight, g)
+    }
+
     override fun paint(g: Graphics) {
         val g2d = g as Graphics2D
         drawWcs(g2d)
+        drawCargoShipLines(g2d)
         drawArm(g2d)
         drawWrist(g2d)
     }

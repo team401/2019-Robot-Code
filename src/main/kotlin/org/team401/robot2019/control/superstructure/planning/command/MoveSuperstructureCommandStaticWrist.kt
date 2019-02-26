@@ -16,13 +16,11 @@ import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
  */
 class MoveSuperstructureCommandStaticWrist(val start: Point2d, val end: Point2d, val tool: WristMotionPlanner.Tool, val wristAngle: AngularDistanceMeasureRadians, val minimumRadius: LinearDistanceMeasureInches): SuperstructureCommand() {
     override fun entry() {
+        println("STARTING MOVE: $start to $end")
         //Set the waypoints for the arm motion planner.  This should also reset it
         ArmMotionPlanner.setDesiredTrajectory(start, end, minimumRadius)
-        //WristMotionPlanner.setToAngleMode(tool, wristAngle, end)
-        //WristMotionPlanner.setToParallelMode(tool, end)
-        WristMotionPlanner.setToMaintainAngleMode(wristAngle, tool, end)
+        WristMotionPlanner.setToAngleMode(tool, wristAngle, end)
 
-        println("STARTING MOVE: $start to $end")
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {

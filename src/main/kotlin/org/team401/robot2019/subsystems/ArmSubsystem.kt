@@ -147,7 +147,7 @@ object ArmSubsystem: Subsystem() {
 
             action {
                 ticker.check {
-                    extension.master.selectedSensorPosition = Geometry.ArmGeometry.armBaseLength
+                    extension.master.selectedSensorPosition = (Geometry.ArmGeometry.armBaseLength + Geometry.ArmGeometry.armExtensionStickout)
                         .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
                         .toMagEncoderTicks().value.roundToInt()
                     extensionHomed = true

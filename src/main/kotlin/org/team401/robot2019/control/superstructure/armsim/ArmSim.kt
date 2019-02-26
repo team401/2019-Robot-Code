@@ -7,6 +7,7 @@ import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.SuperstructureController
@@ -27,19 +28,33 @@ object ArmSim {
     data class SimFrame(val time: Double,
                         val command: SuperstructureControlOutput)
 
-    fun runSimulation(startPose: Point2d,
-                      goal: ArmSetpoint,
-                      startWrist: WristState = WristState(0.0.Radians, false, false),
-                      startTool: WristMotionPlanner.Tool = WristMotionPlanner.Tool.CargoTool): List<SimFrame> {
+    fun runSimulation(start: ArmSetpoint,
+                      goal: ArmSetpoint): List<SimFrame> {
         val frames = arrayListOf<SimFrame>()
 
         var currentTime = 0.0
         val dt = 0.01
 
-        val startPoint = ArmKinematics.inverse(startPose)
+        val startPoint = ArmKinematics.inverse(start.point)
         val startArmState = ArmState(startPoint.r, startPoint.theta, 0.0.RadiansPerSecond)
 
-        SuperstructureMotionPlanner.startUp(startArmState, startWrist, startTool)
+        val sideOffset = if (start.point.x >= 0.0.Inches) {
+            WristMotionPlanner.POSITIVE_X_OFFSET
+        } else {
+            WristMotionPlanner.NEGATIVE_X_OFFSET
+        }
+
+
+        val wristAbsoluteAngle = WristMotionPlanner.calculateFloorAngle(
+            ArmKinematics.inverse(start.point).theta,
+            start.toolAngle,
+            start.tool.angularOffset,
+            sideOffset
+        )
+
+        val startWrist = WristState(wristAbsoluteAngle, false, false)
+
+        SuperstructureMotionPlanner.startUp(startArmState, startWrist, start.tool)
         SuperstructureMotionPlanner.requestMove(goal)
 
         SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWrist)
@@ -92,13 +107,13 @@ object ArmSim {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val output = runSimulation(Point2d((0.0).Inches, Geometry.ArmGeometry.maxY), ArmSetpoint(
-            Point2d((40.0).Inches, 0.0.Inches), WristMotionPlanner.Tool.CargoTool, 0.0.Radians
-        )
+        val output = runSimulation(
+            ControlParameters.ArmPositions.cargoFloorPickupBack,
+            ArmSetpoint(Point2d((-1.0).Inches, Geometry.ArmGeometry.armBaseLength + 32.0.Inches), WristMotionPlanner.Tool.CargoTool, 30.0.Degrees.toRadians())
         )
 
 
         graphData(output)
-        createSimulationGraphics(3.0, output, 14.0.Inches, 10.0.Inches)
+        createSimulationGraphics(3.0, output, 12.0.Inches, 10.0.Inches)
     }
 }

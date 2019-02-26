@@ -35,7 +35,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
             return arrayOf(LinearProfileSegment(start, ArmKinematics.forward(out)))
         }
         if(withinCircle(end)){
-            throw Point2d.InvalidPointException("End point is within minimum circle")
+            throw Point2d.InvalidPointException("End point $end is within minimum circle")
         }
 
         if (intersectsCircle) {
