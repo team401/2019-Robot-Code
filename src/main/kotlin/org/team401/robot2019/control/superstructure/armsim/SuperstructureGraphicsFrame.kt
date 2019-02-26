@@ -138,7 +138,7 @@ class SuperstructureGraphicsFrame(ppi: Double,
         stepFwdButton.addActionListener { advance(dt); draw() }
         stepRevButton.addActionListener { decrement(dt); draw() }
 
-        isResizable = false
+        //isResizable = false
 
         reset()
     }

@@ -34,7 +34,9 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
     private var armState = ArmState(0.0.Inches, 0.0.Radians, 0.0.RadiansPerSecond)
     private var wristState = WristState(0.0.Radians, false, false)
 
-    private val staticComponents: BufferedImage
+    private lateinit var staticComponents: BufferedImage
+
+    private var oldSize = size
 
     private fun getOriginX(): Int {
         return size.width / 2
@@ -192,22 +194,29 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
 
     private val transform = AffineTransform.getTranslateInstance(0.0, 0.0)
 
-    override fun paint(g: Graphics) {
-        val g2d = g as Graphics2D
-        g.drawRenderedImage(staticComponents, transform)
-        drawArm(g2d)
-        drawWrist(g2d)
-        println(staticComponents.width)
-    }
-
-    init {
-        size = sizeIn
+    private fun renderImage() {
         staticComponents = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-
         val g = staticComponents.createGraphics()
         g.color = Color.lightGray
         g.fill(Rectangle(0, 0, width, height))
         drawWcs(g)
         drawCargoShipLines(g)
+    }
+
+    override fun paint(g: Graphics) {
+        if (size != oldSize) {
+            renderImage() //re-render
+        }
+
+        val g2d = g as Graphics2D
+        g.drawRenderedImage(staticComponents, transform)
+        drawArm(g2d)
+        drawWrist(g2d)
+    }
+
+    init {
+        size = sizeIn
+        renderImage()
+
     }
 }
