@@ -32,10 +32,6 @@ class SuperstructureGraphicsFrame(ppi: Double,
                                   cargoToolLength: LinearDistanceMeasureInches,
                                   hatchToolLength: LinearDistanceMeasureInches
 ): JFrame("Arm Simulation") {
-    companion object {
-        val fakeWristVelocity = (2.0 * Math.PI).RadiansPerSecond //Velocity to rotate the wrist at during snaps
-    }
-
     private val executor = Executors.newSingleThreadScheduledExecutor()
     private var currentFuture: ScheduledFuture<*>? = null
 
@@ -49,7 +45,7 @@ class SuperstructureGraphicsFrame(ppi: Double,
     private val speedSpinner = JSpinner(SpinnerNumberModel(1.0, 0.0, Double.POSITIVE_INFINITY, 0.1))
     private val dataLabel = JLabel("T: 000.000 sec  Arm Length: 000.000 in  Arm Angle: 000.000 deg  Wrist Angle: 000.000 deg")
 
-    private val canvas = SuperstructureCanvas(ppi, cargoToolLength, hatchToolLength)
+    private val canvas = SuperstructureCanvas(ppi, cargoToolLength, hatchToolLength, Dimension(481, 400))
 
     private val decFmt = DecimalFormat("###.###")
 
@@ -109,7 +105,6 @@ class SuperstructureGraphicsFrame(ppi: Double,
     }
 
     init {
-        canvas.setSize(400, 400)
         val canvasPane = JPanel(BorderLayout())
         canvasPane.border = BorderFactory.createLineBorder(Color.black)
         canvasPane.add(canvas, BorderLayout.CENTER)
@@ -142,6 +137,8 @@ class SuperstructureGraphicsFrame(ppi: Double,
         resetButton.addActionListener { reset() }
         stepFwdButton.addActionListener { advance(dt); draw() }
         stepRevButton.addActionListener { decrement(dt); draw() }
+
+        isResizable = false
 
         reset()
     }

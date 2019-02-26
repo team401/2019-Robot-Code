@@ -8,7 +8,10 @@ import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.w3c.dom.css.Rect
 import java.awt.*
+import java.awt.geom.AffineTransform
+import java.awt.image.BufferedImage
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 import kotlin.math.roundToInt
@@ -18,7 +21,7 @@ import kotlin.math.roundToInt
  * @version 2/19/2019
  *
  */
-class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceMeasureInches, val hatchToolLength: LinearDistanceMeasureInches): Canvas() {
+class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceMeasureInches, val hatchToolLength: LinearDistanceMeasureInches, sizeIn: Dimension): Canvas() {
     companion object {
         private val upIndicatorLength = 3.0.Inches
         private val cargoPortDiameter = 16.0.Inches
@@ -30,6 +33,8 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
 
     private var armState = ArmState(0.0.Inches, 0.0.Radians, 0.0.RadiansPerSecond)
     private var wristState = WristState(0.0.Radians, false, false)
+
+    private val staticComponents: BufferedImage
 
     private fun getOriginX(): Int {
         return size.width / 2
@@ -185,11 +190,24 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         drawHorizontal(thirdCargoPortTopHeight, g)
     }
 
+    private val transform = AffineTransform.getTranslateInstance(0.0, 0.0)
+
     override fun paint(g: Graphics) {
         val g2d = g as Graphics2D
-        drawWcs(g2d)
-        drawCargoShipLines(g2d)
+        g.drawRenderedImage(staticComponents, transform)
         drawArm(g2d)
         drawWrist(g2d)
+        println(staticComponents.width)
+    }
+
+    init {
+        size = sizeIn
+        staticComponents = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+
+        val g = staticComponents.createGraphics()
+        g.color = Color.lightGray
+        g.fill(Rectangle(0, 0, width, height))
+        drawWcs(g)
+        drawCargoShipLines(g)
     }
 }
