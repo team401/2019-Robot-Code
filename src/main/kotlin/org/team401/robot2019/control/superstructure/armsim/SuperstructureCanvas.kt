@@ -192,7 +192,7 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         drawHorizontal(thirdCargoPortTopHeight, g)
     }
 
-    private val transform = AffineTransform.getTranslateInstance(0.0, 0.0)
+    private val transform = AffineTransform()
 
     private fun renderImage() {
         staticComponents = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
@@ -206,6 +206,7 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
     override fun paint(g: Graphics) {
         if (size != oldSize) {
             renderImage() //re-render
+            oldSize = size
         }
 
         val g2d = g as Graphics2D

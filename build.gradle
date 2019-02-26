@@ -35,8 +35,12 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     
     compile wpi.deps.wpilib()
-    compile wpi.deps.vendor.java()
-    nativeZip wpi.deps.vendor.jni(wpi.platforms.roborio)
+
+    compile "com.ctre.phoenix:api-java:5.14.0"
+    compile "com.revrobotics.frc:SparkMax-java:1.1.9"
+
+    nativeZip "com.ctre.phoenix:cci:5.14.0:linuxathena@zip"
+    nativeZip "com.revrobotics.frc:SparkMax-driver:1.1.9:linuxathena@zip"
 
     compile "org.team401:Taxis:1.3"
     
