@@ -11,23 +11,7 @@ repositories {
     mavenCentral()
 
     maven {
-        url "http://maven.team401.org/artifactory/snakeskin"
-    }
-
-    maven {
-        url "http://maven.team401.org/artifactory/wpi"
-    }
-
-    maven {
-        url "http://maven.team401.org/artifactory/ctre"
-    }
-
-    maven {
-        url "http://maven.team401.org/artifactory/jitpack"
-    }
-
-    maven {
-        url "http://maven.team401.org/artifactory/rev"
+        url "http://maven.team401.org/artifactory/frc"
     }
 }
 
