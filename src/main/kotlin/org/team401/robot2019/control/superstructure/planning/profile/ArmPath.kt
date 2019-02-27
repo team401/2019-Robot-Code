@@ -12,21 +12,13 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
     private val start = path.start
     private val end = path.end
 
-    private val y1 = path.start.y
-    private val y2 = path.end.y
     private val x1 = path.start.x
     private val x2 = path.end.x
 
     private val r = minimumRadius.value
-    //private val a = y1 - y2
-    //private val b = x2 - x1
-    //private val c = (x1 - x2) * y1 + (y2 - y1) * x1
-
 
     fun solve(): Array<ProfileSegment> {
-        //println("Solving")
         val intersectsCircle = findIntersectionPoints()
-        //println("intersects Circle : $intersectsCircle")
         var segments: Array<ProfileSegment>
 
         if (withinCircle(start)) {
@@ -39,114 +31,39 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
             throw Point2d.InvalidPointException("End point $end is within minimum circle")
         }
 
-        if (intersectsCircle) {
-            //println("Intersects Circle")
-            val tangentPointOne = CircleUtilities.identifyTangentPoints(r.Inches, Point2d(x1, y1))[0]
-            val tangentPointTwo = CircleUtilities.identifyTangentPoints(r.Inches, Point2d(x2, y2))[0]
+        segments = if (intersectsCircle) {
+            val tangentPointOne = findTangentPoint(start)
+            val tangentPointTwo = findTangentPoint(end)
 
             val firstSegment = LinearProfileSegment(start, tangentPointOne)
             val secondSegment = ArcProfileSegment(tangentPointOne, tangentPointTwo, r)
             val thirdSegment = LinearProfileSegment(tangentPointTwo, end)
-            //println("1st tangent : $tangentPointOne, 2nd tangent: $tangentPointTwo")
-            //println("end : $end")
 
-            segments = arrayOf(firstSegment, secondSegment, thirdSegment)
+            arrayOf(firstSegment, secondSegment, thirdSegment)
 
         }else{
-            segments = arrayOf(LinearProfileSegment(start, end))
+            arrayOf(LinearProfileSegment(start, end))
         }
         //segments.forEach { println("${it.start}, ${it.end}") }
 
         return segments
     }
 
-    private fun findTangentPoint(x1: Double, y1: Double): Point2d {
-        // x coordinate of tangent position
-        val B = -2 * x1 * Math.pow(r, 2.0)
-        val A = (Math.pow(y1, 2.0) + Math.pow(x1, 2.0))
-        val C =  -(Math.pow(y1, 2.0) * Math.pow(r, 2.0)) + (Math.pow(r, 4.0))
-        /*
-        val d1 = (2 * x1 * Math.pow(r, 2.0) + Math.sqrt(Math.pow(2 * x1 * Math.pow(r, 2.0), 2.0)
-                - 4 * ((Math.pow(y1, 2.0) + Math.pow(x1, 2.0)) * (Math.pow(r, 4.0) - (Math.pow(y1, 2.0) * Math.pow(r, 2.0))))))/ (2 * (Math.pow(y1, 2.0) + Math.pow(x1, 2.0)))
+    private fun findTangentPoint(point: Point2d): Point2d {
+        val tangentPoint: Point2d
+        val solutions = CircleUtilities.identifyTangentPoints(r.Inches, point)
 
+        val startTheta = ArmKinematics.inverse(point).theta.value
+        val endTheta = ArmKinematics.inverse(end).theta.value
+        val tangentTheta = ArmKinematics.inverse(solutions[0]).theta.value
 
-        val d2 = (2 * x1 * Math.pow(r, 2.0) - Math.sqrt(Math.pow(2 * x1 * Math.pow(r, 2.0), 2.0)
-                - 4 * ((Math.pow(y1, 2.0) + Math.pow(x1, 2.0)) * (Math.pow(r, 4.0) - (Math.pow(y1, 2.0) * Math.pow(r, 2.0))))))/ (2 * (Math.pow(y1, 2.0) + Math.pow(x1, 2.0)))
-        */
-
-        val discriminant = Math.pow(B, 2.0) - 4 * A * C
-        var d1: Double
-        var d2: Double
-
-        if( discriminant < 0.0 && discriminant >= -0.000001) {
-            d1 = -B / (2 * A)
-            d2 = d1
+        tangentPoint = if(tangentTheta in startTheta..endTheta){
+            solutions[0]
         }else{
-            d1 = (-B + Math.sqrt(Math.pow(B, 2.0) - 4 * A * C))/ (2 * A)
-            d2 = (-B - Math.sqrt(Math.pow(B, 2.0) - 4 * A * C))/ (2 * A)
+            solutions[1]
         }
 
-        // y coordinate of tangent position
-        var e1: Double
-        var e2: Double
-        if(y1 >= 0.001 || y1 <= -0.001){
-        //if (y1 != 0.0) { // There is a plus or minus here, adjust if it becomes a problem
-            //println("y1 != 0.0")
-            e1 = (Math.pow(r, 2.0) - (x1 * d1)) / y1
-            e2 = (Math.pow(r, 2.0) - (x1 * d2)) / y1
-        }else{
-            //println("y1 == 0.0")
-            e1 = Math.sqrt(x1 * d1 - Math.pow(d1, 2.0))
-            e2 = Math.sqrt(x1 * d2 - Math.pow(d2, 2.0))
-        }
-
-        //println("x1 : $x1, x2 : $x2")
-        //if(d2 < 0 && this.x1 < this.x2){
-        //    e1 *= -1
-        //}
-
-        //println("d1 : $d1, d2: $d2")
-        //println("e1 : $e1, e2: $e2")
-
-        var d: Double
-        var e: Double
-        /*
-        if(this.x1 < this.x2 || e1 < e2){
-            d = d2
-            e = e2
-        }else{
-            d = d1
-            e = e1
-        }
-        */
-        if(e1 <= e2){ // Going "backwards"
-            e = e2
-            if(withinTolerance(x1, 0.0, 0.0001)) {
-                if (this.x1 < this.x2) {
-                    d = if (d1 < d2) {
-                        d2
-                    } else {
-                        d1
-                    }
-                } else {
-                    d = if (d1 < d2) {
-                        d1
-                    } else {
-                        d2
-                    }
-                }
-            }else{
-                d = d2
-            }
-        }else{
-            e = e1
-            d = d1
-        }
-        //println("d : $d, e : $e")
-
-        //print("Distance from origin to Tan position : ${Math.sqrt(Math.pow(d, 2.0) + Math.pow(e, 2.0))}")
-
-        return Point2d(d.Inches, e.Inches)
+        return tangentPoint
     }
 
     private fun findIntersectionPoints(): Boolean{
@@ -181,7 +98,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
             max = x1.value
         }
 
-        if (!(intX1 >= min && intX1 <= max) && !(intX2 >= min && intX2 <= max)){
+        if (intX1 !in min..max && intX2 !in min..max){
             //println("Out of scope")
             return false
         }
@@ -194,9 +111,5 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         }
 
         return value < r
-    }
-    private fun withinTolerance(value: Double, target: Double, tolerance: Double): Boolean{
-        return Math.abs(value - target) < Math.abs(tolerance)
-
     }
 }
