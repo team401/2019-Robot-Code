@@ -2,6 +2,7 @@ package org.team401.robot2019.control.superstructure.planning.profile
 
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.team401.robot2019.control.superstructure.geometry.CircleUtilities
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
@@ -22,7 +23,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
     //private val c = (x1 - x2) * y1 + (y2 - y1) * x1
 
 
-    fun solve(): Array<ProfileSegment>{
+    fun solve(): Array<ProfileSegment> {
         //println("Solving")
         val intersectsCircle = findIntersectionPoints()
         //println("intersects Circle : $intersectsCircle")
@@ -40,8 +41,8 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
 
         if (intersectsCircle) {
             //println("Intersects Circle")
-            val tangentPointOne = findTangentPoint(x1.value, y1.value)
-            val tangentPointTwo = findTangentPoint(x2.value, y2.value)
+            val tangentPointOne = CircleUtilities.identifyTangentPoints(r.Inches, Point2d(x1, y1))[0]
+            val tangentPointTwo = CircleUtilities.identifyTangentPoints(r.Inches, Point2d(x2, y2))[0]
 
             val firstSegment = LinearProfileSegment(start, tangentPointOne)
             val secondSegment = ArcProfileSegment(tangentPointOne, tangentPointTwo, r)

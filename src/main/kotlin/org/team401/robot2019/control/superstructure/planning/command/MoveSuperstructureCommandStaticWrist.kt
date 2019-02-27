@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure.planning.command
 
+import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.control.superstructure.SuperstructureController
@@ -20,7 +21,7 @@ class MoveSuperstructureCommandStaticWrist(val start: Point2d, val end: Point2d,
         //Set the waypoints for the arm motion planner.  This should also reset it
         ArmMotionPlanner.setDesiredTrajectory(start, end, minimumRadius)
         WristMotionPlanner.setToAngleMode(tool, wristAngle, end)
-
+        //WristMotionPlanner.setToMaintainAngleMode(90.0.Degrees.toRadians(), tool, end)
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {
