@@ -24,7 +24,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         if (withinCircle(start)) {
             val pointPolar = ArmKinematics.inverse(start)
             val out = PointPolar(r.Inches, pointPolar.theta)
-            println("Within circle")
+            println("$start is within minimum circle")
             return arrayOf(LinearProfileSegment(start, ArmKinematics.forward(out)))
         }
         if(withinCircle(end)){
@@ -32,8 +32,8 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         }
 
         segments = if (intersectsCircle) {
-            val tangentPointOne = findTangentPoint(start)
-            val tangentPointTwo = findTangentPoint(end)
+            val tangentPointOne = findTangentPoint(start, start)
+            val tangentPointTwo = findTangentPoint(tangentPointOne, end)
 
             val firstSegment = LinearProfileSegment(start, tangentPointOne)
             val secondSegment = ArcProfileSegment(tangentPointOne, tangentPointTwo, r)
@@ -49,24 +49,25 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         return segments
     }
 
-    private fun findTangentPoint(point: Point2d): Point2d {
-        val tangentPoint: Point2d
-        val solutions = CircleUtilities.identifyTangentPoints(r.Inches, point)
+    private fun findTangentPoint(currentPoint: Point2d, tangentPoint: Point2d): Point2d {
+        val solution: Point2d
+        val solutions = CircleUtilities.identifyTangentPoints(r.Inches, tangentPoint)
 
-        val startTheta = ArmKinematics.inverse(point).theta.value
+        val startTheta = ArmKinematics.inverse(currentPoint).theta.value
         val endTheta = ArmKinematics.inverse(end).theta.value
         val tangentTheta = ArmKinematics.inverse(solutions[0]).theta.value
 
+        //println("start theta: $startTheta, endTheta: $endTheta")
         //println("solution 1 : ${solutions[0]}, $tangentTheta")
         //println("solution 2 : ${solutions[1]}, ${ArmKinematics.inverse(solutions[1]).theta.value}")
 
-        tangentPoint = if(tangentTheta in startTheta..endTheta || tangentTheta in endTheta..startTheta){ // Change this if a point on the circle causes problems
+        solution = if(tangentTheta in startTheta..endTheta || tangentTheta in endTheta..startTheta){ // Change this if a point on the circle causes problems
             solutions[0]
         }else{
             solutions[1]
         }
 
-        return tangentPoint
+        return solution
     }
 
     private fun findIntersectionPoints(): Boolean{

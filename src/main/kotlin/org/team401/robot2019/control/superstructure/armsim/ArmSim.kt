@@ -107,10 +107,12 @@ object ArmSim {
 
     @JvmStatic
     fun main(args: Array<String>) {
+
         val output = runSimulation(
             ArmSetpoint(Point2d(50.0.Inches, 0.0.Inches), WristMotionPlanner.Tool.CargoTool, (0.0).Degrees.toRadians()),
             ControlParameters.ArmPositions.rocketCargoHighBack
             )
+
 
         graphData(output)
         createSimulationGraphics(3.0, output, 9.5.Inches, 10.0.Inches)
