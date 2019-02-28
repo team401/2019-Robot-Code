@@ -1,7 +1,5 @@
 package org.team401.robot2019.util
 
-import org.snakeskin.measure.MeasureUnitless
-
 /**
  * @author Cameron Earle
  * @version 2/27/2019

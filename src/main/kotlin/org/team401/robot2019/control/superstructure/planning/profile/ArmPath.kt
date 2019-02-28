@@ -57,7 +57,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         val endTheta = ArmKinematics.inverse(end).theta.value
         val tangentTheta = ArmKinematics.inverse(solutions[0]).theta.value
 
-        tangentPoint = if(tangentTheta in startTheta..endTheta){
+        tangentPoint = if(tangentTheta in startTheta..endTheta){ // Change this if a point on the circle causes problems
             solutions[0]
         }else{
             solutions[1]
