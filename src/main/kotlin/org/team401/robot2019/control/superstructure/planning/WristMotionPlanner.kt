@@ -19,7 +19,7 @@ object WristMotionPlanner {
 
     //Tools on the wrist
     enum class Tool(val angularOffset: AngularDistanceMeasureRadians, val minimumRadius: LinearDistanceMeasureInches) {
-        CargoTool((-Math.PI).Radians, Geometry.ArmGeometry.cargoToolMinSafeLength),
+        CargoTool((Math.PI).Radians, Geometry.ArmGeometry.cargoToolMinSafeLength),
         HatchPanelTool(0.0.Radians, Geometry.ArmGeometry.hatchPanelToolMinSafeLength)
     }
 

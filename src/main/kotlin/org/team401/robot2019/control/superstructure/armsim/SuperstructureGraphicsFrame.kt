@@ -12,6 +12,8 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.EventQueue
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import java.text.DecimalFormat
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -19,6 +21,10 @@ import java.util.concurrent.TimeUnit
 import javax.swing.*
 import javax.swing.border.BevelBorder
 import kotlin.math.roundToLong
+import java.awt.KeyEventDispatcher
+import java.awt.KeyboardFocusManager
+
+
 
 /**
  * @author Cameron Earle
@@ -50,6 +56,8 @@ class SuperstructureGraphicsFrame(ppi: Double,
     private val decFmt = DecimalFormat("###.###")
 
     private var activeTime = 0.0
+
+    private var keyHeld = false
 
     fun getPlaybackSpeed(): Double {
         return speedSpinner.value as Double
@@ -138,7 +146,22 @@ class SuperstructureGraphicsFrame(ppi: Double,
         stepFwdButton.addActionListener { advance(dt); draw() }
         stepRevButton.addActionListener { decrement(dt); draw() }
 
-        //isResizable = false
+        KeyboardFocusManager.getCurrentKeyboardFocusManager()
+            .addKeyEventDispatcher {
+                if (it.id == KeyEvent.KEY_RELEASED) {
+                    when (it.keyCode) {
+                        39 -> { //Right arrow key
+                            advance(dt)
+                            draw()
+                        }
+                        37 -> { //Left arrow key
+                            decrement(dt)
+                            draw()
+                        }
+                    }
+                }
+                false
+            }
 
         reset()
     }
