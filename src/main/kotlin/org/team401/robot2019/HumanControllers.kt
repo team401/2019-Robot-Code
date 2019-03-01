@@ -63,11 +63,20 @@ val Gamepad = HumanControls.f310(2){
 
     whenButton(Buttons.B) {
         pressed {
-            SuperstructureRoutines.intake()
+            SuperstructureRoutines.intake(true)
         }
 
         released {
             SuperstructureRoutines.stopIntake()
+        }
+    }
+
+    whenButton(Buttons.RIGHT_BUMPER) {
+        pressed {
+            WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Scoring)
+        }
+        released {
+            WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
         }
     }
 

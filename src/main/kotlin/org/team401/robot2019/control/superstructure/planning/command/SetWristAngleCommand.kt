@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure.planning.command
 
+import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.team401.robot2019.control.superstructure.SuperstructureController
@@ -24,7 +25,12 @@ class SetWristAngleCommand(val tool: WristMotionPlanner.Tool, val angle: Angular
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {
-        val wristCommand = WristMotionPlanner.update(armState, wristState)
+        val wristCommand: WristState
+        when (tool) {
+            WristMotionPlanner.Tool.CargoTool -> wristCommand = WristState((-180.0).Degrees.toRadians(), false, false)
+            WristMotionPlanner.Tool.HatchPanelTool -> wristCommand = WristState((0.0).Degrees.toRadians(), false, false)
+        }
+        //val wristCommand = WristMotionPlanner.update(armState, wristState)
         SuperstructureController.update(targetArmState, wristCommand, tool)
         done = true
     }

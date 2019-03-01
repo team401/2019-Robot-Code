@@ -24,7 +24,7 @@ object ControlParameters{
         val extensionAcceleration = (36.0 * 3.5).InchesPerSecond //PER SECOND
 
 
-        val ROTATION_MAX_ACCELERATION = 1.0.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
+        val ROTATION_MAX_ACCELERATION = 0.5.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
         val ROTATION_MAX_VELOCITY = 0.5.RevolutionsPerSecond.toRadiansPerSecond()
 
 
@@ -72,6 +72,9 @@ object ControlParameters{
 
         val hasCargoTime = 0.25.Seconds
 
+        val intakePower = -.75
+        val scoringPower = 1.0
+
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 2.3
             override val kI = 0.0
@@ -91,13 +94,13 @@ object ControlParameters{
         val cargoFloorPickupBack = cargoFloorPickupFront.flipped()
 
         //Rocket cargo positions
-        val rocketCargoBottomFront = ArmSetpoint(
-            Point2d(30.0.Inches, (-5.0).Inches),
+        val rocketCargoBottomFront = ArmSetpoint.fromFloor(
+            Point2d(34.0.Inches, 27.5.Inches),
             WristMotionPlanner.Tool.CargoTool,
             0.0.Radians
         )
         val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.0.Inches)
-        val rocketCargoHighFront = rocketCargoMidFront.upBy(28.0.Inches).withAngle(30.0.Degrees.toRadians())
+        val rocketCargoHighFront = rocketCargoMidFront.upBy(16.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians())
 
         val rocketCargoBottomBack = rocketCargoBottomFront.flipped()
         val rocketCargoMidBack = rocketCargoMidFront.flipped()

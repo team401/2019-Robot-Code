@@ -77,13 +77,18 @@ object SuperstructureRoutines {
         SuperstructureMotionPlanner.requestToolChange(SuperstructureMotionPlanner.notActiveTool())
     }
 
-    fun intake() {
+    fun intake(front: Boolean) {
         enterCC()
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
-                //TODO move to intake position
-                //TODO turn on cargo wheels
+                if (front) {
+                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupFront)
+                } else {
+                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupBack)
+                }
+                WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped) //TODO unclamped
+                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
             }
 
             WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -98,7 +103,8 @@ object SuperstructureRoutines {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
-                //TODO turn off cargo wheels
+                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
+                WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped)
             }
 
             WristMotionPlanner.Tool.HatchPanelTool -> {

@@ -212,6 +212,7 @@ object SuperstructureMotionPlanner {
         reset()
 
         val startArmPose = ArmKinematics.forward(lastObservedArmState) //Calculate the current arm pose
+        /*
         var hadToMove = false
 
         val safeToolChangePolar =
@@ -232,14 +233,18 @@ object SuperstructureMotionPlanner {
             commandQueue.add(ExtensionOnlyCommand(safeToolChangePolar.r, activeTool))
             hadToMove = true
         }
+        */
 
         //Change the tool
         activeTool = notActiveTool()
+        println("New Tool: $activeTool")
         commandQueue.add(SetWristAngleCommand(activeTool, lastObservedWristState.wristPosition, startArmPose))
 
+        /*
         if (hadToMove) {
             //TODO move back, skipping for now
         }
+        */
     }
 
     /**

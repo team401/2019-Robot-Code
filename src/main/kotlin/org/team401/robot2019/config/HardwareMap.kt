@@ -34,8 +34,8 @@ object HardwareMap {
     }
 
     object Wrist{
-        const val clawSolenoidID = 1
-        const val cargoClawSolenoidID = 2
+        const val clawSolenoidID = 2
+        const val cargoClawSolenoidID = 1
 
     }
 

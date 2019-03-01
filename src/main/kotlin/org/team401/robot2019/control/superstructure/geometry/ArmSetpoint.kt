@@ -25,6 +25,10 @@ data class ArmSetpoint(val point: Point2d,
         return ArmSetpoint(Point2d(point.x, point.y + distance), tool, toolAngle)
     }
 
+    fun atX(x: LinearDistanceMeasureInches): ArmSetpoint {
+        return ArmSetpoint(Point2d(x, point.y), tool, toolAngle)
+    }
+
     fun withAngle(angle: AngularDistanceMeasureRadians): ArmSetpoint {
         return ArmSetpoint(point, tool, angle)
     }

@@ -146,8 +146,8 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         val cargoX = xToFrame((armEndpoint.x.value - (cargoToolLength.value * Math.cos(wristAngleAdjusted.value))).Inches)
         val cargoY = yToFrame((armEndpoint.y.value - (cargoToolLength.value * Math.sin(wristAngleAdjusted.value))).Inches)
 
-        val upX = xToFrame((armEndpoint.x.value + (upIndicatorLength.value * Math.cos(upIndicatorAngle.value))).Inches)
-        val upY = yToFrame((armEndpoint.y.value + (upIndicatorLength.value * Math.sin(upIndicatorAngle.value))).Inches)
+        val upX = xToFrame((armEndpoint.x.value - (upIndicatorLength.value * Math.cos(upIndicatorAngle.value))).Inches)
+        val upY = yToFrame((armEndpoint.y.value - (upIndicatorLength.value * Math.sin(upIndicatorAngle.value))).Inches)
 
         g.stroke = BasicStroke((1.0 * ppi).toFloat())
         g.color = Color.yellow

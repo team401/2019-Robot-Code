@@ -30,14 +30,6 @@ object ArmSim {
 
     fun runSimulation(start: ArmSetpoint,
                       goal: ArmSetpoint): List<SimFrame> {
-        val frames = arrayListOf<SimFrame>()
-
-        var currentTime = 0.0
-        val dt = 0.01
-
-        val startPoint = ArmKinematics.inverse(start.point)
-        val startArmState = ArmState(startPoint.r, startPoint.theta, 0.0.RadiansPerSecond)
-
         val sideOffset = if (start.point.x >= 0.0.Inches) {
             WristMotionPlanner.POSITIVE_X_OFFSET
         } else {
@@ -54,8 +46,25 @@ object ArmSim {
 
         val startWrist = WristState(wristAbsoluteAngle, false, false)
 
-        SuperstructureMotionPlanner.startUp(startArmState, startWrist, start.tool)
-        SuperstructureMotionPlanner.requestMove(goal)
+
+        return runSimulation(start.point, startWrist, start.tool, goal)
+    }
+
+    fun runSimulation(startPose: Point2d,
+                      startWrist: WristState,
+                      startTool: WristMotionPlanner.Tool,
+                      goal: ArmSetpoint): List<SimFrame> {
+        val frames = arrayListOf<SimFrame>()
+
+        var currentTime = 0.0
+        val dt = 0.01
+
+        val startPoint = ArmKinematics.inverse(startPose)
+        val startArmState = ArmState(startPoint.r, startPoint.theta, 0.0.RadiansPerSecond)
+
+        SuperstructureMotionPlanner.startUp(startArmState, startWrist, startTool)
+        //SuperstructureMotionPlanner.requestMove(goal)
+        SuperstructureMotionPlanner.requestToolChange(SuperstructureMotionPlanner.notActiveTool())
 
         SuperstructureMotionPlanner.update(currentTime, dt, startArmState, startWrist)
 
@@ -109,8 +118,10 @@ object ArmSim {
     fun main(args: Array<String>) {
 
         val output = runSimulation(
-            ArmSetpoint(Point2d(50.0.Inches, 0.0.Inches), WristMotionPlanner.Tool.CargoTool, (0.0).Degrees.toRadians()),
-            ControlParameters.ArmPositions.rocketCargoHighBack
+            ArmSetpoint(Point2d(0.0.Inches, 40.0.Inches), WristMotionPlanner.Tool.CargoTool, 0.0.Radians),
+            //Point2d((-0.1).Inches, 50.0.Inches), WristState(0.0.Degrees.toRadians(), false, false), WristMotionPlanner.Tool.HatchPanelTool,
+            ControlParameters.ArmPositions.rocketCargoMidFront
+            //ArmSetpoint(Point2d(50.0.Inches, 0.0.Inches), WristMotionPlanner.Tool.HatchPanelTool, 30.0.Degrees.toRadians())
             )
 
 

@@ -25,12 +25,12 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    AutoManager.setAutoLoop(TuningAutoTuneTrackScrubFactor(DrivetrainSubsystem, 10, .5))
+    //AutoManager.setAutoLoop(TuningAutoTuneTrackScrubFactor(DrivetrainSubsystem, 10, .5))
 
-    Subsystems.add(DrivetrainSubsystem)
-    Controllers.add(LeftStick, RightStick)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem)
+    Controllers.add(LeftStick, RightStick, Gamepad)
 
-    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
+    //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
     SuperstructureMotionPlanner.preCompile()
     RealTimeExecutor.addTask(SuperstructureUpdater)
 }

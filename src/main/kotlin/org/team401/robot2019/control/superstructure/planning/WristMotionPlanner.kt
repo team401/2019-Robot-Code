@@ -19,8 +19,8 @@ object WristMotionPlanner {
 
     //Tools on the wrist
     enum class Tool(val angularOffset: AngularDistanceMeasureRadians, val minimumRadius: LinearDistanceMeasureInches) {
-        CargoTool((Math.PI).Radians, Geometry.ArmGeometry.cargoToolMinSafeLength),
-        HatchPanelTool(0.0.Radians, Geometry.ArmGeometry.hatchPanelToolMinSafeLength)
+        CargoTool((-Math.PI).Radians, Geometry.ArmGeometry.cargoToolMinSafeLength),
+        HatchPanelTool((0.0).Radians, Geometry.ArmGeometry.hatchPanelToolMinSafeLength)
     }
 
     //Control modes for the wrist
@@ -136,6 +136,9 @@ object WristMotionPlanner {
                 )
             }
         }
+
+        //println("Current: ${wristState.wristPosition.toDegrees()}  Desired ${finalCommandAngle.toDegrees()}")
+
         return WristState(finalCommandAngle, wristState.hasCargo, wristState.hasHatchPanel)
     }
 }

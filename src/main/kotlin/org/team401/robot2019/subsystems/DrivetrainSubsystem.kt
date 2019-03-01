@@ -105,7 +105,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
                 tank(output.left, output.right)
 
-                println(driveState.getLatestFieldToVehicle())
+                //println(driveState.getLatestFieldToVehicle())
             }
         }
 
