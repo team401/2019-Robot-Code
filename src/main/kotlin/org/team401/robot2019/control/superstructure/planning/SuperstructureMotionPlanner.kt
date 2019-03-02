@@ -47,7 +47,7 @@ object SuperstructureMotionPlanner {
      * Active "target" tool for the system.
      */
     var activeTool = WristMotionPlanner.Tool.HatchPanelTool
-    private set
+    @Synchronized set
     @Synchronized get
 
     /**
@@ -185,33 +185,36 @@ object SuperstructureMotionPlanner {
 
     /**
      * Asks the system to change tools, preferably without moving.
+     *
+     * Returns true if the motion planner will do the action, false if not
      */
-    @Synchronized fun requestToolChange(tool: WristMotionPlanner.Tool) {
+    @Synchronized fun requestToolChange(tool: WristMotionPlanner.Tool): Boolean {
         if (tool == activeTool) { //If we're trying to switch to the same tool, ignore it
             println("Ignoring switch to already selected tool!")
-            return
+            return false
         }
 
         when (activeTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
                 if (lastObservedWristState.hasHatchPanel) { //If we're in the hatch panel tool and we have a hatch panel
                     println("You're a tool!  Drop the hatch panel to switch tools.") //Reject the switch
-                    return
+                    return false
                 }
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
                 if (lastObservedWristState.hasCargo) { //Same as above for cargo
                     println("You're a tool!  Drop the cargo to switch tools.")
-                    return
+                    return false
                 }
             }
         }
 
-        if (!isDone()) return //Don't do this unless our other steps are done
+        if (!isDone()) return false //Don't do this unless our other steps are done
         reset()
 
         val startArmPose = ArmKinematics.forward(lastObservedArmState) //Calculate the current arm pose
+
         /*
         var hadToMove = false
 
@@ -235,16 +238,28 @@ object SuperstructureMotionPlanner {
         }
         */
 
-        //Change the tool
+
+        val sideOffset = if (startArmPose.x >= 0.0.Inches) {
+            WristMotionPlanner.POSITIVE_X_OFFSET
+        } else {
+            WristMotionPlanner.NEGATIVE_X_OFFSET
+        }
+
+        //Calculate the current tool's angle from the floor
         activeTool = notActiveTool()
-        println("New Tool: $activeTool")
-        commandQueue.add(SetWristAngleCommand(activeTool, lastObservedWristState.wristPosition, startArmPose))
+        commandQueue.add(SetWristAngleCommand(
+            activeTool,
+            activeToolAngle,
+            startArmPose
+        ))
 
         /*
         if (hadToMove) {
             //TODO move back, skipping for now
         }
         */
+
+        return true
     }
 
     /**
@@ -279,28 +294,28 @@ object SuperstructureMotionPlanner {
         }
         */
 
-        activeTool = WristMotionPlanner.Tool.CargoTool
-
-        if (lastObservedArmState.armRadius < activeTool.minimumRadius) {
+        if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeArmLength) {
             //We need to extend out to the minimum radius first
-            commandQueue.add(ExtensionOnlyCommand(activeTool.minimumRadius, activeTool))
+            commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))
         }
-        val safePoint = ArmKinematics.forward(PointPolar(activeTool.minimumRadius + 0.1.Inches, lastObservedArmState.armAngle))
+        val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches, lastObservedArmState.armAngle))
 
         //Now we need to move the arm to the safe location
-        commandQueue.add(MoveSuperstructureCommandStaticWrist(safePoint, Point2d(0.0.Inches, activeTool.minimumRadius + 0.1.Inches), activeTool, 0.0.Radians, activeTool.minimumRadius))
+        commandQueue.add(MoveSuperstructureCommandStaticWrist(safePoint, Point2d(0.0.Inches, Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches), activeTool, 0.0.Radians, Geometry.ArmGeometry.minSafeArmLength))
     }
 
     /**
      * Asks the system to move to a new pose, while following a series of constraints.
+     *
+     * Returns true if the motion planner will do the action, false if not
      */
-    @Synchronized fun requestMove(setpoint: ArmSetpoint) {
+    @Synchronized fun requestMove(setpoint: ArmSetpoint): Boolean {
         if (setpoint.tool != activeTool) {
             println("Please switch tools before performing this move")
-            return
+            return false
         }
 
-        if (!isDone()) return
+        if (!isDone()) return false
         reset()
 
         //TODO there is definitely a case here where we could end up pushing the extension into the floor.
@@ -332,5 +347,9 @@ object SuperstructureMotionPlanner {
                 )
             )
         }
+
+        activeToolAngle = setpoint.toolAngle
+
+        return true
     }
 }

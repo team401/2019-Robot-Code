@@ -69,7 +69,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     enum class DriveStates {
         DisabedForFault,
         OpenLoopOperatorControl,
-        PathFollowing
+        PathFollowing,
+        ClimbAlign
     }
 
     enum class DriveFaults {
@@ -86,6 +87,14 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         state(DriveStates.DisabedForFault) {
             entry {
                 stop() //Send no more commands to the controllers
+            }
+        }
+
+        state(DrivetrainSubsystem.DriveStates.ClimbAlign) {
+            action {
+                val translate = LeftStick.readAxis { PITCH } / 3.0
+                val rotate = RightStick.readAxis { ROLL } / 3.0
+                arcade(translate, rotate)
             }
         }
 

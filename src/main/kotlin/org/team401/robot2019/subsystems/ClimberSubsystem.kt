@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController
+import com.ctre.phoenix.motorcontrol.can.FilterConfiguration
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
@@ -52,7 +53,20 @@ object ClimberSubsystem: Subsystem() {
     }
 
     private fun upwardsMoveBack(setpointBack: LinearDistanceMeasureInches) {
-        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF)
+        //Configure motion velocities and accelerations
+        val nativeVelocityBack = ControlParameters.ClimberParameters.climberVelocityUp
+            .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
+
+        val nativeAccelBack = ControlParameters.ClimberParameters.climberAccelerationUp
+            .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
+
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 200)
+        back.master.configMotionAcceleration(nativeAccelBack, 200)
+
+
+        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 200)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -62,7 +76,19 @@ object ClimberSubsystem: Subsystem() {
     }
 
     private fun upwardsMoveFront(setpointFront: LinearDistanceMeasureInches) {
-        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF)
+        //Configure motion velocities and accelerations
+        val nativeVelocityFront = ControlParameters.ClimberParameters.climberVelocityUp
+            .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
+
+        val nativeAccelFront = ControlParameters.ClimberParameters.climberAccelerationUp
+            .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
+
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 200)
+        front.master.configMotionAcceleration(nativeAccelFront, 200)
+
+        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 200)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -72,7 +98,19 @@ object ClimberSubsystem: Subsystem() {
     }
 
     private fun downwardsMoveBack(setpointBack: LinearDistanceMeasureInches) {
-        //back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF) //TODO PUT ME BACK
+        //Configure motion velocities and accelerations
+        val nativeVelocityBack = ControlParameters.ClimberParameters.climberVelocityDown
+            .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
+
+        val nativeAccelBack = ControlParameters.ClimberParameters.climberAccelerationDown
+            .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
+
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 200)
+        back.master.configMotionAcceleration(nativeAccelBack, 200)
+
+        back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF, 0, 200)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -82,7 +120,19 @@ object ClimberSubsystem: Subsystem() {
     }
 
     private fun downwardsMoveFront(setpointFront: LinearDistanceMeasureInches) {
-        //front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF) //TODO PUT ME BACK
+        //Configure motion velocities and accelerations
+        val nativeVelocityFront = ControlParameters.ClimberParameters.climberVelocityDown
+            .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
+
+        val nativeAccelFront = ControlParameters.ClimberParameters.climberAccelerationDown
+            .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
+
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 200)
+        front.master.configMotionAcceleration(nativeAccelFront, 200)
+
+        front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF, 0, 200)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -111,8 +161,8 @@ object ClimberSubsystem: Subsystem() {
                 front.master.config_kF(0, SmartDashboard.getNumber("ffFront", 0.0), 100)
                 back.master.config_kP(0, SmartDashboard.getNumber("pBack", 0.0), 100)
                 front.master.config_kP(0, SmartDashboard.getNumber("pFront", 0.0), 100)
-                downwardsMoveBack(10.0.Inches)
-                downwardsMoveFront(10.0.Inches)
+                downwardsMoveBack(22.0.Inches)
+                downwardsMoveFront(22.0.Inches)
             }
 
             exit {
@@ -206,8 +256,8 @@ object ClimberSubsystem: Subsystem() {
             }
 
             entry {
-                upwardsMoveFront(ControlParameters.ClimberPositions.stowed)
-                downwardsMoveBack(ControlParameters.ClimberPositions.l2Climb)
+                upwardsMoveBack(ControlParameters.ClimberPositions.stowed)
+                downwardsMoveFront(ControlParameters.ClimberPositions.l2Climb)
             }
         }
 
@@ -217,8 +267,15 @@ object ClimberSubsystem: Subsystem() {
             }
 
             entry {
-                upwardsMoveFront(ControlParameters.ClimberPositions.stowed)
-                downwardsMoveBack(ControlParameters.ClimberPositions.l3Climb)
+                upwardsMoveBack(ControlParameters.ClimberPositions.stowed)
+                downwardsMoveFront(ControlParameters.ClimberPositions.l3Climb)
+            }
+        }
+
+        disabled {
+            action {
+                front.set(0.0)
+                back.set(0.0)
             }
         }
     }
@@ -255,8 +312,8 @@ object ClimberSubsystem: Subsystem() {
 
 
         //debug
-        println("Back: ${back.getPosition().toLinearDistance(Geometry.ClimberGeometry.backPitchRadius).toInches()}\tFront: ${front.getPosition().toLinearDistance(Geometry.ClimberGeometry.frontPitchRadius).toInches()}")
-
+        //println("Back: ${back.getPosition().toLinearDistance(Geometry.ClimberGeometry.backPitchRadius).toInches()}\tFront: ${front.getPosition().toLinearDistance(Geometry.ClimberGeometry.frontPitchRadius).toInches()}")
+        //println(climberMachine.getState())
     }
 
     private fun configureClimberMotorControllers() {
@@ -274,26 +331,6 @@ object ClimberSubsystem: Subsystem() {
 
         back.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
         front.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-
-        //Configure motion velocities and accelerations
-        val nativeVelocityBack = ControlParameters.ClimberParameters.climberVelocity
-            .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
-            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
-        val nativeVelocityFront = ControlParameters.ClimberParameters.climberVelocity
-            .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
-            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
-
-        val nativeAccelBack = ControlParameters.ClimberParameters.climberAcceleration
-            .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
-            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
-        val nativeAccelFront = ControlParameters.ClimberParameters.climberAcceleration
-            .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
-            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
-        
-        back.master.configMotionCruiseVelocity(nativeVelocityBack)
-        back.master.configMotionAcceleration(nativeAccelBack)
-        front.master.configMotionCruiseVelocity(nativeVelocityFront)
-        front.master.configMotionAcceleration(nativeAccelFront)
     }
 
     override fun setup() {

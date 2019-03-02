@@ -25,13 +25,9 @@ class SetWristAngleCommand(val tool: WristMotionPlanner.Tool, val angle: Angular
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {
-        val wristCommand: WristState
-        when (tool) {
-            WristMotionPlanner.Tool.CargoTool -> wristCommand = WristState((-180.0).Degrees.toRadians(), false, false)
-            WristMotionPlanner.Tool.HatchPanelTool -> wristCommand = WristState((0.0).Degrees.toRadians(), false, false)
-        }
-        //val wristCommand = WristMotionPlanner.update(armState, wristState)
+        val wristCommand = WristMotionPlanner.update(armState, wristState)
         SuperstructureController.update(targetArmState, wristCommand, tool)
+        println("Moving wrist from ${wristState.wristPosition.toDegrees()} to ${wristCommand.wristPosition}")
         done = true
     }
 

@@ -18,6 +18,7 @@ import org.team401.taxis.geometry.Translation2d
  * @version 1/5/2019
  *
  */
+
 val LeftStick = HumanControls.t16000m(0) {
     invertAxis(Axes.PITCH)
 
@@ -44,12 +45,11 @@ val RightStick = HumanControls.t16000m(1) {
 
 }
 
-
 val Gamepad = HumanControls.f310(2){
     whenButton(Buttons.Y) {
         pressed {
-            SuperstructureRoutines.enterCC()
             SuperstructureMotionPlanner.goHome()
+            SuperstructureRoutines.ccMaybe(true) //Force into coordinated control
         }
     }
 
@@ -63,7 +63,7 @@ val Gamepad = HumanControls.f310(2){
 
     whenButton(Buttons.B) {
         pressed {
-            SuperstructureRoutines.intake(true)
+            SuperstructureRoutines.intake(readButton(Buttons.LEFT_BUMPER), readButton(Buttons.RIGHT_BUMPER))
         }
 
         released {
@@ -82,10 +82,85 @@ val Gamepad = HumanControls.f310(2){
 
     whenHatChanged(Hats.D_PAD) {
         when (it) {
-            Direction.NORTH -> SuperstructureRoutines.goToHigh(true) //TODO add in accessor
-            Direction.WEST -> SuperstructureRoutines.goToMid(true)
-            Direction.SOUTH -> SuperstructureRoutines.goToLow(true)
+            Direction.NORTH -> SuperstructureRoutines.goToHigh(readButton(Buttons.LEFT_BUMPER), readButton(Buttons.RIGHT_BUMPER))
+            Direction.WEST -> SuperstructureRoutines.goToMid(readButton(Buttons.LEFT_BUMPER), readButton(Buttons.RIGHT_BUMPER))
+            Direction.SOUTH -> SuperstructureRoutines.goToLow(readButton(Buttons.LEFT_BUMPER), readButton(Buttons.RIGHT_BUMPER))
             //TODO add cargo ship
         }
     }
+
+    whenAxis(Axes.LEFT_TRIGGER) {
+        exceeds(0.5) {
+            SuperstructureRoutines.scoreLeft()
+        }
+    }
+
+    whenAxis(Axes.RIGHT_TRIGGER) {
+        exceeds(0.5) {
+            SuperstructureRoutines.scoreRight()
+        }
+    }
 }
+
+/*
+val LeftStick = HumanControls.attack3(0) {
+    invertAxis(Axes.PITCH)
+
+    whenButton(Buttons.STICK_TOP) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbAlign)
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL3)
+        }
+    }
+
+    whenButton(Buttons.STICK_BOTTOM) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Stowed)
+        }
+    }
+}
+
+val RightStick = HumanControls.attack3(1) {
+    whenButton(Buttons.STICK_TOP) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbAlign)
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL3)
+        }
+    }
+
+    whenButton(Buttons.STICK_BOTTOM) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbAlign)
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Stowed)
+        }
+    }
+}
+
+/*
+val TestGamepad = HumanControls.f310(2) {
+    whenButton(Buttons.Y) {
+        pressed {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL3)
+        }
+    }
+
+    whenButton(Buttons.A) {
+        pressed {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Stowed)
+        }
+    }
+
+    whenButton(Buttons.B) {
+        pressed {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
+        }
+    }
+
+    whenButton(Buttons.X) {
+        pressed {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL3)
+        }
+    }
+}
+        */

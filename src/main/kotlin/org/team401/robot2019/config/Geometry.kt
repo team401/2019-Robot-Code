@@ -101,7 +101,7 @@ object Geometry {
          * Distance from the ground that the legs are at when homed.  These are used to offset the home position
          * so that zero is right on the ground.  These constants should be negative
          */
-        val frontHomeOffset = (-1.5).Inches
-        val backHomeOffset = (-0.5).Inches
+        val frontHomeOffset = (-0.5).Inches
+        val backHomeOffset = (-1.25).Inches
     }
 }

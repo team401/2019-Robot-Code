@@ -37,6 +37,9 @@ object HardwareMap {
         const val clawSolenoidID = 2
         const val cargoClawSolenoidID = 1
 
+        const val ballSensorNCPort = 1
+        const val ballSensorNOPort = 0
+
     }
 
     object FloorPickup {

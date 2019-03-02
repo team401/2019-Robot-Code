@@ -11,18 +11,20 @@ import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
-import org.snakeskin.measure.Degrees
-import org.snakeskin.measure.DegreesPerSecond
-import org.snakeskin.measure.Milliseconds
-import org.snakeskin.measure.Seconds
+import org.snakeskin.logic.History
+import org.snakeskin.measure.*
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.snakeskin.subsystem.SubsystemCheckContext
 import org.snakeskin.utility.Ticker
+import org.team401.robot2019.RobotEvents
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import kotlin.math.roundToInt
 
 /**
@@ -41,10 +43,13 @@ object WristSubsystem: Subsystem() {
     private val leftIntake = CTRESmartGearbox(leftIntakeTalon)
     private val rightIntake = CTRESmartGearbox(rightIntakeTalon)
 
-    private val cargoSensor = DigitalInput(0)
-    private val leftHatchSensor = DigitalInput(1)
+    private val cargoSensorNO = DigitalInput(HardwareMap.Wrist.ballSensorNOPort)
+    private val cargoSensorNC = DigitalInput(HardwareMap.Wrist.ballSensorNCPort)
+    private val leftHatchSensor = DigitalInput(4)
 
-    private val hatchPanelSolenoid = Solenoid(HardwareMap.Wrist.clawSolenoidID)
+    private val cargoHistory = History<Boolean>()
+
+    private val hatchClawSolenoid = Solenoid(HardwareMap.Wrist.clawSolenoidID)
     private val cargoGrabberSolenoid = Solenoid(HardwareMap.Wrist.cargoClawSolenoidID)
 
     enum class WristStates {
@@ -66,12 +71,10 @@ object WristSubsystem: Subsystem() {
         Scoring
     }
 
-    /*
     enum class HatchClawStates {
         Clamped, //Clamped around a gamepiece
         Unclamped
     }
-    */
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
         if (setpoint > 210.0.Degrees || setpoint < (-185.0).Degrees) {
@@ -116,8 +119,7 @@ object WristSubsystem: Subsystem() {
 
         state (WristStates.GoTo0) {
             entry {
-                val position = rotation.getPosition().toDegrees()
-                move(position)
+                rotation.set(0.0)
             }
 
             action {
@@ -144,23 +146,69 @@ object WristSubsystem: Subsystem() {
         }
     }
 
-    val cargoGrabberMachine: StateMachine<CargoGrabberStates> = commandMachine(
-        stateMap(
-            CargoGrabberStates.Clamped to false,
-            CargoGrabberStates.Unclamped to true
-        )
-    ) {
-        cargoGrabberSolenoid.set(value)
+    val cargoGrabberMachine: StateMachine<CargoGrabberStates> = stateMachine {
+        state (CargoGrabberStates.Unclamped) {
+            entry {
+                cargoGrabberSolenoid.set(true)
+            }
+        }
+
+        state (CargoGrabberStates.Clamped) {
+            entry {
+                cargoGrabberSolenoid.set(false)
+            }
+
+            action {
+                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool) {
+                    setState(CargoGrabberStates.Unclamped) //Open the grabber if we're in the hatch tool
+                }
+            }
+        }
     }
 
-    val cargoWheelsMachine: StateMachine<CargoWheelsStates> = commandMachine(
-        stateMap(
-            CargoWheelsStates.Idle to 0.0,
-            CargoWheelsStates.Intake to ControlParameters.WristParameters.intakePower,
-            CargoWheelsStates.Scoring to ControlParameters.WristParameters.scoringPower
-        )
-    ) {
-        cargoIntake.set(value)
+    val hatchClawMachine: StateMachine<HatchClawStates> = stateMachine {
+        state (HatchClawStates.Unclamped) {
+            entry {
+                hatchClawSolenoid.set(true)
+            }
+
+            action {
+                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
+                    setState(HatchClawStates.Clamped) //Open (clamp) the claw if we're in the cargo tool
+                }
+            }
+        }
+
+        state (HatchClawStates.Clamped) {
+            entry {
+                hatchClawSolenoid.set(false)
+            }
+        }
+    }
+
+    val cargoWheelsMachine: StateMachine<CargoWheelsStates> = stateMachine {
+        state (CargoWheelsStates.Idle) {
+            entry {
+                leftIntake.set(0.0)
+                rightIntake.set(0.0)
+            }
+        }
+
+        state (CargoWheelsStates.Intake) {
+            entry {
+                leftIntake.set(ControlParameters.WristParameters.intakePower)
+                rightIntake.set(ControlParameters.WristParameters.intakePower)
+            }
+
+            action {
+                cargoHistory.update(cargoSensorNO.get())
+                if (cargoHistory.current == true && cargoHistory.last == false) {
+                    send(RobotEvents.CargoAcquired)
+                    cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
+                    setState(WristSubsystem.CargoWheelsStates.Idle)
+                }
+            }
+        }
     }
 
     /**
@@ -169,8 +217,7 @@ object WristSubsystem: Subsystem() {
      * to both automatically close the intake as well as detect continuous presence.
      */
     private fun systemSeesCargo(): Boolean {
-        //return cargoSensor.get() //TODO check polarity of banner sensor
-        return false
+        return cargoSensorNO.get()
     }
 
     /**
@@ -192,6 +239,7 @@ object WristSubsystem: Subsystem() {
     }
 
     override fun action() {
+        //println(cargoSensorNO.get())
         //println(cargoSensor.get())
         //println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
         //println(rotation.getPosition().toDegrees())
@@ -203,7 +251,12 @@ object WristSubsystem: Subsystem() {
         rotation.inverted = false
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-        rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2396 + (2048)
+
+        if (Math.abs(rotation.master.selectedSensorPosition - rotation.master.sensorCollection.pulseWidthPosition) >= 10.0) {
+            //We need to reset the wrist home
+            rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2396 + (2048)
+        }
+
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
 
@@ -220,6 +273,16 @@ object WristSubsystem: Subsystem() {
         )
 
         on (Events.ENABLED) {
+            cargoWheelsMachine.setState(CargoWheelsStates.Idle)
+            cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
+            hatchClawMachine.setState(HatchClawStates.Clamped)
+
+            val armState = ArmKinematics.forward(ArmSubsystem.getCurrentArmState())
+            val currentTool = when {
+                armState.x >= 0.0.Inches -> WristMotionPlanner.Tool.HatchPanelTool
+                else -> WristMotionPlanner.Tool.CargoTool
+            }
+            SuperstructureMotionPlanner.activeTool = currentTool
             wristMachine.setState(WristStates.GoTo0)
         }
     }

@@ -14,6 +14,7 @@ import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
 object WristMotionPlanner {
     private val PI_2 = (Math.PI / 2.0).Radians
+    private val NPI_2 = (-1.0 * (Math.PI / 2.0)).Radians
     val POSITIVE_X_OFFSET = 0.0.Radians
     val NEGATIVE_X_OFFSET = (Math.PI).Radians
 
@@ -69,6 +70,9 @@ object WristMotionPlanner {
         commandedArmState = ArmKinematics.inverse(finalState)
     }
 
+    /**
+     * Calculates the absolute angle given the angle from the floor, tool, and side offset
+     */
     fun calculateFloorAngle(armAngle: AngularDistanceMeasureRadians,
                                     wristCommmandAngle: AngularDistanceMeasureRadians,
                                     toolOffset: AngularDistanceMeasureRadians,

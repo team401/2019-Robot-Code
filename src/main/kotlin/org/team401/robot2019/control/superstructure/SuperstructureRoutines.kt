@@ -12,94 +12,113 @@ import org.team401.robot2019.subsystems.WristSubsystem
  *
  */
 object SuperstructureRoutines {
-    fun enterCC() {
-        ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
-        ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
-        WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.CoordinatedControl)
+    fun ccMaybe(enterCC: Boolean) {
+        if (enterCC) {
+            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
+            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.CoordinatedControl)
+        } else {
+            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.Holding)
+            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.Holding)
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.Holding)
+        }
     }
 
-    fun goToLow(front: Boolean) {
-        enterCC()
+    fun goToLow(front: Boolean, back: Boolean) {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                println("NOT IMPLEMENTED!")
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchBottomFront))
+                } else if (back && !front) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchBottomBack))
+                }
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front) {
-                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoBottomFront)
-                } else {
-                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoBottomBack)
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoBottomFront))
+                } else if (back && !front) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoBottomBack))
                 }
             }
         }
     }
 
-    fun goToMid(front: Boolean) {
-        enterCC()
+    fun goToMid(front: Boolean, back: Boolean) {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                println("NOT IMPLEMENTED!")
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchMidFront))
+                } else if (back && !front) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchMidBack))
+                }
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front) {
-                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoMidFront)
-                } else {
-                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoMidBack)
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoMidFront))
+                } else if (back && !front) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoMidBack))
                 }        
             }
         }
     }
 
-    fun goToHigh(front: Boolean) {
-        enterCC()
+    fun goToHigh(front: Boolean, back: Boolean) {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                println("NOT IMPLEMENTED!")
-            }
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchHighFront))
+                } else if (back && !front) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchHighBack))
+                }            }
 
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front) {
-                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoHighFront)
-                } else {
-                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoHighBack)
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoHighFront))
+                } else if (back && !front) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoHighBack))
                 }
             }
         }
     }
 
     fun switchTool() {
-        enterCC()
-        SuperstructureMotionPlanner.requestToolChange(SuperstructureMotionPlanner.notActiveTool())
+        ccMaybe(SuperstructureMotionPlanner.requestToolChange(SuperstructureMotionPlanner.notActiveTool()))
     }
 
-    fun intake(front: Boolean) {
-        enterCC()
+    fun intake(front: Boolean, back: Boolean) {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front) {
-                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupFront)
-                } else {
-                    SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupBack)
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupFront))
+                } else if (back && !front){
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupBack))
                 }
-                WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped) //TODO unclamped
-                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
+                if (back != front) { //If they only pushed one button, this is effectively making sure this doesn't run if neither case above ran
+                    WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Unclamped)
+                    WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
+                }
             }
 
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                //TODO move to intake position
-                //TODO open hatch panel grabber
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.hatchIntakeFront))
+                } else if (back && !front){
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.hatchIntakeBack))
+                }
+                if (back != front) { //If they only pushed one button, this is effectively making sure this doesn't run if neither case above ran
+                    WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
+                }
             }
         }
     }
 
     fun stopIntake() {
-        enterCC()
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
@@ -108,17 +127,29 @@ object SuperstructureRoutines {
             }
 
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                //TODO close hatch panel grabber
+                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Clamped)
             }
         }
     }
 
-    fun score(left: Boolean, right: Boolean) {
-        enterCC()
+    fun scoreLeft() {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                //TODO open claws
+                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
+            }
+
+            WristMotionPlanner.Tool.CargoTool -> {
+                //TODO turn on appropriate wheels
+            }
+        }
+    }
+
+    fun scoreRight() {
+        val currentTool = SuperstructureMotionPlanner.activeTool
+        when (currentTool) {
+            WristMotionPlanner.Tool.HatchPanelTool -> {
+                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
