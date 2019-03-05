@@ -1,5 +1,6 @@
 package org.team401.robot2019.config
 
+import org.snakeskin.utility.Selectable
 import org.team401.taxis.template.DriveDynamicsTemplate
 
 /**
@@ -9,15 +10,15 @@ import org.team401.taxis.template.DriveDynamicsTemplate
  */
 object Physics {
     object DrivetrainDynamics: DriveDynamicsTemplate {
-        override val angularDrag = 1.0
-        override val inertialMass = 24.948
-        override val leftKa = 0.002
-        override val leftKs = 0.0065
-        override val leftKv = 0.0133
-        override val momentOfInertia = 1.0
-        override val rightKa = 0.0037
-        override val rightKs = 0.0051
-        override val rightKv = 0.0129
-        override val trackScrubFactor = 1.0181122803726486
+        override val angularDrag by Selectable(1.0, 1.0)
+        override val inertialMass by Selectable(69.172836, 51.6868506)
+        override val leftKa by Selectable(0.002, 0.0188)
+        override val leftKs by Selectable(0.0065, 0.1539)
+        override val leftKv by Selectable(0.0133, 0.1480)
+        override val momentOfInertia by Selectable(2.0, 1.0)
+        override val rightKa by Selectable(0.0037, 0.0204)
+        override val rightKs by Selectable(0.0051, 0.1370)
+        override val rightKv by Selectable(0.0129, 0.1473)
+        override val trackScrubFactor by Selectable(1.0181122803726486, 1.00567713365549)
     }
 }

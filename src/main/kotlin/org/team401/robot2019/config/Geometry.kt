@@ -4,6 +4,7 @@ import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.MagEncoderTicks
 import org.snakeskin.template.TankDrivetrainGeometryTemplate
+import org.snakeskin.utility.Selectable
 import kotlin.math.atan2
 
 /**
@@ -13,8 +14,8 @@ import kotlin.math.atan2
  */
 object Geometry {
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
-        override val wheelRadius = 3.062954.Inches
-        override val wheelbase = 26.5.Inches
+        override val wheelRadius by Selectable(3.062954.Inches, 3.0708584735251.Inches)
+        override val wheelbase by Selectable(26.5.Inches, 26.25.Inches)
     }
 
     object ArmGeometry{

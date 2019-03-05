@@ -1,5 +1,6 @@
 package org.team401.robot2019.subsystems
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
@@ -11,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
+import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
 import org.snakeskin.measure.RevolutionsPerMinute
@@ -120,7 +122,22 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
         state (DrivetrainSubsystem.DriveStates.PathFollowing) {
             entry {
+                val kP = SmartDashboard.getNumber("driveP", 0.0)
+                val kI = SmartDashboard.getNumber("driveI", 0.0)
+                val kD = SmartDashboard.getNumber("driveD", 0.0)
+                val kF = 0.0
+                
+                both {
+                    master.pidController.p = kP
+                    master.pidController.i = kI
+                    master.pidController.d = kD
+                    master.pidController.ff = kF
+                }
+                
                 DrivetrainSubsystem.setPose(Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(0.0)))
+                both {
+                    setDeadband(0.0)
+                }
                 pathManager.reset()
                 pathManager.setTrajectory(
                     TrajectoryIterator(TimedView(
@@ -128,12 +145,13 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                             false,
                             listOf(
                                 Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)),
-                                Pose2d(10.0 * 12.0, 0.0, Rotation2d.fromDegrees(0.0))
+                                Pose2d(10.0 * 12.0, 0.0, Rotation2d.fromDegrees(0.0)),
+                                Pose2d(14.0 * 12.0, -10.0 * 12.0, Rotation2d.fromDegrees(270.0))
                             ),
                             listOf(),
-                            14.0 * 12.0,
-                            14.0 * 12.0,
-                            10.0
+                            4.0 * 12.0,
+                            4.0 * 12.0,
+                            9.0
                         )
                     ))
                 )
@@ -179,7 +197,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         both {
             master.idleMode = CANSparkMax.IdleMode.kBrake
             master.setSmartCurrentLimit(40)
-            master.openLoopRampRate = 0.0//.25
+            master.openLoopRampRate = 0.25
             master.closedLoopRampRate = 0.0
             master.pidController.p = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kP
             master.pidController.i = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kI
@@ -224,15 +242,27 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
         //debug
         //println("Left: ${left.getPosition().toDegrees()}\t Right: ${right.getPosition().toDegrees()}")
+        println(driveState.getLatestFieldToVehicle().value)
     }
 
     override fun setup() {
         configureDriveMotorControllers()
+
+        WristSubsystem.leftIntakeTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
+        WristSubsystem.rightIntakeTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
+
+        both {
+            setPosition(0.0.Radians)
+        }
 
         WristSubsystem.leftIntakeTalon.setSensorPhase(true) //TODO if we invert this in wrist, remove
 
         on(Events.TELEOP_ENABLED) {
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)
         }
+
+        SmartDashboard.putNumber("driveP", 0.0)
+        SmartDashboard.putNumber("driveI", 0.0)
+        SmartDashboard.putNumber("driveD", 0.0)
     }
 }
