@@ -15,7 +15,7 @@ import org.team401.taxis.util.Util
  * @version 1/16/2019
  *
  */
-class CollectLinearTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<*>>, val power: Double = 1.0, val runtime: TimeMeasureSeconds, val axis: Int = 0): AutoStep() {
+class CollectLinearTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<*>>, val power: Double = 1.0, val runtime: TimeMeasureSeconds, val axis: Int = 0, val polarity: Double = 1.0): AutoStep() {
     companion object {
         const val ACCEL_TO_MS2 = 0.0005985504150390625
         const val ACCEL_MINIMUM_MS2 = 1.0
@@ -38,13 +38,14 @@ class CollectLinearTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<*
             println("Acceleration: $acceleration m/s/s")
             val torque = acceleration * drive.fullStateModel.drivetrainDynamicsModel.mass() * drive.wheelRadius.toMeters().value
             println("Torque: $torque N*m")
+            println("$acceleration\t$torque")
             return torque
         }
 
-        fun createAuto(drive: IPathFollowingDiffDrive<ISmartGearbox<*>>, power: Double = 1.0, runtime: TimeMeasureSeconds, axis: Int = 0): RobotAuto {
+        fun createAuto(drive: IPathFollowingDiffDrive<ISmartGearbox<*>>, power: Double = 1.0, runtime: TimeMeasureSeconds, axis: Int = 0, polarity: Double = 1.0): RobotAuto {
             return object : RobotAuto(10L) {
                 override fun assembleAuto(): SequentialSteps {
-                    return SequentialSteps(CollectLinearTorqueData(drive, power, runtime, axis))
+                    return SequentialSteps(CollectLinearTorqueData(drive, power, runtime, axis, polarity))
                 }
             }
         }
@@ -57,6 +58,7 @@ class CollectLinearTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<*
     override fun entry(currentTime: Double) {
         startTime = currentTime
         drive.both {
+            setRampRate(0.0)
             setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         }
     }
@@ -64,7 +66,7 @@ class CollectLinearTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<*
     override fun action(currentTime: Double, lastTime: Double): Boolean {
         drive.arcade(power, 0.0)
         drive.imu.getBiasedAccelerometer(xyz)
-        data.add(currentTime to (xyz[axis] * ACCEL_TO_MS2))
+        data.add(currentTime to (polarity * xyz[axis] * ACCEL_TO_MS2))
         return currentTime - startTime >= runtime.toSeconds().value
     }
 

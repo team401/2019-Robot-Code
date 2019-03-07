@@ -72,7 +72,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         DisabedForFault,
         OpenLoopOperatorControl,
         PathFollowing,
-        ClimbAlign
+        ClimbAlign,
+        JitterTest
     }
 
     enum class DriveFaults {
@@ -89,6 +90,27 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         state(DriveStates.DisabedForFault) {
             entry {
                 stop() //Send no more commands to the controllers
+            }
+        }
+
+        state(DriveStates.JitterTest){
+            entry {
+                both {
+                    setDeadband(0.0)
+                    setRampRate(0.0)
+                }
+            }
+
+            rtAction {
+                val jit = Math.random() / 1e4
+                val leftStick = LeftStick.readAxis { PITCH } + jit
+                val rightStick = RightStick.readAxis { PITCH } + jit
+
+                val leftFf = leftStick * 12.0
+                val rightFf = rightStick * 12.0
+
+                left.master.pidController.setReference(Math.random() * 100.0, ControlType.kVelocity, 0, leftFf)
+                right.master.pidController.setReference(Math.random() * 100.0, ControlType.kVelocity, 0, rightFf)
             }
         }
 
@@ -145,12 +167,11 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                             false,
                             listOf(
                                 Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)),
-                                Pose2d(10.0 * 12.0, 0.0, Rotation2d.fromDegrees(0.0)),
-                                Pose2d(14.0 * 12.0, -10.0 * 12.0, Rotation2d.fromDegrees(270.0))
+                                Pose2d(20.0 * 12.0, 0.0, Rotation2d.fromDegrees(0.0))
                             ),
                             listOf(),
-                            4.0 * 12.0,
-                            4.0 * 12.0,
+                            10.0 * 12.0,
+                            5.0 * 12.0,
                             9.0
                         )
                     ))
@@ -169,8 +190,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                 val leftFfVolts = output.left_feedforward_voltage
                 val rightFfVolts = output.right_feedforward_voltage
 
-                val totalFfLeft = leftFfVolts + (ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD * leftAccelRpmPerMs)
-                val totalFfRight = rightFfVolts + (ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD * rightAccelRpmPerMs)
+                val totalFfLeft = leftFfVolts + (ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD * leftAccelRpmPerMs * 12.0)
+                val totalFfRight = rightFfVolts + (ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD * rightAccelRpmPerMs * 12.0)
 
                 left.master.pidController.setReference(leftVelocityRpm, ControlType.kVelocity, 0, totalFfLeft)
                 right.master.pidController.setReference(rightVelocityRpm, ControlType.kVelocity, 0, totalFfRight)
@@ -179,6 +200,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                 SmartDashboard.putNumber("rightDesired", rightVelocityRpm)
                 SmartDashboard.putNumber("leftActual", left.master.encoder.velocity)
                 SmartDashboard.putNumber("rightActual", right.master.encoder.velocity)
+                SmartDashboard.putNumber("leftFf", totalFfLeft)
+                SmartDashboard.putNumber("rightFf", totalFfRight)
             }
 
             exit {
@@ -242,7 +265,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
         //debug
         //println("Left: ${left.getPosition().toDegrees()}\t Right: ${right.getPosition().toDegrees()}")
-        println(driveState.getLatestFieldToVehicle().value)
+        //println(driveState.getLatestFieldToVehicle().value)
     }
 
     override fun setup() {
@@ -258,7 +281,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         WristSubsystem.leftIntakeTalon.setSensorPhase(true) //TODO if we invert this in wrist, remove
 
         on(Events.TELEOP_ENABLED) {
-            driveMachine.setState(DriveStates.OpenLoopOperatorControl)
+            driveMachine.setState(DriveStates.JitterTest)
         }
 
         SmartDashboard.putNumber("driveP", 0.0)

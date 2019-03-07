@@ -46,6 +46,7 @@ class CollectAngularTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<
             println("Average Angular Acceleration (rad/s/s): $avgAngAccel")
             val moi = (linearTorque / drive.wheelRadius.toMeters().value * ((drive.wheelbase.toMeters().value * Physics.DrivetrainDynamics.trackScrubFactor) / 2.0)) / avgAngAccel
             println("Robot MOI: $moi")
+            println("$avgAngAccel\t$moi")
             return moi
         }
 
@@ -65,6 +66,7 @@ class CollectAngularTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<
 
     override fun entry(currentTime: Double) {
         drive.both {
+            setRampRate(0.0)
             setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         }
         startTime = currentTime
