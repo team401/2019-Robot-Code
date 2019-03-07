@@ -62,7 +62,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 ) {
     object ShifterStates: ShifterState(false, false)
 
-    private val shifter = Solenoid(0) //TODO hardware map
+    private val shifter = Solenoid(HardwareMap.Drivetrain.shifterSolenoid)
 
     fun shift(state: Boolean) {
         shifter.set(state)
