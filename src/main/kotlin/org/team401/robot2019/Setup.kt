@@ -41,7 +41,7 @@ object RobotIndex {
 @Setup
 fun setup() {
     ControlPoller.pollInAutonomous = true
-    RealTimeExecutor.rate = 0.01
+    RealTimeExecutor.rate = 0.02
 
     Selectable.selected = RobotIndex.PRACTICE
 

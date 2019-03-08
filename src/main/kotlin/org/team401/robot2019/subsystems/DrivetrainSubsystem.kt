@@ -34,6 +34,7 @@ import org.team401.taxis.geometry.Translation2d
 import org.team401.taxis.trajectory.TimedView
 import org.team401.taxis.trajectory.TrajectoryIterator
 import org.team401.taxis.trajectory.TrajectoryView
+import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
 import org.team401.taxis.trajectory.timing.TimedState
 
 /**
@@ -156,7 +157,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                     master.pidController.ff = kF
                 }
                 
-                DrivetrainSubsystem.setPose(Pose2d(Translation2d.identity(), Rotation2d.fromDegrees(0.0)))
+                DrivetrainSubsystem.setPose(Pose2d(5.5 * 12.0, 17.25 * 12.0, Rotation2d.fromDegrees(0.0)))
                 both {
                     setDeadband(0.0)
                 }
@@ -166,12 +167,13 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                         pathManager.generateTrajectory(
                             false,
                             listOf(
-                                Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)),
-                                Pose2d(20.0 * 12.0, 0.0, Rotation2d.fromDegrees(0.0))
+                                Pose2d(5.5 * 12.0, 17.25 * 12.0, Rotation2d.fromDegrees(0.0)),
+                                Pose2d(17.5 * 12.0, 20.0 * 12.0, Rotation2d.fromDegrees(0.0)),
+                                Pose2d(20.0 * 12.0, 25.0 * 12.0, Rotation2d.fromDegrees(145.0))
                             ),
-                            listOf(),
-                            10.0 * 12.0,
-                            5.0 * 12.0,
+                            listOf(CentripetalAccelerationConstraint(110.0)),
+                            14.0 * 12.0,
+                            8.0 * 12.0,
                             9.0
                         )
                     ))
@@ -281,7 +283,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         WristSubsystem.leftIntakeTalon.setSensorPhase(true) //TODO if we invert this in wrist, remove
 
         on(Events.TELEOP_ENABLED) {
-            driveMachine.setState(DriveStates.JitterTest)
+            driveMachine.setState(DriveStates.OpenLoopOperatorControl)
         }
 
         SmartDashboard.putNumber("driveP", 0.0)
