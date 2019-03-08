@@ -13,27 +13,6 @@ object SuperstructureMotionPlanner {
     val commandQueue = LinkedList<SuperstructureCommand>()
 
     /**
-     * Maximum time in seconds that a command queue is allowed to run.
-     * If a command queue runs for any longer than this time, it will be cancelled,
-     * and each subsystem will be put into their respective "hold" states.
-     *
-     * If this timeout is violated, it is assumed that something is stuck
-     */
-    private val queueTimeout = 5.0.Seconds
-
-    /**
-     * Represents the last time the queue was reset.  This is used to see if we have timed out
-     */
-    private var lastQueueScheduleTime = 0.0
-
-    /**
-     * If this is true, the superstructure has timed out and listening subsystems should switch to holding
-     */
-    var hasTimedOut = false
-    private set
-    @Synchronized get
-
-    /**
      * Last observed state of the arm
      */
     private var lastObservedArmState = ArmState(0.0.Inches, 0.0.Radians, 0.0.RadiansPerSecond)
@@ -68,37 +47,28 @@ object SuperstructureMotionPlanner {
     //TODO make this class manage timestamp vs dt to detect long pauses in execution (i.e. robot disabled)
     @Synchronized
     fun update(time: Double, dt: Double, armState: ArmState, wristState: WristState) {
-        try {
-            lastObservedArmState = armState     //Update state variables
-            lastObservedWristState = wristState
+        lastObservedArmState = armState     //Update state variables
+        lastObservedWristState = wristState
 
-            //println("updated arm state: $armState")
+        //Pop the first command from the queue
+        if (commandQueue.isNotEmpty()) { //If there are commands in the queue
+            val currentCommand = commandQueue.pop() //Remove the first element
 
-            /*
-        if (hasTimedOut) { //If we timed out last loop
-            reset() //Reset the motion planner
-            return //Break execution here
-        }
-        */
-            //Pop the first command from the queue
-            if (commandQueue.isNotEmpty()) { //If there are commands in the queue
-                val currentCommand = commandQueue.pop() //Remove the first element
+            try {
                 currentCommand.update(dt, armState, wristState) //Update the command
                 if (!currentCommand.isDone()) { //If the command isn't done
                     commandQueue.push(currentCommand) //Put it back at the start of the queue
                 }
+            } catch (e: Exception) {
+                //An exception occured during this command.  Print out some debug info and reset the motion planner.
+                System.err.println("Exception encountered in Superstructure Motion Planner")
+                System.err.println("Active Command:\t${currentCommand.javaClass.simpleName}")
+                System.err.println("Description:\t${currentCommand.getDescription()}")
+                System.err.println("Stack trace:")
+                e.printStackTrace()
 
-                /*
-            //If we have commands, we need to update the watchdog
-            if (time - lastQueueScheduleTime > queueTimeout.toSeconds().value) {
-                System.err.println("Superstructure reached watchdog timeout!  All mechanisms entering holding.")
-                hasTimedOut = true
+                reset() //Reset the planner
             }
-            */
-            }
-        } catch (e: Exception) {
-            reset()
-            throw e
         }
     }
 

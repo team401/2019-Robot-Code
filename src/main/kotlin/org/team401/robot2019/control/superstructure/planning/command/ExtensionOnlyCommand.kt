@@ -47,4 +47,8 @@ class ExtensionOnlyCommand(val radius: LinearDistanceMeasureInches, val tool: Wr
     override fun isDone(): Boolean {
         return done
     }
+
+    override fun getDescription(): String {
+        return "Target Radius: $radius | Active Tool: $tool | Completion Tolerance: $tolerance"
+    }
 }

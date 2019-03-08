@@ -27,4 +27,8 @@ class WaitForArmAtRadiusCommand(val lower: LinearDistanceMeasureInches, val uppe
     override fun isDone(): Boolean {
         return done
     }
+
+    override fun getDescription(): String {
+        return "Lower Bound: $lower | Upper Bound: $upper"
+    }
 }

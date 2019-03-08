@@ -25,4 +25,8 @@ class ParallelCommand(vararg val sequence: SuperstructureCommand): Superstructur
     override fun isDone(): Boolean {
         return sequence.all { it.isDone() }
     }
+
+    override fun getDescription(): String {
+        return "Parallel[n]:${sequence.joinToString { it.getDescription() }}"
+    }
 }

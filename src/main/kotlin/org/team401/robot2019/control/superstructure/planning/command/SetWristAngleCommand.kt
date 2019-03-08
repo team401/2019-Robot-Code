@@ -34,4 +34,8 @@ class SetWristAngleCommand(val tool: WristMotionPlanner.Tool, val angle: Angular
     override fun isDone(): Boolean {
         return done
     }
+
+    override fun getDescription(): String {
+        return "Target Tool: $tool | Target Floor Relative Angle: $angle | Final Arm Pose: $targetPose"
+    }
 }

@@ -20,4 +20,8 @@ class LambdaCommand(val lambda: () -> Unit): SuperstructureCommand() {
     override fun isDone(): Boolean {
         return true
     }
+
+    override fun getDescription(): String {
+        return "Functional Command"
+    }
 }

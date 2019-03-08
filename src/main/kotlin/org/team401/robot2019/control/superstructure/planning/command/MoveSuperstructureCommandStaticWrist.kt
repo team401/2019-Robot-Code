@@ -17,7 +17,6 @@ import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
  */
 class MoveSuperstructureCommandStaticWrist(val start: Point2d, val end: Point2d, val tool: WristMotionPlanner.Tool, val wristAngle: AngularDistanceMeasureRadians, val minimumRadius: LinearDistanceMeasureInches): SuperstructureCommand() {
     override fun entry() {
-        println("STARTING MOVE: $start to $end")
         //Set the waypoints for the arm motion planner.  This should also reset it
         ArmMotionPlanner.setDesiredTrajectory(start, end, minimumRadius)
         WristMotionPlanner.setToAngleMode(tool, wristAngle, end)
@@ -31,9 +30,10 @@ class MoveSuperstructureCommandStaticWrist(val start: Point2d, val end: Point2d,
     }
 
     override fun isDone(): Boolean {
-        if(ArmMotionPlanner.isDone()){
-            println("Move finished")
-        }
         return ArmMotionPlanner.isDone() //We're done when the arm planner is finished executing the trajectory
+    }
+
+    override fun getDescription(): String {
+        return "Start Pose: $start | End Pose: $end | Active Tool: $tool | Target Wrist Floor Relative Angle: $wristAngle | Minimum Radius Constraint: $minimumRadius"
     }
 }

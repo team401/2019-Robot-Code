@@ -24,4 +24,8 @@ class SeriesCommand(vararg val sequence: SuperstructureCommand): SuperstructureC
     override fun isDone(): Boolean {
         return sequence.last().isDone() //We're done when the last item in the sequence is done
     }
+
+    override fun getDescription(): String {
+        return "Series[$seqIdx]:${sequence[seqIdx].getDescription()}"
+    }
 }

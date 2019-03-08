@@ -52,4 +52,8 @@ class RotationOnlyCommand(val angle: AngularDistanceMeasureRadians, val tool: Wr
     override fun isDone(): Boolean {
         return ArmMotionPlanner.isDone()
     }
+
+    override fun getDescription(): String {
+        return "Target Arm Angle: $angle | Active Tool: $tool"
+    }
 }
