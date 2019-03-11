@@ -209,6 +209,13 @@ object WristSubsystem: Subsystem() {
                 }
             }
         }
+
+        state (CargoWheelsStates.Scoring) {
+            entry {
+                leftIntake.set(ControlParameters.WristParameters.scoringPower)
+                rightIntake.set(ControlParameters.WristParameters.scoringPower)
+            }
+        }
     }
 
     /**

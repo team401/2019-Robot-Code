@@ -82,6 +82,34 @@ object WristMotionPlanner {
         return (PI_2 - armAngle + wristCommmandAngle + toolOffset + sideOffset)
     }
 
+    /**
+     * Convenience function that runs the calculations from the above function with less inputs
+     */
+    fun calculateFinalFloorAngle(commandedArmState: ArmState,
+                                 wristCommandAngle: AngularDistanceMeasureRadians,
+                                 commandedTool: Tool): AngularDistanceMeasureRadians {
+        val commandedArmPose = ArmKinematics.forward(commandedArmState)
+
+        val sideOffset = if (commandedArmPose.x >= 0.0.Inches) {
+            POSITIVE_X_OFFSET
+        } else {
+            NEGATIVE_X_OFFSET
+        }
+
+        val commandMultiplier = if (sideOffset == POSITIVE_X_OFFSET) {
+            1.0.Unitless
+        } else {
+            (-1.0).Unitless
+        }
+
+        return calculateFloorAngle(
+            commandedArmState.armAngle,
+            commandMultiplier * wristCommandAngle,
+            commandedTool.angularOffset,
+            sideOffset
+        )
+    }
+
     fun update(armState: ArmState, wristState: WristState): WristState {
         //The talon's "zero" should be the cargo tool pointed straight down when the arm is at 0
         //This means it can be rotated 180 degrees to each side

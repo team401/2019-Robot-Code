@@ -4,14 +4,11 @@ import org.snakeskin.logic.scalars.Scalar
 import org.snakeskin.logic.scalars.ScalarGroup
 import org.snakeskin.logic.scalars.SquareScalar
 import org.snakeskin.measure.*
-import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
-import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.snakeskin.template.PIDFTemplate
 import org.snakeskin.utility.CheesyDriveController
-import org.team401.robot2019.control.superstructure.geometry.ArmSetpoint
+import org.team401.robot2019.control.superstructure.geometry.SuperstructureSetpoint
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
-import kotlin.math.roundToInt
 
 object ControlParameters{
     object ArmParameters{
@@ -85,20 +82,18 @@ object ControlParameters{
 
     object ArmPositions {
         //Floor pickup positions
-        val cargoFloorPickupFront = ArmSetpoint.fromFloor(
+        val cargoFloorPickupFront = SuperstructureSetpoint.intakingCargo(
             Point2d(35.0.Inches, 14.5.Inches),
-            WristMotionPlanner.Tool.CargoTool,
             0.0.Radians
-        ).withAngle((-25.0).Degrees.toRadians())
+        ).withAngle((-25.0).Degrees.toRadians()).fromFloor()
 
         val cargoFloorPickupBack = cargoFloorPickupFront.flipped()
 
         //Rocket cargo positions
-        val rocketCargoBottomFront = ArmSetpoint.fromFloor(
-            Point2d(34.0.Inches, 27.5.Inches),
-            WristMotionPlanner.Tool.CargoTool,
+        val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
+            Point2d(33.0.Inches, 27.5.Inches),
             0.0.Radians
-        )
+        ).fromFloor()
         val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.0.Inches)
         val rocketCargoHighFront = rocketCargoMidFront.upBy(16.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians())
 
@@ -107,20 +102,18 @@ object ControlParameters{
         val rocketCargoHighBack = rocketCargoHighFront.flipped()
 
         //Intake hatch positions
-        val hatchIntakeFront = ArmSetpoint.fromFloor(
+        val hatchIntakeFront = SuperstructureSetpoint.intakingHatch(
             Point2d(34.0.Inches, 19.0.Inches),
-            WristMotionPlanner.Tool.HatchPanelTool,
             0.0.Radians
-        )
+        ).fromFloor()
 
         val hatchIntakeBack = hatchIntakeFront.flipped()
 
         //Rocket hatch positions
-        val rocketHatchBottomFront = ArmSetpoint.fromFloor(
+        val rocketHatchBottomFront = SuperstructureSetpoint.holdingHatch(
             Point2d(34.0.Inches, 19.0.Inches),
-            WristMotionPlanner.Tool.HatchPanelTool,
             0.0.Radians
-        )
+        ).fromFloor()
         val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches)
         val rocketHatchHighFront = rocketHatchMidFront.upBy(16.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians())
 

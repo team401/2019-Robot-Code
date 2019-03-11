@@ -132,29 +132,23 @@ object SuperstructureRoutines {
         }
     }
 
-    fun scoreLeft() {
+    fun score() {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
                 WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
+                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
-                //TODO turn on appropriate wheels
+                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Scoring)
             }
         }
     }
 
-    fun scoreRight() {
-        val currentTool = SuperstructureMotionPlanner.activeTool
-        when (currentTool) {
-            WristMotionPlanner.Tool.HatchPanelTool -> {
-                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
-            }
-
-            WristMotionPlanner.Tool.CargoTool -> {
-                //TODO turn on appropriate wheels
-            }
+    fun stopScoring(left: Boolean, right: Boolean) {
+        if (!left && !right) {
+            WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
         }
     }
 }

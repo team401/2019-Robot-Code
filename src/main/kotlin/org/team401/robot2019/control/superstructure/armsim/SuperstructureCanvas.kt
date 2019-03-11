@@ -3,17 +3,12 @@ package org.team401.robot2019.control.superstructure.armsim
 import org.snakeskin.measure.*
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.config.Geometry
-import org.team401.robot2019.control.superstructure.geometry.ArmState
-import org.team401.robot2019.control.superstructure.geometry.Point2d
-import org.team401.robot2019.control.superstructure.geometry.PointPolar
-import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.robot2019.control.superstructure.geometry.*
+import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
-import org.w3c.dom.css.Rect
 import java.awt.*
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
-import javax.swing.JFrame
-import javax.swing.SwingUtilities
 import kotlin.math.roundToInt
 
 /**
@@ -28,7 +23,12 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         private val cargoPortOffset = 28.0.Inches
         private val cargoPortHeight = 27.5.Inches - (cargoPortDiameter / 2.0.Unitless)
 
-        private val originToFrame = 14.5.Inches
+    }
+
+    private fun dist(a: Point2d, b: Point2d): LinearDistanceMeasureInches {
+        val dx2 = ((b.x - a.x) * (b.x - a.x)).value
+        val dy2 = ((b.y - a.y) * (b.y - a.y)).value
+        return Math.sqrt(dx2 + dy2).Inches
     }
 
     private var armState = ArmState(0.0.Inches, 0.0.Radians, 0.0.RadiansPerSecond)
@@ -71,27 +71,27 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
      * Draws the coordinate grid on the graphics canvas, as well as the floor, frame perimeter, and extension limits
      */
     private fun drawWcs(g: Graphics2D) {
-        g.stroke = BasicStroke(1.0f)
+        g.stroke = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
         g.color = Color.gray //Set to gray color
         g.drawLine(getOriginX(), 0, getOriginX(), size.height) //Draw y axis
         g.drawLine(0, getOriginY(), size.width, getOriginY()) //Draw x axis
 
-        g.stroke = BasicStroke(2.0f)
+        g.stroke = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
         g.color = Color.cyan
 
-        val floorY = yToFrame(Geometry.ArmGeometry.floorOffset)
+        val floorY = yToFrame(Geometry.ArmGeometry.originToFloor)
         g.drawLine(0, floorY, size.width, floorY)
 
-        val frameXRight = xToFrame(originToFrame)
-        val frameXLeft = xToFrame((-1.0).Unitless * originToFrame)
+        val frameXRight = xToFrame(Geometry.ArmGeometry.originToFrame)
+        val frameXLeft = xToFrame((-1.0).Unitless * Geometry.ArmGeometry.originToFrame)
 
         g.drawLine(frameXLeft, 0, frameXLeft, size.height)
         g.drawLine(frameXRight, 0, frameXRight, size.height)
 
         g.color = Color.red
 
-        val limitXRight = xToFrame(30.0.Inches + originToFrame)
-        val limitXLeft = xToFrame((-1.0).Unitless * (30.0.Inches + originToFrame))
+        val limitXRight = xToFrame(30.0.Inches + Geometry.ArmGeometry.originToFrame)
+        val limitXLeft = xToFrame((-1.0).Unitless * (30.0.Inches + Geometry.ArmGeometry.originToFrame))
 
         g.drawLine(limitXLeft, 0, limitXLeft, size.height)
         g.drawLine(limitXRight, 0, limitXRight, size.height)
@@ -112,18 +112,18 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         val endEndpointY = yToFrame(armEndEndpoint.y)
 
         //Draw arm extension
-        g.stroke = BasicStroke((1.5 * ppi).toFloat())
+        g.stroke = BasicStroke((1.5 * ppi).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
         g.color = Color.red
         g.drawLine(baseEndpointX, baseEndpointY, endEndpointX, endEndpointY)
 
         //Draw arm base
-        g.stroke = BasicStroke((2.0 * ppi).toFloat())
+        g.stroke = BasicStroke((2.0 * ppi).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
         g.color = Color.blue
         g.drawLine(getOriginX(), getOriginY(), baseEndpointX, baseEndpointY)
 
         if (armState.armRadius < Geometry.ArmGeometry.armBaseLength) {
             //There is an intersection, we should draw it now
-            g.stroke = BasicStroke((1.5 * ppi).toFloat())
+            g.stroke = BasicStroke((1.5 * ppi).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
             g.color = Color.magenta
             g.drawLine(baseEndpointX, baseEndpointY, endEndpointX, endEndpointY)
         }
@@ -140,24 +140,36 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
 
         val wristAngleAdjusted = wristState.wristPosition - (Math.PI / 2.0).Radians + armState.armAngle
         val upIndicatorAngle = wristAngleAdjusted + (Math.PI / 2.0).Radians
-        val hatchX = xToFrame((armEndpoint.x.value + (hatchToolLength.value * Math.cos(wristAngleAdjusted.value))).Inches)
-        val hatchY = yToFrame((armEndpoint.y.value + (hatchToolLength.value * Math.sin(wristAngleAdjusted.value))).Inches)
 
-        val cargoX = xToFrame((armEndpoint.x.value - (cargoToolLength.value * Math.cos(wristAngleAdjusted.value))).Inches)
-        val cargoY = yToFrame((armEndpoint.y.value - (cargoToolLength.value * Math.sin(wristAngleAdjusted.value))).Inches)
+        val wristPose = EndpointKinematics.forward(armState, wristState, WristSubsystem.CargoGrabberStates.Clamped, WristSubsystem.HatchClawStates.Clamped)
+        val hatchX = xToFrame(wristPose.hatchEndpoint.x)
+        val hatchY = yToFrame(wristPose.hatchEndpoint.y)
+        val hatchAX = xToFrame(wristPose.hatchEndpointA.x)
+        val hatchAY = yToFrame(wristPose.hatchEndpointA.y)
+        val hatchBX = xToFrame(wristPose.hatchEndpointB.x)
+        val hatchBY = yToFrame(wristPose.hatchEndpointB.y)
+        val cargoX = xToFrame(wristPose.cargoEndpoint.x)
+        val cargoY = yToFrame(wristPose.cargoEndpoint.y)
+        val backstopX = xToFrame(wristPose.backstopEndpoint.x)
+        val backstopY = yToFrame(wristPose.backstopEndpoint.y)
 
         val upX = xToFrame((armEndpoint.x.value - (upIndicatorLength.value * Math.cos(upIndicatorAngle.value))).Inches)
         val upY = yToFrame((armEndpoint.y.value - (upIndicatorLength.value * Math.sin(upIndicatorAngle.value))).Inches)
 
-        g.stroke = BasicStroke((1.0 * ppi).toFloat())
+        g.stroke = BasicStroke((1.0 * ppi).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
         g.color = Color.yellow
         g.drawLine(endpointX, endpointY, hatchX, hatchY)
+        g.color = Color.white
+        g.drawLine(hatchX, hatchY, hatchAX, hatchAY)
+        g.drawLine(hatchX, hatchY, hatchBX, hatchBY)
 
-        g.stroke = BasicStroke((1.0 * ppi).toFloat())
+        g.stroke = BasicStroke((1.0 * ppi).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
         g.color = Color.orange
         g.drawLine(endpointX, endpointY, cargoX, cargoY)
+        g.color = Color.white
+        g.drawLine(endpointX, endpointY, backstopX, backstopY)
 
-        g.stroke = BasicStroke((1.0 * ppi).toFloat())
+        g.stroke = BasicStroke((1.0 * ppi).toFloat(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
         g.color = Color.green
         g.drawLine(endpointX, endpointY, upX, upY)
     }
@@ -170,7 +182,7 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         g.color = Color.black
 
         //First cargo port
-        val firstCargoPortBottomHeight = Geometry.ArmGeometry.floorOffset + cargoPortHeight
+        val firstCargoPortBottomHeight = Geometry.ArmGeometry.originToFloor + cargoPortHeight
         val firstCargoPortTopHeight = firstCargoPortBottomHeight + cargoPortDiameter
 
         val secondCargoPortBottomHeight = firstCargoPortBottomHeight + cargoPortOffset

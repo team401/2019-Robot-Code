@@ -15,9 +15,8 @@ import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
-import javax.swing.JFrame
+import org.team401.robot2019.subsystems.WristSubsystem
 import javax.swing.SwingUtilities
-import kotlin.math.PI
 
 /**
  * @author Eli Jelesko and Cameron Earle
@@ -28,8 +27,8 @@ object ArmSim {
     data class SimFrame(val time: Double,
                         val command: SuperstructureControlOutput)
 
-    fun runSimulation(start: ArmSetpoint,
-                      goal: ArmSetpoint): List<SimFrame> {
+    fun runSimulation(start: SuperstructureSetpoint,
+                      goal: SuperstructureSetpoint): List<SimFrame> {
         val sideOffset = if (start.point.x >= 0.0.Inches) {
             WristMotionPlanner.POSITIVE_X_OFFSET
         } else {
@@ -53,7 +52,7 @@ object ArmSim {
     fun runSimulation(startPose: Point2d,
                       startWrist: WristState,
                       startTool: WristMotionPlanner.Tool,
-                      goal: ArmSetpoint): List<SimFrame> {
+                      goal: SuperstructureSetpoint): List<SimFrame> {
         val frames = arrayListOf<SimFrame>()
 
         var currentTime = 0.0
@@ -118,11 +117,19 @@ object ArmSim {
 
         val output = runSimulation(
             ControlParameters.ArmPositions.cargoFloorPickupBack,
-            ControlParameters.ArmPositions.rocketCargoHighBack
+            ControlParameters.ArmPositions.rocketCargoBottomBack
             )
 
 
         graphData(output)
-        createSimulationGraphics(3.0, output, 12.0.Inches, 10.0.Inches)
+
+
+        //As measured on practice bot 3/9/2019
+        //Wrist pivot to cargo closed: 13 in. (comp 15.5 in.)
+        //Wrist pivot to cargo open: 9 in. (comp 12 in.)
+        //Wrist pivot to cargo backstop: 5 in.
+        //Wrist pivot to hatch closed: 12 in.
+        //Wrist pivot to hatch open: 10 in.
+        createSimulationGraphics(3.0, output, 13.0.Inches, 10.0.Inches)
     }
 }

@@ -1,12 +1,14 @@
 package org.team401.robot2019.control.superstructure.planning
 
 import org.snakeskin.measure.*
-import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
+import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.control.superstructure.planning.command.*
+import org.team401.robot2019.subsystems.WristSubsystem
+import org.team401.robot2019.util.epsGt
 import java.util.*
 
 object SuperstructureMotionPlanner {
@@ -105,11 +107,11 @@ object SuperstructureMotionPlanner {
             WristMotionPlanner.Tool.HatchPanelTool
         )
 
-        requestMove(ArmSetpoint(ArmKinematics.forward(
+        requestMove(SuperstructureSetpoint(ArmKinematics.forward(
             PointPolar(
                 Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches,
                 Math.PI.Radians
-            )), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians))
+            )), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians, WristSubsystem.CargoGrabberStates.Clamped, WristSubsystem.HatchClawStates.Clamped))
 
         var time = 0.0
         val dt = 0.1
@@ -279,7 +281,7 @@ object SuperstructureMotionPlanner {
      *
      * Returns true if the motion planner will do the action, false if not
      */
-    @Synchronized fun requestMove(setpoint: ArmSetpoint): Boolean {
+    @Synchronized fun requestMove(setpoint: SuperstructureSetpoint): Boolean {
         if (setpoint.tool != activeTool) {
             println("Please switch tools before performing this move")
             return false
@@ -288,10 +290,58 @@ object SuperstructureMotionPlanner {
         if (!isDone()) return false
         reset()
 
+        val currentPose = ArmKinematics.forward(lastObservedArmState)
+
+        /*
+        //First, we'll obtain the potential pose of the wrist given an immediate rotation to the target angle
+        val wristInstantRotatedPose = EndpointKinematics.forward(
+            lastObservedArmState,
+            WristState(
+                WristMotionPlanner.calculateFinalFloorAngle(lastObservedArmState, setpoint.toolAngle, setpoint.tool),
+                lastObservedWristState.hasCargo,
+                lastObservedWristState.hasHatchPanel
+            ),
+            setpoint.cargoGrabberState,
+            setpoint.hatchClawState
+        )
+
+        //We now need to evaluate the x coordinate with the greatest magnitude that the profile will traverse
+        //while at the minimum radius.  This can be determined by looking at the angular direction and whether
+        //or not the trajectory crosses y = 0.  If it does, the x value at y = 0 is the maximum.  Otherwise, it is
+        //the endpoint with the greatest x magnitude.
+        val startAngle = lastObservedArmState.armAngle
+        val endAngle = ArmKinematics.inverse(setpoint.point).theta
+        val startX = ArmKinematics.forward(lastObservedArmState).x
+        val endX = setpoint.point.x
+
+        var xMaxTheta =
+        if (Math.abs(startX.value) epsGt Math.abs(endX.value)) {
+            //We're moving to the left.  The angle with the maximum x angle is the starting angle
+            xMaxTheta = startAngle
+        } else {
+            //We're moving to the right.  The angle with the maximum x angle is the ending angle
+            xMaxTheta = endAngle
+        }
+
+        if (startAngle.value epsGt endAngle.value) {
+            //We are moving clockwise.
+            if (Math.PI in endAngle.value..startAngle.value || 0.0 in endAngle.value..startAngle.value) {
+                //180 degrees is within this trajectory, so y = 0 is the x coordinate with the greatest magnitude
+                //in the negative direction
+                xMax = Geometry.ArmGeometry.minSafeWristToolChangeRadius
+            }
+        } else {
+            //We are moving counter-clockwise.
+            //Same cases above, except accounting for the fact that Kotlin ranges must start with the smaller number
+            if (Math.PI in startAngle.value..endAngle.value || 0.0 in startAngle.value..endAngle.value) {
+                xMax = Geometry.ArmGeometry.minSafeWristToolChangeRadius
+            }
+        }
+        */
+
         //TODO there is definitely a case here where we could end up pushing the extension into the floor.
         //TODO if the radius is too short and we are already on the floor, this will happen
         //TODO add checks to prevent this
-        val currentPose = ArmKinematics.forward(lastObservedArmState)
         val targetPose = setpoint.point
         val minimumRadius = activeTool.minimumRadius + 1.0.Inches //TODO test if this is really necessary
         if (lastObservedArmState.armRadius < minimumRadius) {

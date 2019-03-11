@@ -63,7 +63,7 @@ val Gamepad = HumanControls.f310(2){
 
     whenButton(Buttons.B) {
         pressed {
-            SuperstructureRoutines.intake(readButton(Buttons.LEFT_BUMPER), readButton(Buttons.RIGHT_BUMPER))
+            SuperstructureRoutines.intake(readAxis(Axes.LEFT_TRIGGER) > 0.5, readAxis(Axes.RIGHT_TRIGGER) > 0.5)
         }
 
         released {
@@ -82,22 +82,30 @@ val Gamepad = HumanControls.f310(2){
 
     whenHatChanged(Hats.D_PAD) {
         when (it) {
-            Direction.NORTH -> SuperstructureRoutines.goToHigh(readButton(Buttons.LEFT_BUMPER), readButton(Buttons.RIGHT_BUMPER))
-            Direction.WEST -> SuperstructureRoutines.goToMid(readButton(Buttons.LEFT_BUMPER), readButton(Buttons.RIGHT_BUMPER))
-            Direction.SOUTH -> SuperstructureRoutines.goToLow(readButton(Buttons.LEFT_BUMPER), readButton(Buttons.RIGHT_BUMPER))
+            Direction.NORTH -> SuperstructureRoutines.goToHigh(readAxis(Axes.LEFT_TRIGGER) > 0.5, readAxis(Axes.RIGHT_TRIGGER) > 0.5)
+            Direction.WEST -> SuperstructureRoutines.goToMid(readAxis(Axes.LEFT_TRIGGER) > 0.5, readAxis(Axes.RIGHT_TRIGGER) > 0.5)
+            Direction.SOUTH -> SuperstructureRoutines.goToLow(readAxis(Axes.LEFT_TRIGGER) > 0.5, readAxis(Axes.RIGHT_TRIGGER) > 0.5)
             //TODO add cargo ship
         }
     }
 
-    whenAxis(Axes.LEFT_TRIGGER) {
-        exceeds(0.5) {
-            SuperstructureRoutines.scoreLeft()
+    whenButton(Buttons.LEFT_BUMPER) {
+        pressed {
+            SuperstructureRoutines.score()
+        }
+
+        released {
+            SuperstructureRoutines.stopScoring(false, false)
         }
     }
 
-    whenAxis(Axes.RIGHT_TRIGGER) {
-        exceeds(0.5) {
-            SuperstructureRoutines.scoreRight()
+    whenButton(Buttons.RIGHT_BUMPER) {
+        pressed {
+            SuperstructureRoutines.score()
+        }
+
+        released {
+            SuperstructureRoutines.stopScoring(false, false)
         }
     }
 }

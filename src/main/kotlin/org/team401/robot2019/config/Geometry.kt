@@ -20,8 +20,8 @@ object Geometry {
 
     object ArmGeometry{
         //All values with the pivot as the origin, wrist pivot as the endpoint
-        val maxX = 55.0.Inches
-        val maxY = 55.0.Inches
+        val maxX = 70.0.Inches
+        val maxY = 70.0.Inches
         val minY = (-25.0).Inches
         val maxExtension = 0.0.Inches
         val maxArmLength = 0.0.Inches
@@ -46,7 +46,7 @@ object Geometry {
         val minSafeArmLength = armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
         val hatchPanelToolMinSafeLength = armBaseLength + armExtensionStickout + 5.0.Inches
-        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 12.0.Inches
+        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 10.0.Inches + (5.0/8.0).Inches
 
 
         /**
@@ -71,11 +71,15 @@ object Geometry {
          */
         val wristParallelCollisionAngle = 12.0.Inches
 
+        /**
+         * Distance from the origin to the edge of the frame, in the positive direction.  This is symmetric.
+         */
+        val originToFrame = 14.5.Inches
 
         /**
-         * Negative distance from the origin to the floor.
+         * Distance from the origin to the flor, in the negative direction
          */
-        val floorOffset = (-23.0).Inches
+        val originToFloor = (-23.0).Inches
 
         val maxTheta = atan2(maxY.value, maxX.value) // From -Pi to Pi
 
@@ -85,6 +89,20 @@ object Geometry {
          * The "pitch radius" of the sprocket
          */
         val extensionPitchRadius = 0.720.Inches
+
+        /**
+         * Maximum legal x coordinate for a component of the wrist.
+         */
+        val maximumLegalWristX = originToFrame + 30.0.Inches
+    }
+
+    object WristGeometry {
+        val pivotToCargoBackstop = 5.0.Inches
+        val pivotToCargoClosedEndpoint = 13.0.Inches
+        val pivotToCargoOpenEndpoint = 9.0.Inches
+        val pivotToHatchClamped = 10.0.Inches
+        val pivotToHatchOpen = 12.0.Inches
+        val hatchClawOpenHeight = 5.0.Inches
     }
 
     object ClimberGeometry {
