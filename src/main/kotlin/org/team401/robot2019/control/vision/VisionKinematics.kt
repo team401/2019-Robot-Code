@@ -8,7 +8,7 @@ object VisionKinematics {
      * Constant transform from the robot to the camera.
      * Distance from the origin of the robot to the origin of the camera, as measured in the field (x, y) configuration
      */
-    val robotToCamera = Pose2d(1.0, 0.0, Rotation2d.identity())
+    val robotToCamera = Pose2d(0.0, 0.0, Rotation2d.identity())
 
     /**
      * @param fieldToRobot Pose measurement of the robot relative to the field origin frame
@@ -27,4 +27,12 @@ object VisionKinematics {
         //Transform the original robot pose by this displacement to arrive at actual robot pose
         return fieldToRobot.transformBy(error)
     }
+}
+
+fun main(args: Array<String>) {
+    println(VisionKinematics.forward(
+        Pose2d(20.0, -10.0, Rotation2d.fromDegrees(90.0)),
+        Pose2d(20.0, 0.0, Rotation2d.fromDegrees(90.0)),
+        Pose2d(-10.0, 0.0, Rotation2d.fromDegrees(0.0))
+    ))
 }
