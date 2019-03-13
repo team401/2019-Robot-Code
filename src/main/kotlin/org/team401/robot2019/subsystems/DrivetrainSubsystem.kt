@@ -1,7 +1,6 @@
 package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
-import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
@@ -15,7 +14,6 @@ import org.snakeskin.event.Events
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
-import org.snakeskin.measure.RevolutionsPerMinute
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.LeftStick
 import org.team401.robot2019.RightStick
@@ -25,17 +23,13 @@ import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
-import org.team401.taxis.diffdrive.control.FeedforwardOnlyPathController
 import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
 import org.team401.taxis.diffdrive.odometry.OdometryTracker
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
-import org.team401.taxis.geometry.Translation2d
 import org.team401.taxis.trajectory.TimedView
 import org.team401.taxis.trajectory.TrajectoryIterator
-import org.team401.taxis.trajectory.TrajectoryView
 import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
-import org.team401.taxis.trajectory.timing.TimedState
 
 /**
  * @author Cameron Earle
@@ -73,8 +67,9 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         DisabedForFault,
         OpenLoopOperatorControl,
         PathFollowing,
-        ClimbAlign,
-        JitterTest
+        ClimbPull,
+        ClimbStop,
+        ClimbReposition,
     }
 
     enum class DriveFaults {
@@ -91,35 +86,6 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         state(DriveStates.DisabedForFault) {
             entry {
                 stop() //Send no more commands to the controllers
-            }
-        }
-
-        state(DriveStates.JitterTest){
-            entry {
-                both {
-                    setDeadband(0.0)
-                    setRampRate(0.0)
-                }
-            }
-
-            rtAction {
-                val jit = Math.random() / 1e4
-                val leftStick = LeftStick.readAxis { PITCH } + jit
-                val rightStick = RightStick.readAxis { PITCH } + jit
-
-                val leftFf = leftStick * 12.0
-                val rightFf = rightStick * 12.0
-
-                left.master.pidController.setReference(Math.random() * 100.0, ControlType.kVelocity, 0, leftFf)
-                right.master.pidController.setReference(Math.random() * 100.0, ControlType.kVelocity, 0, rightFf)
-            }
-        }
-
-        state(DrivetrainSubsystem.DriveStates.ClimbAlign) {
-            action {
-                val translate = LeftStick.readAxis { PITCH } / 3.0
-                val rotate = RightStick.readAxis { ROLL } / 3.0
-                arcade(translate, rotate)
             }
         }
 
@@ -208,6 +174,30 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
             exit {
                 stop()
+            }
+        }
+
+        state(DriveStates.ClimbPull){
+            entry {
+                shift(ControlParameters.DrivetrainParameters.climbPullGear)
+                arcade(ControlParameters.DrivetrainParameters.climbPullPower, 0.0)
+            }
+        }
+
+        state(DriveStates.ClimbStop){
+            action {
+                if (ClimberSubsystem.backWithinTolerance(ControlParameters.ClimberPositions.stowed)){
+                    Thread.sleep(ControlParameters.DrivetrainParameters.climbWheelStopDelay.toMilliseconds().value.toLong())
+                    stop()
+                    setState(DriveStates.ClimbReposition)
+                }
+            }
+        }
+
+        state(DriveStates.ClimbReposition){
+            action {
+                arcade(LeftStick.readAxis { PITCH } * ControlParameters.DrivetrainParameters.slowingFactor,
+                    RightStick.readAxis { ROLL } * ControlParameters.DrivetrainParameters.slowingFactor)
             }
         }
 

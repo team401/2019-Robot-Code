@@ -43,7 +43,7 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.02
 
-    Selectable.selected = RobotIndex.COMP
+    Selectable.selected = RobotIndex.PRACTICE
 
     //AutoManager.setAutoLoop(CollectAngularTorqueData.createAuto(DrivetrainSubsystem, 0.5, 2.0.Seconds, 14.68094497,2))
 
@@ -51,13 +51,14 @@ fun setup() {
 
     //AutoManager.setAutoLoop(TuningAutoTuneTrackScrubFactor(DrivetrainSubsystem, 10, .5))
 
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem)
+    //Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ClimberSubsystem)
     Controllers.add(LeftStick, RightStick)
 
     //Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem)
     //Controllers.add(LeftStick, RightStick, Gamepad)
 
     //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
-    SuperstructureMotionPlanner.preCompile()
-    RealTimeExecutor.addTask(SuperstructureUpdater)
+    //SuperstructureMotionPlanner.preCompile()
+    //RealTimeExecutor.addTask(SuperstructureUpdater)
 }

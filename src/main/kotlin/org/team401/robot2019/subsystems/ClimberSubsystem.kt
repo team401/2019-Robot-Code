@@ -45,11 +45,29 @@ object ClimberSubsystem: Subsystem() {
         DownL3, //Moves both legs down to the position required to fall on to level 3
         FallL2, //Retracts the front legs fully to "fall" onto level 2
         FallL3, //Retracts the front legs  fully to "fall" onto level 3
+        SlowFall, //Slowly retracts the legs. Used if we are aborting a climb
+        LondonBridgeIsMaybeFallingDown // Stows both legs. To separate stowed from climbing
     }
 
     enum class ClimberFaults {
         MotorControllerReset,
         HomeLost
+    }
+
+    fun getFrontHeightInches(): LinearDistanceMeasureInches {
+        return front.getPosition().toLinearDistance(Geometry.ClimberGeometry.frontPitchRadius)
+    }
+
+    fun getBackHeightInches(): LinearDistanceMeasureInches {
+        return back.getPosition().toLinearDistance(Geometry.ClimberGeometry.backPitchRadius)
+    }
+
+    fun frontWithinTolerance(setpoint: LinearDistanceMeasureInches): Boolean {
+        return Math.abs((setpoint - getFrontHeightInches()).value).Inches <= ControlParameters.ClimberParameters.climberTolerance
+    }
+
+    fun backWithinTolerance(setpoint: LinearDistanceMeasureInches): Boolean {
+        return Math.abs((setpoint - getBackHeightInches()).value).Inches <= ControlParameters.ClimberParameters.climberTolerance
     }
 
     private fun upwardsMoveBack(setpointBack: LinearDistanceMeasureInches) {
@@ -97,6 +115,51 @@ object ClimberSubsystem: Subsystem() {
         front.set(ControlMode.MotionMagic, nativeSetpointFront)
     }
 
+    private fun upwardsMoveBackSlow(setpointBack: LinearDistanceMeasureInches) {
+        //Configure motion velocities and accelerations
+        val nativeVelocityBack = ControlParameters.ClimberParameters.climberVelocityUpSlow
+            .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
+
+        val nativeAccelBack = ControlParameters.ClimberParameters.climberAccelerationUpSlow
+            .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
+
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 200)
+        back.master.configMotionAcceleration(nativeAccelBack, 200)
+
+
+        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 200)
+
+        val nativeSetpointBack = setpointBack
+            .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
+            .toMagEncoderTicks().value
+
+        back.set(ControlMode.MotionMagic, nativeSetpointBack)
+    }
+
+    private fun upwardsMoveFrontSlow(setpointFront: LinearDistanceMeasureInches) {
+        //Configure motion velocities and accelerations
+        val nativeVelocityFront = ControlParameters.ClimberParameters.climberVelocityUpSlow
+            .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt()
+
+        val nativeAccelFront = ControlParameters.ClimberParameters.climberAccelerationUpSlow
+            .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
+            .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
+
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 200)
+        front.master.configMotionAcceleration(nativeAccelFront, 200)
+
+        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 200)
+
+        val nativeSetpointFront = setpointFront
+            .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
+            .toMagEncoderTicks().value
+
+        front.set(ControlMode.MotionMagic, nativeSetpointFront)
+    }
+
     private fun downwardsMoveBack(setpointBack: LinearDistanceMeasureInches) {
         //Configure motion velocities and accelerations
         val nativeVelocityBack = ControlParameters.ClimberParameters.climberVelocityDown
@@ -110,7 +173,7 @@ object ClimberSubsystem: Subsystem() {
         back.master.configMotionCruiseVelocity(nativeVelocityBack, 200)
         back.master.configMotionAcceleration(nativeAccelBack, 200)
 
-        back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF, 0, 200)
+        //back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF, 0, 200)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -132,7 +195,7 @@ object ClimberSubsystem: Subsystem() {
         front.master.configMotionCruiseVelocity(nativeVelocityFront, 200)
         front.master.configMotionAcceleration(nativeAccelFront, 200)
 
-        front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF, 0, 200)
+        //front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF, 0, 200)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -248,11 +311,19 @@ object ClimberSubsystem: Subsystem() {
                 downwardsMoveFront(ControlParameters.ClimberPositions.l3Climb)
                 downwardsMoveBack(ControlParameters.ClimberPositions.l3Climb)
             }
+
+            action {
+                //Start checking our position.  If we're >= the setpoint - tolerance, move on.
+                if (frontWithinTolerance(ControlParameters.ClimberPositions.l3Climb)
+                    && backWithinTolerance(ControlParameters.ClimberPositions.l3Climb)) {
+                    setState(ClimberStates.FallL3)
+                }
+            }
         }
         
         state (ClimberStates.FallL2) {
             rejectIf {
-                !isInState(ClimberStates.DownL2) //Don't allow us to fall unless we're already in the right up state
+                !isInState(ClimberStates.DownL2) && !isInState(ClimberStates.LondonBridgeIsMaybeFallingDown)//Don't allow us to fall unless we're already in the right up state
             }
 
             entry {
@@ -263,12 +334,30 @@ object ClimberSubsystem: Subsystem() {
 
         state (ClimberStates.FallL3) {
             rejectIf {
-                !isInState(ClimberStates.DownL3) //Don't allow us to fall unless we're already in the right up state
+                !isInState(ClimberStates.DownL3) && !isInState(ClimberStates.LondonBridgeIsMaybeFallingDown) //Don't allow us to fall unless we're already in the right up state
             }
 
             entry {
                 upwardsMoveBack(ControlParameters.ClimberPositions.stowed)
                 downwardsMoveFront(ControlParameters.ClimberPositions.l3Climb)
+            }
+        }
+
+        state(ClimberStates.SlowFall){
+            entry {
+                upwardsMoveBackSlow(ControlParameters.ClimberPositions.stowed)
+                upwardsMoveFrontSlow(ControlParameters.ClimberPositions.stowed)
+            }
+        }
+
+        state(ClimberStates.LondonBridgeIsMaybeFallingDown){
+            rejectIf {
+                !isInState(ClimberStates.FallL3) && !isInState(ClimberStates.FallL2)
+            }
+
+            entry {
+                upwardsMoveFront(ControlParameters.ClimberPositions.stowed)
+                upwardsMoveBack(ControlParameters.ClimberPositions.stowed)
             }
         }
 

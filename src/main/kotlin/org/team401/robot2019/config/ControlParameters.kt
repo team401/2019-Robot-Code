@@ -9,6 +9,7 @@ import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.control.superstructure.geometry.SuperstructureSetpoint
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.subsystems.DrivetrainSubsystem
 
 object ControlParameters{
     object ArmParameters{
@@ -129,6 +130,20 @@ object ControlParameters{
             override val kD = 0.0
             override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
         }
+
+        /**
+         * The power to drive onto the level 3 or 2 platforms
+         */
+        val climbPullPower = -0.25
+
+        /**
+         * Climb in low gear
+         */
+        val climbPullGear = DrivetrainSubsystem.ShifterStates.LOW
+
+        val climbWheelStopDelay = 0.5.Seconds
+
+        val slowingFactor = 1 / 4.0
     }
 
     object DrivetrainCheesyDriveParameters: CheesyDriveController.DefaultParameters() {
@@ -177,6 +192,9 @@ object ControlParameters{
         val climberVelocityUp = 36.0.InchesPerSecond
         val climberAccelerationUp = 72.0.InchesPerSecond //per second
 
+        val climberVelocityUpSlow = climberVelocityDown
+        val climberAccelerationUpSlow = climberAccelerationDown
+
         /**
          * Power to apply to the legs to home them.  This should be negative
          */
@@ -186,6 +204,11 @@ object ControlParameters{
          * Number of seconds the legs must be at zero velocity until the system is considered homed
          */
         val homingTime = 0.25.Seconds
+
+        /**
+         * Tolerance for checking whether or not the climber is at the desired height
+         */
+        val climberTolerance = 1.0.Inches
     }
 
     object ClimberPositions {
