@@ -1,6 +1,9 @@
 package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced
+import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod
+import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
@@ -59,12 +62,15 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
     private val shifter = Solenoid(HardwareMap.Drivetrain.shifterSolenoid)
 
+    /**
+     * Shifts the drivetrain to the selected gear.  The available shifter states are available in ShifterStates.
+     */
     fun shift(state: Boolean) {
         shifter.set(state)
     }
 
     enum class DriveStates {
-        DisabedForFault,
+        DisabledForFault,
         OpenLoopOperatorControl,
         PathFollowing,
         ClimbPull,
@@ -83,7 +89,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     const val gearRatioHigh = (50.0/28.0) * (64.0 / 15.0)
 
     val driveMachine: StateMachine<DriveStates> = stateMachine {
-        state(DriveStates.DisabedForFault) {
+        state(DriveStates.DisabledForFault) {
             entry {
                 stop() //Send no more commands to the controllers
             }
@@ -104,8 +110,6 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                 )
 
                 tank(output.left, output.right)
-
-                //println(driveState.getLatestFieldToVehicle())
             }
         }
 
@@ -228,6 +232,29 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         }
     }
 
+    /**
+     * Configures the "auxiliary" Talon SRX motor controllers that will be used to provide feedback information
+     * to the drive.  This should be called by the subsystem that owns the Talons, Wrist at the time of writing.
+     */
+    fun configureFeedbackTalonsForDrive(leftTalon: TalonSRX, rightTalon: TalonSRX) {
+        //Set feedback device
+        leftTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100)
+        rightTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100)
+
+        //Set sensor phase
+        leftTalon.setSensorPhase(true)
+
+        //Configure status frame rate
+        leftTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100)
+        rightTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100)
+
+        //Configure velocity measurement period and window
+        leftTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_50Ms, 100)
+        rightTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_50Ms, 100)
+        leftTalon.configVelocityMeasurementWindow(1, 100)
+        rightTalon.configVelocityMeasurementWindow(1, 100)
+    }
+
     override fun action() {
         //Detect faults
         if (left.master.getStickyFault(CANSparkMax.FaultID.kHasReset) || left.slaves.any { it.getStickyFault(CANSparkMax.FaultID.kHasReset) } ||
@@ -242,7 +269,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
         //Respond to faults
         if (isFaulted(DriveFaults.MotorControllerReset)) {
-            driveMachine.setState(DriveStates.DisabedForFault).waitFor()
+            driveMachine.setState(DriveStates.DisabledForFault).waitFor()
             configureDriveMotorControllers() //Reconfigure motor controllers
             clearFault(DriveFaults.MotorControllerReset)
             both {
@@ -263,14 +290,9 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     override fun setup() {
         configureDriveMotorControllers()
 
-        WristSubsystem.leftIntakeTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-        WristSubsystem.rightIntakeTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-
         both {
             setPosition(0.0.Radians)
         }
-
-        WristSubsystem.leftIntakeTalon.setSensorPhase(true) //TODO if we invert this in wrist, remove
 
         on(Events.TELEOP_ENABLED) {
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)

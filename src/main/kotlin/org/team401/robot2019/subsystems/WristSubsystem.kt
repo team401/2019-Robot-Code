@@ -255,6 +255,9 @@ object WristSubsystem: Subsystem() {
     override fun setup() {
         leftIntakeTalon.inverted = true
         rightIntakeTalon.inverted = false
+
+        DrivetrainSubsystem.configureFeedbackTalonsForDrive(leftIntakeTalon, rightIntakeTalon)
+
         rotation.inverted = false
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
