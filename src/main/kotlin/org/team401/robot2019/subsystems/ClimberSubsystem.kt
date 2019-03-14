@@ -80,11 +80,11 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        back.master.configMotionCruiseVelocity(nativeVelocityBack, 200)
-        back.master.configMotionAcceleration(nativeAccelBack, 200)
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 0)
+        back.master.configMotionAcceleration(nativeAccelBack, 0)
 
 
-        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 200)
+        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 0)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -103,10 +103,10 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        front.master.configMotionCruiseVelocity(nativeVelocityFront, 200)
-        front.master.configMotionAcceleration(nativeAccelFront, 200)
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 0)
+        front.master.configMotionAcceleration(nativeAccelFront, 0)
 
-        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 200)
+        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 0)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -125,11 +125,11 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        back.master.configMotionCruiseVelocity(nativeVelocityBack, 200)
-        back.master.configMotionAcceleration(nativeAccelBack, 200)
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 0)
+        back.master.configMotionAcceleration(nativeAccelBack, 0)
 
 
-        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 200)
+        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 0)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -148,10 +148,10 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        front.master.configMotionCruiseVelocity(nativeVelocityFront, 200)
-        front.master.configMotionAcceleration(nativeAccelFront, 200)
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 0)
+        front.master.configMotionAcceleration(nativeAccelFront, 0)
 
-        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 200)
+        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 0)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -170,10 +170,10 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        back.master.configMotionCruiseVelocity(nativeVelocityBack, 200)
-        back.master.configMotionAcceleration(nativeAccelBack, 200)
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 0)
+        back.master.configMotionAcceleration(nativeAccelBack, 0)
 
-        //back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF, 0, 200)
+        //back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF, 0, 0)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -192,10 +192,10 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        front.master.configMotionCruiseVelocity(nativeVelocityFront, 200)
-        front.master.configMotionAcceleration(nativeAccelFront, 200)
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 0)
+        front.master.configMotionAcceleration(nativeAccelFront, 0)
 
-        //front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF, 0, 200)
+        //front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF, 0, 0)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -220,12 +220,16 @@ object ClimberSubsystem: Subsystem() {
         
         state(ClimberStates.TestDown) {
             entry {
-                back.master.config_kF(0, SmartDashboard.getNumber("ffBack", 0.0), 100)
-                front.master.config_kF(0, SmartDashboard.getNumber("ffFront", 0.0), 100)
-                back.master.config_kP(0, SmartDashboard.getNumber("pBack", 0.0), 100)
-                front.master.config_kP(0, SmartDashboard.getNumber("pFront", 0.0), 100)
+                back.master.config_kF(0, SmartDashboard.getNumber("ffBack", 0.0), 0)
+                front.master.config_kF(0, SmartDashboard.getNumber("ffFront", 0.0), 0)
+                back.master.config_kP(0, SmartDashboard.getNumber("pBack", 0.0), 0)
+                front.master.config_kP(0, SmartDashboard.getNumber("pFront", 0.0), 0)
                 downwardsMoveBack(22.0.Inches)
                 downwardsMoveFront(22.0.Inches)
+            }
+
+            action{
+                println("Percent out : Front: ${front.master.motorOutputPercent}, Back : ${back.master.motorOutputPercent}")
             }
 
             exit {
