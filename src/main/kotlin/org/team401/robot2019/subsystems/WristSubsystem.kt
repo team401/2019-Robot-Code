@@ -16,6 +16,7 @@ import org.snakeskin.measure.*
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.snakeskin.subsystem.SubsystemCheckContext
 import org.snakeskin.utility.Ticker
+import org.team401.robot2019.DriverstationDisplay
 import org.team401.robot2019.RobotEvents
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
@@ -89,6 +90,9 @@ object WristSubsystem: Subsystem() {
         rejectAllIf(*WristStates.values()){isInState(WristStates.EStopped)}
 
         state (WristStates.EStopped) {
+            entry {
+                DriverstationDisplay.wristStopped.setBoolean(true)
+            }
             action {
                 rotation.set(0.0)
             }

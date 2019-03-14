@@ -18,6 +18,7 @@ import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
 import org.snakeskin.utility.CheesyDriveController
+import org.team401.robot2019.DriverstationDisplay
 import org.team401.robot2019.LeftStick
 import org.team401.robot2019.RightStick
 import org.team401.robot2019.config.ControlParameters
@@ -199,9 +200,15 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         }
 
         state(DriveStates.ClimbReposition){
+            entry {
+                DriverstationDisplay.climbRepositionModeEnabled.setBoolean(true)
+            }
             action {
                 arcade(LeftStick.readAxis { PITCH } * ControlParameters.DrivetrainParameters.slowingFactor,
                     RightStick.readAxis { ROLL } * ControlParameters.DrivetrainParameters.slowingFactor)
+            }
+            exit{
+                DriverstationDisplay.climbRepositionModeEnabled.setBoolean(false)
             }
         }
 

@@ -2,9 +2,6 @@ package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
-import com.ctre.phoenix.motorcontrol.NeutralMode
-import com.ctre.phoenix.motorcontrol.can.BaseMotorController
-import com.ctre.phoenix.motorcontrol.can.FilterConfiguration
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
@@ -202,6 +199,7 @@ object ClimberSubsystem: Subsystem() {
             .toMagEncoderTicks().value
 
         front.set(ControlMode.MotionMagic, nativeSetpointFront)
+
     }
 
     /**

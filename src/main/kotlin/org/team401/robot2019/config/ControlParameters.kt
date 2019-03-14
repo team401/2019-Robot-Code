@@ -186,8 +186,8 @@ object ControlParameters{
             override val kF = 0.0
         }
 
-        val climberVelocityDown = 10.0.InchesPerSecond
-        val climberAccelerationDown = 10.0.InchesPerSecond //per second.  We are using a velocity unit here because the unit library can't convert lin -> ang accel
+        val climberVelocityDown = 7.5.InchesPerSecond
+        val climberAccelerationDown = 7.5.InchesPerSecond //per second.  We are using a velocity unit here because the unit library can't convert lin -> ang accel
 
         val climberVelocityUp = 36.0.InchesPerSecond
         val climberAccelerationUp = 72.0.InchesPerSecond //per second

@@ -1,5 +1,6 @@
 package org.team401.robot2019
 
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.auto.AutoManager
 import org.snakeskin.component.ISensoredGearbox
@@ -37,6 +38,7 @@ object RobotIndex {
     const val COMP = 0
     const val PRACTICE = 1
 }
+
 
 @Setup
 fun setup() {

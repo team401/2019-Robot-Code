@@ -26,6 +26,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 import org.snakeskin.dsl.*
+import org.team401.robot2019.DriverstationDisplay
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
 object ArmSubsystem: Subsystem() {
@@ -127,6 +128,9 @@ object ArmSubsystem: Subsystem() {
 
     val armExtensionMachine: StateMachine<ArmExtensionStates> = stateMachine {
         state (ArmExtensionStates.EStopped) {
+            entry {
+                DriverstationDisplay.armStopped.setBoolean(true)
+            }
             action {
                 extension.stop()
             }
