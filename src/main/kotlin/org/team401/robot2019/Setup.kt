@@ -21,6 +21,7 @@ import org.team401.robot2019.control.superstructure.planning.SuperstructureMotio
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
 import org.team401.robot2019.subsystems.*
+import org.team401.robot2019.util.LEDManager
 import org.team401.taxis.diffdrive.autotune.autos.TuningAutoCollectDynamicsData
 import org.team401.taxis.diffdrive.autotune.autos.TuningAutoTuneTrackScrubFactor
 import org.team401.taxis.diffdrive.autotune.autos.TuningAutoTuneWheelRadius
@@ -47,38 +48,15 @@ fun setup() {
 
     Selectable.selected = RobotIndex.COMP
 
-    //AutoManager.setAutoLoop(CollectLinearTorqueData.createAuto(DrivetrainSubsystem, .5, 2.0.Seconds, 1, -1.0))
-
-    AutoManager.setAutoLoop(CollectAngularTorqueData.createAuto(DrivetrainSubsystem, 0.5, 2.0.Seconds, 16.49251069,2))
-
-    //AutoManager.setAutoLoop(TuningAutoTuneTrackScrubFactor(DrivetrainSubsystem, 10, .25))
-
-    //AutoManager.setAutoLoop(TuningAutoTuneTrackScrubFactor(DrivetrainSubsystem, 10, .5))
-
-    //AutoManager.setAutoLoop(TuningAutoTuneTrackScrubFactor(DrivetrainSubsystem, 10, 0.25))
-
-    //Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem)
+    //Register components
     Subsystems.add(DrivetrainSubsystem, ClimberSubsystem)
     Controllers.add(LeftStick, RightStick)
 
-    //VisionManager.start()
+    //Miscellaneous initialization
+    LEDManager.init()
+    SuperstructureMotionPlanner.preCompile()
 
-    /*
-    ExecutorFactory.getExecutor("test").scheduleAtFixedRate({
-        val cameraToGoal = VisionKinematics.cameraForward(
-            DrivetrainSubsystem.getHeading(),
-            Rotation2d.fromDegrees(0.0),
-            Rotation2d.fromDegrees(VisionManager.backCamera.frame.targetAngleHoriz.value),
-            Rotation2d.fromDegrees(VisionManager.backCamera.frame.targetAngleVert.value)
-        )
-        println(cameraToGoal)
-    }, 0L, 100L, TimeUnit.MILLISECONDS)
-    */
-
-    //Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem)
-    //Controllers.add(LeftStick, RightStick, Gamepad)
-
-    //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
-    //SuperstructureMotionPlanner.preCompile()
-    //RealTimeExecutor.addTask(SuperstructureUpdater)
+    //Initialize real-time tasks
+    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
+    RealTimeExecutor.addTask(SuperstructureUpdater)
 }

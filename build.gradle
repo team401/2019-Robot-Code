@@ -26,6 +26,8 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.knowm.xchart/xchart
     compile group: 'org.knowm.xchart', name: 'xchart', version: '3.5.4'
+    
+    compile 'com.github.team401:LightLink-Java:1.1'
 
 
     compile 'com.google.code.gson:gson:2.8.5'

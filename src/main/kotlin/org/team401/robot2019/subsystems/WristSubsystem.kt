@@ -26,6 +26,7 @@ import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.util.LEDManager
 import kotlin.math.roundToInt
 
 /**
@@ -33,7 +34,7 @@ import kotlin.math.roundToInt
  * @version 2/10/2019
  *
  */
-object WristSubsystem: Subsystem() {
+object WristSubsystem: Subsystem(100L) {
     private val rotationTalon = TalonSRX(HardwareMap.Arm.wristTalonId)
     val leftIntakeTalon = TalonSRX(HardwareMap.Arm.leftIntakeWheelTalonId)
     val rightIntakeTalon = TalonSRX(HardwareMap.Arm.rightIntakeWheelTalonId)
@@ -249,11 +250,9 @@ object WristSubsystem: Subsystem() {
     }
 
     override fun action() {
-        //println(cargoSensorNO.get())
-        //println(cargoSensor.get())
-        //println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
-        //println(rotation.getPosition().toDegrees())
+        LEDManager.updateGamepieceStatus(systemSeesHatch(), systemSeesCargo()) //Update gamepiece status from sensors
 
+        //debug
         println(pot.value)
     }
 
