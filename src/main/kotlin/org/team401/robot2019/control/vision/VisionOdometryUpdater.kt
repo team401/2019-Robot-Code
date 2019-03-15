@@ -21,6 +21,7 @@ class VisionOdometryUpdater(private val driveState: DifferentialDriveState = Dri
         val frame = VisionManager.backCamera.frame
         if (enabled && frame.hasTarget) {
             if (frame.timeCaptured > lastFrameCaptureTime) {
+                /*
                 //We got a new frame, let's process it
                 //Get the current pose
                 val currentPose = driveState.getFieldToVehicle(ctx.time)
@@ -35,6 +36,7 @@ class VisionOdometryUpdater(private val driveState: DifferentialDriveState = Dri
                 //Transform measured pose by displacement
                 val finalPose = measuredPose.transformBy(displacement)
                 DrivetrainSubsystem.driveState.addFieldToVehicleObservation(ctx.time, finalPose)
+                */
             }
         }
     }

@@ -1,26 +1,20 @@
 package org.team401.robot2019.control.vision
 
-import org.snakeskin.measure.Inches
 import org.team401.taxis.geometry.Pose2d
-import org.team401.taxis.geometry.Rotation2d
 
 object VisionKinematics {
     /**
-     * Constant transform from the robot to the camera.
-     * Distance from the origin of the robot to the origin of the camera, as measured in the field (x, y) configuration
-     */
-    val robotToCamera = Pose2d(0.0, 0.0, Rotation2d.identity())
-
-    val cameraToGoalHeight = 12.125.Inches
-
-    /**
+     * Solves the actual field to robot pose given the estimated robot pose, the constant field to goal,
+     * the constant robot to camera, and the measured camera to goal
+     *
      * @param fieldToRobot Pose measurement of the robot relative to the field origin frame
      * @param fieldToGoal Pose measurement of the goal relative to the field origin frame
+     * @param robotToCamera Offset from the origin of the robot to the camera
      * @param cameraToGoal Pose measurement of the goal relative to the origin of the camera
      *
      * @return The actual field to robot measurement from the camera
      */
-    fun fieldForward(fieldToRobot: Pose2d, fieldToGoal: Pose2d, cameraToGoal: Pose2d): Pose2d {
+    fun solveFieldToRobot(fieldToRobot: Pose2d, fieldToGoal: Pose2d, robotToCamera: Pose2d, cameraToGoal: Pose2d): Pose2d {
         //Calculate the pose of the camera, from odometry, on the field
         val fieldToCamera = fieldToRobot.transformBy(robotToCamera)
         //Calculate the field to goal transform, as measured by the camera
@@ -32,21 +26,16 @@ object VisionKinematics {
     }
 
     /**
-     * Solves the camera to goal pose given the angle of the robot, the angle of the target, and the camera info
+     * Solves the field to goal pose given the current robot pose, and the camera to goal pose
+     *
+     * @param fieldToRobot Pose measurement of the robot relative to the field origin frame
+     * @param robotToCamera Offset from the origin of the robot to the camera
+     * @param cameraToGoal Pose measurement of the goal relative to the origin of the camera
      */
-    fun cameraForward(robotAngle: Rotation2d, goalAngle: Rotation2d, cameraHorizontal: Rotation2d, cameraVertical: Rotation2d): Pose2d {
-        val angleFromGoal = goalAngle.rotateBy(robotAngle.inverse())
-        //println("angleFromGoal: $angleFromGoal")
-        val cameraHorizontalAdjusted = cameraHorizontal.rotateBy(angleFromGoal)
-        //println("cameraHorizontalAdjusted: $cameraHorizontalAdjusted")
-        val cameraDistanceToGoal = cameraToGoalHeight.value / cameraVertical.tan()
-        //println("dist: $cameraDistanceToGoal")
-        val cameraHorizontalDisplacementToGoal = cameraDistanceToGoal * cameraHorizontalAdjusted.tan()
-        //println("disp: $cameraHorizontalDisplacementToGoal")
-        return Pose2d(-cameraDistanceToGoal, -cameraHorizontalDisplacementToGoal, angleFromGoal)
+    fun solveFieldToGoal(fieldToRobot: Pose2d, robotToCamera: Pose2d, cameraToGoal: Pose2d): Pose2d {
+        //Calculate the pose of the camera, from odometry, on the field
+        val fieldToCamera = fieldToRobot.transformBy(robotToCamera)
+        //Transform current odometry position by camera readings to get pose of target
+        return fieldToCamera.transformBy(cameraToGoal.inverse())
     }
-}
-
-fun main(args: Array<String>) {
-    println(Pose2d(20.0, 20.0, Rotation2d.identity()).inverse().transformBy(Pose2d(22.0, 22.0, Rotation2d.identity())))
 }

@@ -5,6 +5,8 @@ import org.snakeskin.measure.Inches
 import org.snakeskin.measure.MagEncoderTicks
 import org.snakeskin.template.TankDrivetrainGeometryTemplate
 import org.snakeskin.utility.Selectable
+import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.geometry.Rotation2d
 import kotlin.math.atan2
 
 /**
@@ -122,5 +124,10 @@ object Geometry {
          */
         val frontHomeOffset = (-0.5).Inches
         val backHomeOffset = (-1.25).Inches
+    }
+
+    object VisionGeometry {
+        val robotToFrontCamera = Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0))
+        val robotToBackCamera = Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0))
     }
 }
