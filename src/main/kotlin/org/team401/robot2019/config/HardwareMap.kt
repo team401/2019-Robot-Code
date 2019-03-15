@@ -40,6 +40,8 @@ object HardwareMap {
         const val ballSensorNCPort = 1
         const val ballSensorNOPort = 0
 
+        const val potPort = 1 //analog
+
     }
 
     object FloorPickup {

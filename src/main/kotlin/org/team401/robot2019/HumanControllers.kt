@@ -18,7 +18,7 @@ import org.team401.taxis.geometry.Translation2d
  * @version 1/5/2019
  *
  */
-/*
+
 val LeftStick = HumanControls.t16000m(0) {
     invertAxis(Axes.PITCH)
 
@@ -42,9 +42,41 @@ val LeftStick = HumanControls.t16000m(0) {
 }
 
 val RightStick = HumanControls.t16000m(1) {
+    whenButton(Buttons.STICK_BOTTOM) {
+        pressed {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
+        }
+        released {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
+        }
+    }
+
+    whenButton(Buttons.STICK_RIGHT) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbPull)
+
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Stowed)) {
+                //We want to start climbing
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL3)
+            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)) {
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL3)
+            }
+
+        }
+        released {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.DownL3)) {
+                //We are in the process of climbing, slowly go down
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
+            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.FallL3)) {
+                //We have climbed up and pulled ourselves onto the platform, we now want to retract the front legs
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)
+            }
+        }
+    }
 
 }
-*/
+
 
 val Gamepad = HumanControls.f310(2){
     whenButton(Buttons.Y) {
@@ -111,7 +143,7 @@ val Gamepad = HumanControls.f310(2){
     }
 }
 
-
+/*
 val LeftStick = HumanControls.attack3(0) {
     invertAxis(Axes.PITCH)
 

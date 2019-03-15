@@ -159,32 +159,34 @@ object ControlParameters{
 
     object ClimberParameters {
         object BackDownPIDF: PIDFTemplate {
-            override val kP = 1.25
+            override val kP = .4
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0
         }
 
         object BackUpPIDF: PIDFTemplate {
-            override val kP = 1.25
+            override val kP = .4
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0
         }
 
         object FrontDownPIDF: PIDFTemplate {
-            override val kP = .45
+            override val kP = .6
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0
         }
 
         object FrontUpPIDF: PIDFTemplate {
-            override val kP = .45
+            override val kP = .6
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0
         }
+
+        val angleKp = 0.5
 
         val climberVelocityDown = 10.0.InchesPerSecond
         val climberAccelerationDown = 10.0.InchesPerSecond //per second.  We are using a velocity unit here because the unit library can't convert lin -> ang accel

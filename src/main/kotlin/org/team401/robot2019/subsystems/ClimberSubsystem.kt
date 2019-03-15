@@ -13,15 +13,15 @@ import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.logic.LockingDelegate
-import org.snakeskin.measure.Inches
-import org.snakeskin.measure.Milliseconds
-import org.snakeskin.measure.RadiansPerSecond
-import org.snakeskin.measure.Seconds
+import org.snakeskin.measure.*
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.utility.Ticker
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
+import org.team401.robot2019.control.climbing.ClimberState
+import org.team401.robot2019.control.climbing.ClimbingController
 import kotlin.math.roundToInt
 
 /**
@@ -35,6 +35,17 @@ object ClimberSubsystem: Subsystem() {
 
     private val back = CTRESmartGearbox(backTalon)
     private val front = CTRESmartGearbox(frontTalon)
+
+    private val chassisYawPitchRoll = DoubleArray(3)
+
+    /**
+     * Returns the chassis pitch, correctly adjusted to the way the ClimbingController wants it.
+     * This includes possibly negating the angle, and using a different axis depending on the mounting of the IMU
+     */
+    private fun getChassisPitch(): AngularDistanceMeasureDegrees {
+        DrivetrainSubsystem.imu.getYawPitchRoll(chassisYawPitchRoll)
+        return (-1.0 * chassisYawPitchRoll[1]).Degrees
+    }
 
     enum class ClimberStates {
         Disabled,
@@ -70,6 +81,10 @@ object ClimberSubsystem: Subsystem() {
         return Math.abs((setpoint - getBackHeightInches()).value).Inches <= ControlParameters.ClimberParameters.climberTolerance
     }
 
+    fun getCurrentClimberState(): ClimberState {
+        return ClimberState(getBackHeightInches(), getFrontHeightInches())
+    }
+
     private fun upwardsMoveBack(setpointBack: LinearDistanceMeasureInches) {
         //Configure motion velocities and accelerations
         val nativeVelocityBack = ControlParameters.ClimberParameters.climberVelocityUp
@@ -80,11 +95,11 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        back.master.configMotionCruiseVelocity(nativeVelocityBack, 0)
-        back.master.configMotionAcceleration(nativeAccelBack, 0)
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 30)
+        back.master.configMotionAcceleration(nativeAccelBack, 30)
 
 
-        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 0)
+        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 30)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -103,10 +118,10 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        front.master.configMotionCruiseVelocity(nativeVelocityFront, 0)
-        front.master.configMotionAcceleration(nativeAccelFront, 0)
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 30)
+        front.master.configMotionAcceleration(nativeAccelFront, 30)
 
-        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 0)
+        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 30)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -125,11 +140,11 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        back.master.configMotionCruiseVelocity(nativeVelocityBack, 0)
-        back.master.configMotionAcceleration(nativeAccelBack, 0)
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 30)
+        back.master.configMotionAcceleration(nativeAccelBack, 30)
 
 
-        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 0)
+        back.setPIDF(ControlParameters.ClimberParameters.BackUpPIDF, 0, 30)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -148,10 +163,10 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        front.master.configMotionCruiseVelocity(nativeVelocityFront, 0)
-        front.master.configMotionAcceleration(nativeAccelFront, 0)
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 30)
+        front.master.configMotionAcceleration(nativeAccelFront, 30)
 
-        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 0)
+        front.setPIDF(ControlParameters.ClimberParameters.FrontUpPIDF, 0, 30)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -170,10 +185,10 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.backPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        back.master.configMotionCruiseVelocity(nativeVelocityBack, 0)
-        back.master.configMotionAcceleration(nativeAccelBack, 0)
+        back.master.configMotionCruiseVelocity(nativeVelocityBack, 30)
+        back.master.configMotionAcceleration(nativeAccelBack, 30)
 
-        //back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF, 0, 0)
+        back.setPIDF(ControlParameters.ClimberParameters.BackDownPIDF, 0, 30)
 
         val nativeSetpointBack = setpointBack
             .toAngularDistance(Geometry.ClimberGeometry.backPitchRadius)
@@ -192,10 +207,10 @@ object ClimberSubsystem: Subsystem() {
             .toAngularVelocity(Geometry.ClimberGeometry.frontPitchRadius)
             .toMagEncoderTicksPerHundredMilliseconds().value.roundToInt() //PER SECOND
 
-        front.master.configMotionCruiseVelocity(nativeVelocityFront, 0)
-        front.master.configMotionAcceleration(nativeAccelFront, 0)
+        front.master.configMotionCruiseVelocity(nativeVelocityFront, 30)
+        front.master.configMotionAcceleration(nativeAccelFront, 30)
 
-        //front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF, 0, 0)
+        front.setPIDF(ControlParameters.ClimberParameters.FrontDownPIDF, 0, 30)
 
         val nativeSetpointFront = setpointFront
             .toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius)
@@ -219,17 +234,40 @@ object ClimberSubsystem: Subsystem() {
         }
         
         state(ClimberStates.TestDown) {
+            var started = false
+
             entry {
-                back.master.config_kF(0, SmartDashboard.getNumber("ffBack", 0.0), 0)
-                front.master.config_kF(0, SmartDashboard.getNumber("ffFront", 0.0), 0)
-                back.master.config_kP(0, SmartDashboard.getNumber("pBack", 0.0), 0)
-                front.master.config_kP(0, SmartDashboard.getNumber("pFront", 0.0), 0)
-                downwardsMoveBack(22.0.Inches)
-                downwardsMoveFront(22.0.Inches)
+                started = false
+                ClimbingController.kP = SmartDashboard.getNumber("angleP", 0.0)
+                upwardsMoveFront(ControlParameters.ClimberPositions.stowed) //Move the climber to the stowed position
+                upwardsMoveBack(ControlParameters.ClimberPositions.stowed) //Upwards is fine since we just need to get there fast
             }
 
-            action{
-                println("Percent out : Front: ${front.master.motorOutputPercent}, Back : ${back.master.motorOutputPercent}")
+            rtAction {
+                //Check and see if we're at the stowed position
+                if (!started && backWithinTolerance(ControlParameters.ClimberPositions.stowed)
+                    && frontWithinTolerance(ControlParameters.ClimberPositions.stowed)) {
+                    println(back.master.config_kP(0, SmartDashboard.getNumber("backP", 0.0), 30))
+                    println(front.master.config_kP(0, SmartDashboard.getNumber("frontP", 0.0), 30))
+                    //Start the profile
+                    ClimbingController.setSetpoint(getCurrentClimberState(), ControlParameters.ClimberPositions.l3Climb)
+                    started = true
+                }
+
+                if (started) {
+                    //Update controller
+                    val desiredState = ClimbingController.update(dt, getChassisPitch())
+                    //Convert setpoints
+                    val backPosition = desiredState.backPosition.toAngularDistance(Geometry.ClimberGeometry.backPitchRadius).toMagEncoderTicks().value
+                    val frontPosition = desiredState.frontPosition.toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius).toMagEncoderTicks().value
+                    //Set controllers
+                    back.set(ControlMode.Position, backPosition)
+                    front.set(ControlMode.Position, frontPosition)
+                }
+
+                if (ClimbingController.isDone()) {
+                    println("Climb done.")
+                }
             }
 
             exit {
@@ -311,17 +349,48 @@ object ClimberSubsystem: Subsystem() {
         }
         
         state (ClimberStates.DownL3) {
+            var started = false
+
             entry {
-                downwardsMoveFront(ControlParameters.ClimberPositions.l3Climb)
-                downwardsMoveBack(ControlParameters.ClimberPositions.l3Climb)
+                started = false
+                upwardsMoveFront(ControlParameters.ClimberPositions.stowed) //Move the climber to the stowed position
+                upwardsMoveBack(ControlParameters.ClimberPositions.stowed) //Upwards is fine since we just need to get there fast
             }
 
-            action {
-                //Start checking our position.  If we're >= the setpoint - tolerance, move on.
-                if (frontWithinTolerance(ControlParameters.ClimberPositions.l3Climb)
-                    && backWithinTolerance(ControlParameters.ClimberPositions.l3Climb)) {
-                    setState(ClimberStates.FallL3)
+            rtAction {
+                //Check and see if we're at the stowed position
+                if (!started && backWithinTolerance(ControlParameters.ClimberPositions.stowed)
+                    && frontWithinTolerance(ControlParameters.ClimberPositions.stowed)) {
+                    back.master.config_kP(0, ControlParameters.ClimberParameters.BackDownPIDF.kP, 30)
+                    front.master.config_kP(0, ControlParameters.ClimberParameters.FrontDownPIDF.kP, 30)
+                    //Start the profile
+                    ClimbingController.setSetpoint(getCurrentClimberState(), ControlParameters.ClimberPositions.l3Climb)
+                    started = true
                 }
+
+                if (started) {
+                    //Update controller
+                    val desiredState = ClimbingController.update(dt, getChassisPitch())
+                    //Convert setpoints
+                    val backPosition = desiredState.backPosition.toAngularDistance(Geometry.ClimberGeometry.backPitchRadius).toMagEncoderTicks().value
+                    val frontPosition = desiredState.frontPosition.toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius).toMagEncoderTicks().value
+                    //Set controllers
+                    back.set(ControlMode.Position, backPosition)
+                    front.set(ControlMode.Position, frontPosition)
+                    if (ClimbingController.isDone()) {
+                        println("Climb done.")
+                    }
+                    //Start checking our position.  If we're >= the setpoint - tolerance, move on.
+                    if (frontWithinTolerance(ControlParameters.ClimberPositions.l3Climb)
+                        && backWithinTolerance(ControlParameters.ClimberPositions.l3Climb)) {
+                        setState(ClimberStates.FallL3)
+                    }
+                }
+            }
+
+            exit {
+                front.stop()
+                back.stop()
             }
         }
         
@@ -403,6 +472,7 @@ object ClimberSubsystem: Subsystem() {
             println("[Fault Cleared] Climber is homing")
         }
 
+        //println(getChassisPitch())
 
         //debug
         //println("Back: ${back.getPosition().toLinearDistance(Geometry.ClimberGeometry.backPitchRadius).toInches()}\tFront: ${front.getPosition().toLinearDistance(Geometry.ClimberGeometry.frontPitchRadius).toInches()}")
@@ -439,9 +509,8 @@ object ClimberSubsystem: Subsystem() {
             }
         }
         
-        SmartDashboard.putNumber("ffBack", 0.0)
-        SmartDashboard.putNumber("ffFront", 0.0)
-        SmartDashboard.putNumber("pBack", 0.0)
-        SmartDashboard.putNumber("pFront", 0.0)
+        SmartDashboard.putNumber("angleP", 0.0)
+        SmartDashboard.putNumber("frontP", 0.0)
+        SmartDashboard.putNumber("backP", 0.0)
     }
 }

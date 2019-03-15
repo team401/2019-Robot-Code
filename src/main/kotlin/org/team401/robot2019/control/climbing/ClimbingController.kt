@@ -1,7 +1,9 @@
 package org.team401.robot2019.control.climbing
 
+import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.InchesPerSecondPerSecond
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.config.ControlParameters
@@ -12,10 +14,9 @@ import org.team401.robot2019.config.ControlParameters
  * (i.e. operations that only move a single leg) will just use motion magic.
  */
 object ClimbingController {
-    private lateinit var activeProfileBack: ClimbingProfileGenerator
-    private lateinit var activeProfileFront: ClimbingProfileGenerator //TODO do better handling of these, create in update
+    private lateinit var activeProfile: ClimbingProfileGenerator
 
-    val kP = 0.0 //TODO move to constants
+    var kP by LockingDelegate(ControlParameters.ClimberParameters.angleKp)
 
     /**
      * Updates the climber controller.
@@ -25,13 +26,12 @@ object ClimbingController {
      * This should be positive when the front of the robot is angled up when viewed from the right side.
      * @return The target state of the climber
      */
-    @Synchronized fun update(dt: Double, chassisPitch: AngularDistanceMeasureRadians): ClimberState {
-        val backOutput = activeProfileBack.update(dt)
-        val frontOutput = activeProfileFront.update(dt)
-        val angleAdjustment = chassisPitch.value * kP
+    @Synchronized fun update(dt: Double, chassisPitch: AngularDistanceMeasureDegrees): ClimberState {
+        val referenceOutput = activeProfile.update(dt)
+        val angleAdjustment = chassisPitch.value * chassisPitch.value * kP //Nonlinear feedback!
         //A positive angle means we want to increase the setpoint of the back legs, and decrease the front
-        val backSetpointFinal = backOutput.position + angleAdjustment.Inches
-        val frontSetpointFinal = frontOutput.position - angleAdjustment.Inches
+        val backSetpointFinal = referenceOutput.position + angleAdjustment.Inches
+        val frontSetpointFinal = referenceOutput.position - angleAdjustment.Inches
 
         return ClimberState(backSetpointFinal, frontSetpointFinal)
     }
@@ -45,18 +45,20 @@ object ClimbingController {
      * This expects both legs to be in the same position when starting a profile
      */
     @Synchronized fun setSetpoint(currentState: ClimberState, target: LinearDistanceMeasureInches) {
-        activeProfileBack = ClimbingProfileGenerator(
-            ControlParameters.ClimberParameters.climberVelocityDown,
-            ControlParameters.ClimberParameters.climberAccelerationDown.value.InchesPerSecondPerSecond, //TODO fix in constants
-            currentState.backPosition,
-            target
-        )
+        val maxStart = Math.max(currentState.backPosition.value, currentState.frontPosition.value).Inches
 
-        activeProfileFront = ClimbingProfileGenerator(
+        activeProfile = ClimbingProfileGenerator(
             ControlParameters.ClimberParameters.climberVelocityDown,
             ControlParameters.ClimberParameters.climberAccelerationDown.value.InchesPerSecondPerSecond, //TODO fix in constants
-            currentState.frontPosition,
+            maxStart,
             target
         )
+    }
+
+    /**
+     * Returns true when the profile has finished executing
+     */
+    @Synchronized fun isDone(): Boolean {
+        return activeProfile.isDone()
     }
 }

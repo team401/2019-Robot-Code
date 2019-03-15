@@ -127,27 +127,48 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                     master.pidController.ff = kF
                 }
                 
-                DrivetrainSubsystem.setPose(Pose2d(5.5 * 12.0, 17.25 * 12.0, Rotation2d.fromDegrees(0.0)))
+                //DrivetrainSubsystem.setPose(Pose2d(17.5, 17.5, Rotation2d.fromDegrees(180.0)))
+                setPose(Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0)))
                 both {
                     setDeadband(0.0)
                 }
                 pathManager.reset()
+
+                /*
                 pathManager.setTrajectory(
                     TrajectoryIterator(TimedView(
                         pathManager.generateTrajectory(
-                            false,
-                            listOf(
-                                Pose2d(5.5 * 12.0, 17.25 * 12.0, Rotation2d.fromDegrees(0.0)),
-                                Pose2d(17.5 * 12.0, 20.0 * 12.0, Rotation2d.fromDegrees(0.0)),
-                                Pose2d(20.0 * 12.0, 25.0 * 12.0, Rotation2d.fromDegrees(145.0))
+                            true,
+                            listOf( ///226.5, 54.5
+                                Pose2d(17.5, 17.5, Rotation2d.fromDegrees(180.0)),
+                                Pose2d(161.0, 54.5, Rotation2d.fromDegrees(180.0)),
+                                Pose2d(209.0, 54.5, Rotation2d.fromDegrees(180.0))
                             ),
                             listOf(CentripetalAccelerationConstraint(110.0)),
-                            14.0 * 12.0,
+                            12.0 * 12.0,
+                            4.0 * 12.0,
+                            9.0
+                        )
+                    ))
+                )
+                */
+
+                pathManager.setTrajectory(
+                    TrajectoryIterator(TimedView(
+                        pathManager.generateTrajectory(
+                            true,
+                            listOf(
+                                Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0)),
+                                Pose2d(8.0 * 12.0, 0.0, Rotation2d.fromDegrees(180.0))
+                            ),
+                            listOf(CentripetalAccelerationConstraint(110.0)),
+                            12.0 * 12.0,
                             8.0 * 12.0,
                             9.0
                         )
                     ))
                 )
+
             }
 
             rtAction {
@@ -216,6 +237,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         both {
             master.idleMode = CANSparkMax.IdleMode.kBrake
             master.setSmartCurrentLimit(40)
+            master.setControlFramePeriodMs(10)
             master.openLoopRampRate = 0.25
             master.closedLoopRampRate = 0.0
             master.pidController.p = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kP
@@ -243,6 +265,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
         //Set sensor phase
         leftTalon.setSensorPhase(true)
+        rightTalon.setSensorPhase(false)
 
         //Configure status frame rate
         leftTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100)
@@ -289,6 +312,11 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
     override fun setup() {
         configureDriveMotorControllers()
+        configureFeedbackTalonsForDrive(
+            WristSubsystem.leftIntakeTalon,
+            WristSubsystem.rightIntakeTalon
+        )
+
 
         both {
             setPosition(0.0.Radians)
@@ -297,6 +325,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         on(Events.TELEOP_ENABLED) {
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)
         }
+
+        setPose(Pose2d.identity())
 
         SmartDashboard.putNumber("driveP", 0.0)
         SmartDashboard.putNumber("driveI", 0.0)

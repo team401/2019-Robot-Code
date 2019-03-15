@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.SensorCollection
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
+import edu.wpi.first.wpilibj.AnalogInput
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
@@ -46,6 +47,8 @@ object WristSubsystem: Subsystem() {
     private val cargoSensorNO = DigitalInput(HardwareMap.Wrist.ballSensorNOPort)
     private val cargoSensorNC = DigitalInput(HardwareMap.Wrist.ballSensorNCPort)
     private val leftHatchSensor = DigitalInput(4)
+
+    private val pot = AnalogInput(HardwareMap.Wrist.potPort)
 
     private val cargoHistory = History<Boolean>()
 
@@ -250,9 +253,12 @@ object WristSubsystem: Subsystem() {
         //println(cargoSensor.get())
         //println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
         //println(rotation.getPosition().toDegrees())
+
+        println(pot.value)
     }
 
     override fun setup() {
+
         leftIntakeTalon.inverted = true
         rightIntakeTalon.inverted = false
 
