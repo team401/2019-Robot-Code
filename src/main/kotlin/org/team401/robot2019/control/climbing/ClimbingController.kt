@@ -14,9 +14,8 @@ import org.team401.robot2019.config.ControlParameters
  * (i.e. operations that only move a single leg) will just use motion magic.
  */
 object ClimbingController {
-    private lateinit var activeProfile: ClimbingProfileGenerator
-
-    var kP by LockingDelegate(ControlParameters.ClimberParameters.angleKp)
+    private lateinit var activeProfileBack: ClimbingProfileGenerator
+    private lateinit var activeProfileFront: ClimbingProfileGenerator
 
     /**
      * Updates the climber controller.
@@ -27,13 +26,10 @@ object ClimbingController {
      * @return The target state of the climber
      */
     @Synchronized fun update(dt: Double, chassisPitch: AngularDistanceMeasureDegrees): ClimberState {
-        val referenceOutput = activeProfile.update(dt)
-        val angleAdjustment = chassisPitch.value * chassisPitch.value * kP //Nonlinear feedback!
-        //A positive angle means we want to increase the setpoint of the back legs, and decrease the front
-        val backSetpointFinal = referenceOutput.position + angleAdjustment.Inches
-        val frontSetpointFinal = referenceOutput.position - angleAdjustment.Inches
+        val referenceOutputBack = activeProfileBack.update(dt)
+        val referenceOutputFront = activeProfileFront.update(dt)
 
-        return ClimberState(backSetpointFinal, frontSetpointFinal)
+        return ClimberState(referenceOutputBack.position, referenceOutputFront.position)
     }
 
     /**
@@ -42,14 +38,24 @@ object ClimbingController {
      * @param currentState The starting point, should just be read from sensors
      * @param target The setpoint
      *
-     * This expects both legs to be in the same position when starting a profile
+     * This expects both legs to be in (about) the same position when starting a profile
      */
     @Synchronized fun setSetpoint(currentState: ClimberState, target: LinearDistanceMeasureInches) {
+        //Capture the climber that is furthest down, ues it as the starting position.
+        //This helps to synchronize the profile by quickly snapping the "lagging" leg
+        //into the position that it is supposed to be in
         val maxStart = Math.max(currentState.backPosition.value, currentState.frontPosition.value).Inches
 
-        activeProfile = ClimbingProfileGenerator(
-            ControlParameters.ClimberParameters.climberVelocityDown,
-            ControlParameters.ClimberParameters.climberAccelerationDown.value.InchesPerSecondPerSecond, //TODO fix in constants
+        activeProfileBack = ClimbingProfileGenerator(
+                ControlParameters.ClimberParameters.climberVelocityDownClimbBack,
+            ControlParameters.ClimberParameters.climberAccelerationDown.value.InchesPerSecondPerSecond,
+            maxStart,
+            target
+        )
+
+        activeProfileFront = ClimbingProfileGenerator(
+            ControlParameters.ClimberParameters.climberVelocityDownClimbFront,
+            ControlParameters.ClimberParameters.climberAccelerationDown.value.InchesPerSecondPerSecond,
             maxStart,
             target
         )
@@ -59,6 +65,6 @@ object ClimbingController {
      * Returns true when the profile has finished executing
      */
     @Synchronized fun isDone(): Boolean {
-        return activeProfile.isDone()
+        return activeProfileBack.isDone() && activeProfileFront.isDone()
     }
 }

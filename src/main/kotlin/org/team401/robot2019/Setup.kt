@@ -49,7 +49,7 @@ fun setup() {
     Selectable.selected = RobotIndex.COMP
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ClimberSubsystem)
+    Subsystems.add(DrivetrainSubsystem, WristSubsystem)
     Controllers.add(LeftStick, RightStick)
 
     //Miscellaneous initialization

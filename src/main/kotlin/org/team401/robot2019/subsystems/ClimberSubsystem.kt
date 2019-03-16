@@ -238,7 +238,6 @@ object ClimberSubsystem: Subsystem() {
 
             entry {
                 started = false
-                ClimbingController.kP = SmartDashboard.getNumber("angleP", 0.0)
                 upwardsMoveFront(ControlParameters.ClimberPositions.stowed) //Move the climber to the stowed position
                 upwardsMoveBack(ControlParameters.ClimberPositions.stowed) //Upwards is fine since we just need to get there fast
             }

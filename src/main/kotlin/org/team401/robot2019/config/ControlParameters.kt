@@ -73,6 +73,10 @@ object ControlParameters{
         val intakePower = -.75
         val scoringPower = 1.0
 
+        const val invertPot = true
+        const val degreesPerPotValue = (180.0 / 805.0)
+        const val potOffset = 2070
+
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 2.3
             override val kI = 0.0
@@ -186,7 +190,11 @@ object ControlParameters{
             override val kF = 0.0
         }
 
-        val angleKp = 0.5
+        /**
+         * Velocities for the actual climb.  The climb will use the normal acceleration values.
+         */
+        val climberVelocityDownClimbBack = 10.0.InchesPerSecond
+        val climberVelocityDownClimbFront = 10.0.InchesPerSecond
 
         val climberVelocityDown = 10.0.InchesPerSecond
         val climberAccelerationDown = 10.0.InchesPerSecond //per second.  We are using a velocity unit here because the unit library can't convert lin -> ang accel

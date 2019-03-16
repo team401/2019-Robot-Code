@@ -80,6 +80,18 @@ object WristSubsystem: Subsystem(100L) {
         Unclamped
     }
 
+    /**
+     * Returns the current reading on the pot, scaled correctly, in degrees
+     */
+    private fun getPotAngleDegrees(): AngularDistanceMeasureDegrees {
+        val potMaybeInverted = if (ControlParameters.WristParameters.invertPot) {
+            4095 - pot.value
+        } else {
+            pot.value
+        }
+        return ((potMaybeInverted - ControlParameters.WristParameters.potOffset) * ControlParameters.WristParameters.degreesPerPotValue).Degrees
+    }
+
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
         if (setpoint > 210.0.Degrees || setpoint < (-185.0).Degrees) {
             println("ILLEGAL WRIST COMMAND $setpoint")
@@ -253,7 +265,7 @@ object WristSubsystem: Subsystem(100L) {
         LEDManager.updateGamepieceStatus(systemSeesHatch(), systemSeesCargo()) //Update gamepiece status from sensors
 
         //debug
-        println(pot.value)
+        println("Raw: ${pot.value}\tDegrees: ${getPotAngleDegrees()}\tEnc: ${rotation.getPosition().toDegrees()}")
     }
 
     override fun setup() {
@@ -267,10 +279,21 @@ object WristSubsystem: Subsystem(100L) {
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
 
+        /*
         if (Math.abs(rotation.master.selectedSensorPosition - rotation.master.sensorCollection.pulseWidthPosition) >= 10.0) {
             //We need to reset the wrist home
             rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2396 + (2048)
         }
+        */
+
+        val samples = arrayListOf<Double>()
+
+        for (i in 0 until 10) {
+            samples.add(getPotAngleDegrees().value) //Take sample
+            Thread.sleep(10) //Wait ~10 ms
+        }
+
+        rotation.master.selectedSensorPosition = samples.average().Degrees.toMagEncoderTicks().value.roundToInt()
 
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
