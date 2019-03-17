@@ -15,25 +15,30 @@ import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.logic.LockingDelegate
-import org.snakeskin.measure.Radians
-import org.snakeskin.measure.RadiansPerSecond
-import org.snakeskin.measure.RadiansPerSecondPerSecond
+import org.snakeskin.measure.*
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.LeftStick
 import org.team401.robot2019.RightStick
+import org.team401.robot2019.RobotEvents
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
+import org.team401.robot2019.control.superstructure.SuperstructureController
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.control.vision.VisionKinematics
+import org.team401.robot2019.control.vision.VisionManager
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
 import org.team401.taxis.diffdrive.odometry.OdometryTracker
 import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.geometry.Pose2dWithCurvature
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.trajectory.TimedView
 import org.team401.taxis.trajectory.TrajectoryIterator
 import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
+import org.team401.taxis.trajectory.timing.TimedState
 
 /**
  * @author Cameron Earle
@@ -79,7 +84,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         ClimbPull,
         ClimbStop,
         ClimbReposition,
-        VisionAlign
+        HatchAlignFront
     }
 
     enum class DriveFaults {
@@ -119,9 +124,9 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
         state (DrivetrainSubsystem.DriveStates.PathFollowing) {
             entry {
-                val kP = SmartDashboard.getNumber("driveP", 0.0)
-                val kI = SmartDashboard.getNumber("driveI", 0.0)
-                val kD = SmartDashboard.getNumber("driveD", 0.0)
+                val kP = 0.0//SmartDashboard.getNumber("driveP", 0.0)
+                val kI = 0.0//SmartDashboard.getNumber("driveI", 0.0)
+                val kD = 0.0//SmartDashboard.getNumber("driveD", 0.0)
                 val kF = 0.0
                 
                 both {
@@ -129,49 +134,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                     master.pidController.i = kI
                     master.pidController.d = kD
                     master.pidController.ff = kF
-                }
-                
-                //DrivetrainSubsystem.setPose(Pose2d(17.5, 17.5, Rotation2d.fromDegrees(180.0)))
-                setPose(Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0)))
-                both {
                     setDeadband(0.0)
                 }
-                pathManager.reset()
-
-                /*
-                pathManager.setTrajectory(
-                    TrajectoryIterator(TimedView(
-                        pathManager.generateTrajectory(
-                            true,
-                            listOf( ///226.5, 54.5
-                                Pose2d(17.5, 17.5, Rotation2d.fromDegrees(180.0)),
-                                Pose2d(161.0, 54.5, Rotation2d.fromDegrees(180.0)),
-                                Pose2d(209.0, 54.5, Rotation2d.fromDegrees(180.0))
-                            ),
-                            listOf(CentripetalAccelerationConstraint(110.0)),
-                            12.0 * 12.0,
-                            4.0 * 12.0,
-                            9.0
-                        )
-                    ))
-                )
-                */
-
-                pathManager.setTrajectory(
-                    TrajectoryIterator(TimedView(
-                        pathManager.generateTrajectory(
-                            true,
-                            listOf(
-                                Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0)),
-                                Pose2d(8.0 * 12.0, 0.0, Rotation2d.fromDegrees(180.0))
-                            ),
-                            listOf(CentripetalAccelerationConstraint(110.0)),
-                            12.0 * 12.0,
-                            8.0 * 12.0,
-                            9.0
-                        )
-                    ))
-                )
 
             }
 
@@ -192,13 +156,6 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
                 left.master.pidController.setReference(leftVelocityRpm, ControlType.kVelocity, 0, totalFfLeft)
                 right.master.pidController.setReference(rightVelocityRpm, ControlType.kVelocity, 0, totalFfRight)
-
-                SmartDashboard.putNumber("leftDesired", leftVelocityRpm)
-                SmartDashboard.putNumber("rightDesired", rightVelocityRpm)
-                SmartDashboard.putNumber("leftActual", left.master.encoder.velocity)
-                SmartDashboard.putNumber("rightActual", right.master.encoder.velocity)
-                SmartDashboard.putNumber("leftFf", totalFfLeft)
-                SmartDashboard.putNumber("rightFf", totalFfRight)
             }
 
             exit {
@@ -227,6 +184,92 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
             action {
                 arcade(LeftStick.readAxis { PITCH } * ControlParameters.DrivetrainParameters.slowingFactor,
                     RightStick.readAxis { ROLL } * ControlParameters.DrivetrainParameters.slowingFactor)
+            }
+        }
+
+        state(DriveStates.HatchAlignFront) {
+            var vLoc = false
+            var tGen = false
+            var fieldToGoal = Pose2d.identity()
+            var startPose = Pose2d.identity()
+            var startVelocity = 0.0.InchesPerSecond
+            var trajectory: TrajectoryIterator<TimedState<Pose2dWithCurvature>>
+
+            rejectIf {
+                SuperstructureController.output.wristTool != WristMotionPlanner.Tool.HatchPanelTool
+            }
+
+            entry {
+                vLoc = false
+                tGen = false
+                VisionManager.frontCamera.configForVision(1)
+                VisionManager.frontCamera.resetFrame()
+                Thread.sleep(100) //Give the camera some time to enter the state
+            }
+
+            rtAction {
+                if (!vLoc) {
+                    //Look for target
+                    val frame = VisionManager.frontCamera.frame
+                    val poseAtCapture = driveState.getFieldToVehicle(frame.timeCaptured.value)
+                    startPose = driveState.getFieldToVehicle(time)
+                    startVelocity = (left.getVelocity().toLinearVelocity(Geometry.DrivetrainGeometry.wheelRadius) +
+                            right.getVelocity().toLinearVelocity(Geometry.DrivetrainGeometry.wheelRadius)) / 2.0.Unitless
+                    if (frame.hasTarget) {
+                        val fieldToGoalCaptured = VisionKinematics.solveFieldToGoal(
+                            poseAtCapture,
+                            Geometry.VisionGeometry.robotToFrontCamera,
+                            frame.toPose2d()
+                        )
+
+                        println("Start pose: $startPose")
+                        println("Field to goal captured: $fieldToGoalCaptured")
+                        fieldToGoal = VisionKinematics.solveLatencyCorrection(poseAtCapture, startPose, fieldToGoalCaptured)
+                        println("Field to goal latency corrected: $fieldToGoal")
+                        send(RobotEvents.VLoc)
+                        vLoc = true
+                    }
+                } else {
+                    //Have target, trajectory time
+                    if (!tGen) {
+                        //Generate the trajectory
+                        val goal = fieldToGoal.transformBy(Pose2d(-38.0, 0.0, Rotation2d.identity())) //Account for arm length
+                        val straightPart = goal.transformBy(Pose2d(-6.0, 0.0, Rotation2d.identity())) //Add some points in the profile to drive straight
+
+                        trajectory = TrajectoryIterator(
+                            TimedView(
+                                pathManager.generateTrajectory(
+                                    false,
+                                    listOf(startPose, straightPart, goal),
+                                    listOf(),
+                                    startVelocity.value,
+                                    0.0,
+                                    2.0 * 12.0,
+                                    2.0 * 12.0,
+                                    9.0
+                                )
+                            )
+                        )
+
+                        /*
+                        //Run the trajectory
+                        pathManager.reset()
+                        pathManager.setTrajectory(
+                            trajectory
+                        )
+
+                        tGen = true
+                        setState(DriveStates.PathFollowing)
+                        */
+                        println(listOf(startPose, straightPart, goal))
+
+                        setState(DriveStates.OpenLoopOperatorControl)
+                    }
+                }
+            }
+
+            exit {
+                VisionManager.frontCamera.configForVision(0)
             }
         }
 

@@ -19,14 +19,18 @@ class SetWristAngleCommand(val tool: WristMotionPlanner.Tool, val angle: Angular
     var done = false
     private val targetArmPolar = ArmKinematics.inverse(targetPose)
     private val targetArmState = ArmState(targetArmPolar.r, targetArmPolar.theta, 0.0.RadiansPerSecond)
+    private var startArmState: ArmState? = null
 
     override fun entry() {
         WristMotionPlanner.setToAngleMode(tool, angle, targetPose)
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {
+        if (startArmState == null) {
+            startArmState = armState
+        }
         val wristCommand = WristMotionPlanner.update(armState, wristState)
-        SuperstructureController.update(targetArmState, wristCommand, tool)
+        SuperstructureController.update(startArmState!!, wristCommand, tool)
         println("Moving wrist from ${wristState.wristPosition.toDegrees()} to ${wristCommand.wristPosition}")
         done = true
     }

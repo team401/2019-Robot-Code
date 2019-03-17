@@ -16,8 +16,10 @@ import org.team401.robot2019.auto.CollectAngularTorqueData
 import org.team401.robot2019.auto.CollectLinearTorqueData
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureUpdater
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
 import org.team401.robot2019.subsystems.*
@@ -51,15 +53,24 @@ fun setup() {
     //AutoManager.setAutoLoop(CollectLinearTorqueData(DrivetrainSubsystem, .25, 3.0.Seconds))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, ClimberSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, ClimberSubsystem)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
     LEDManager.init()
-    //VisionManager.start()
+    VisionManager.start()
     SuperstructureMotionPlanner.preCompile()
 
     //Initialize real-time tasks
     RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
     RealTimeExecutor.addTask(SuperstructureUpdater)
+
+    //Events
+    /*
+    on (RobotEvents.VLoc) {
+        if (SuperstructureMotionPlanner.activeTool == WristMotionPlanner.Tool.HatchPanelTool) {
+            SuperstructureRoutines.intake(true, false)
+        }
+    }
+    */
 }

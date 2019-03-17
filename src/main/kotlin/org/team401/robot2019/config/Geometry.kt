@@ -1,5 +1,6 @@
 package org.team401.robot2019.config
 
+import org.snakeskin.measure.Centimeters
 import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.MagEncoderTicks
@@ -127,7 +128,7 @@ object Geometry {
     }
 
     object VisionGeometry {
-        val robotToFrontCamera = Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0))
+        val robotToFrontCamera = Pose2d(12.75.Centimeters.toInches().value, 20.5.Centimeters.toInches().value, Rotation2d.fromDegrees(0.0))
         val robotToBackCamera = Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0))
     }
 }

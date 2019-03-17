@@ -7,5 +7,6 @@ package org.team401.robot2019
  */
 enum class RobotEvents {
     CargoAcquired,
-    HatchAcquired
+    HatchAcquired,
+    VLoc
 }

@@ -281,7 +281,7 @@ object SuperstructureMotionPlanner {
     @Synchronized fun goToClimb() {
         reset()
 
-        commandQueue.add(RotationOnlyCommand(90.0.Degrees.toRadians(), WristMotionPlanner.Tool.HatchPanelTool))
+        commandQueue.add(RotationOnlyCommand((120.0).Degrees.toRadians(), WristMotionPlanner.Tool.HatchPanelTool))
         commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches, WristMotionPlanner.Tool.HatchPanelTool))
         commandQueue.add(SetWristAngleCommand(WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians, ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches, 90.0.Degrees.toRadians()))))
         commandQueue.add(DelayCommand(1.0.Seconds))

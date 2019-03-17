@@ -1,6 +1,15 @@
 package org.team401.robot2019.control.vision
 
+import org.snakeskin.measure.RadiansPerSecond
+import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.control.superstructure.geometry.EndpointKinematics
+import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.subsystems.WristSubsystem
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.geometry.Rotation2d
 
 object VisionKinematics {
     /**
@@ -38,4 +47,28 @@ object VisionKinematics {
         //Transform current odometry position by camera readings to get pose of target
         return fieldToCamera.transformBy(cameraToGoal.inverse())
     }
+
+    fun solveLatencyCorrection(poseAtCapture: Pose2d, currentPose: Pose2d, poseToAdjust: Pose2d): Pose2d {
+        val displacement = poseAtCapture.inverse().transformBy(currentPose)
+        return poseToAdjust.transformBy(displacement)
+    }
+}
+
+fun main(args: Array<String>) {
+    val setpoint = ControlParameters.ArmPositions.hatchIntakeFront
+    val armPolar = ArmKinematics.inverse(setpoint.point)
+    println(
+        EndpointKinematics.forward(
+            ArmState(armPolar.r, armPolar.theta, 0.0.RadiansPerSecond),
+            WristState(
+                WristMotionPlanner.calculateFinalFloorAngle(
+                    ArmState(armPolar.r, armPolar.theta, 0.0.RadiansPerSecond),
+                    setpoint.toolAngle,
+                    setpoint.tool
+                ), false ,false
+            ),
+            setpoint.cargoGrabberState,
+            WristSubsystem.HatchClawStates.Clamped
+        )
+    )
 }

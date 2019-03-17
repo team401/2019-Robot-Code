@@ -223,12 +223,14 @@ object WristSubsystem: Subsystem(100L) {
             }
 
             action {
+                /*
                 cargoHistory.update(cargoSensorNO.get())
                 if (cargoHistory.current == true && cargoHistory.last == false) {
                     send(RobotEvents.CargoAcquired)
                     cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
                     setState(WristSubsystem.CargoWheelsStates.Idle)
                 }
+                */
             }
         }
 
@@ -290,7 +292,6 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     override fun setup() {
-
         leftIntakeTalon.inverted = true
         rightIntakeTalon.inverted = false
 

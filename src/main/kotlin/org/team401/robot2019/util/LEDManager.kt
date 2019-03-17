@@ -18,10 +18,10 @@ object LEDManager {
      */
     object Indices {
         const val ArmStrip = 0
-        const val TrussBackLeftStrip = 1
-        const val TrussFrontLeftStrip = 2
-        const val TrussBackRightStrip = 3
-        const val TrussFrontRightStrip = 4
+        const val TrussBackLeftStrip = 2
+        const val TrussFrontLeftStrip = 4
+        const val TrussBackRightStrip = 1
+        const val TrussFrontRightStrip = 3
     }
 
     /**

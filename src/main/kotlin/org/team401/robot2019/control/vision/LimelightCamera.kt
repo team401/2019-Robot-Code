@@ -186,4 +186,8 @@ class LimelightCamera(val name: String, val constantLatency: TimeMeasureMillisec
         entries.camMode.setNumber(CameraMode.DriverCamera)
         entries.ledMode.setNumber(LedMode.Off)
     }
+
+    @Synchronized fun resetFrame() {
+        frame = VisionFrame.identity()
+    }
 }

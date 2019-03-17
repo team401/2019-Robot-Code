@@ -36,28 +36,17 @@ val LeftStick = HumanControls.t16000m(0) {
         }
     }
 
-    /*
-    whenButton(Buttons.STICK_LEFT) {
+    whenButton(Buttons.STICK_BOTTOM) {
         pressed {
             //Vision localize
-            VisionManager.frontCamera.configForVision(1)
-            Thread.sleep(100)
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.HatchAlignFront)
+        }
 
-            DrivetrainSubsystem.activeFieldToGoal = VisionKinematics.solveFieldToGoal(
-                DrivetrainSubsystem.driveState.getLatestFieldToVehicle().value,
-                Geometry.VisionGeometry.robotToFrontCamera,
-                VisionManager.frontCamera.frame.toPose2d()
-            )
+        released {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
         }
     }
 
-    whenButton(Buttons.STICK_RIGHT) {
-        pressed {
-            VisionOdometryUpdater.enable(DrivetrainSubsystem.activeFieldToGoal, Geometry.VisionGeometry.robotToFrontCamera)
-            DrivetrainSubsystem.driveMachine
-        }
-    }
-*/
     /*
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
@@ -101,7 +90,7 @@ val RightStick = HumanControls.t16000m(1) {
 
         }
         released {
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
+            //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
             if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.DownL3)) {
                 //We are in the process of climbing, slowly go down
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
@@ -127,7 +116,7 @@ val RightStick = HumanControls.t16000m(1) {
 
         }
         released {
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
+            //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
             if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.DownL2)) {
                 //We are in the process of climbing, slowly go down
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
