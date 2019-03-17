@@ -24,7 +24,7 @@ object Geometry {
         //All values with the pivot as the origin, wrist pivot as the endpoint
         val maxX = 70.0.Inches
         val maxY = 70.0.Inches
-        val minY = (-25.0).Inches
+        val minY = (-30.0).Inches
         val maxExtension = 0.0.Inches
         val maxArmLength = 0.0.Inches
 
@@ -45,10 +45,10 @@ object Geometry {
          * Minimum effective radius of the system that allows the wrist to rotate (i.e. not collide with the base)
          * Measured by rotating the longest side of the wrist towards the end of the arm
          */
-        val minSafeArmLength = armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
         val hatchPanelToolMinSafeLength = armBaseLength + armExtensionStickout + 5.0.Inches
-        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 10.0.Inches + (5.0/8.0).Inches
+        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 8.5.Inches
+        val minSafeArmLength = cargoToolMinSafeLength//armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
 
         /**

@@ -5,9 +5,13 @@ import org.snakeskin.dsl.HumanControls
 import org.snakeskin.logic.Direction
 import org.snakeskin.measure.Inches
 import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.vision.VisionKinematics
+import org.team401.robot2019.control.vision.VisionManager
+import org.team401.robot2019.control.vision.VisionOdometryUpdater
 import org.team401.robot2019.subsystems.*
 import org.team401.robot2019.util.LEDManager
 import org.team401.taxis.geometry.Pose2d
@@ -32,6 +36,29 @@ val LeftStick = HumanControls.t16000m(0) {
         }
     }
 
+    /*
+    whenButton(Buttons.STICK_LEFT) {
+        pressed {
+            //Vision localize
+            VisionManager.frontCamera.configForVision(1)
+            Thread.sleep(100)
+
+            DrivetrainSubsystem.activeFieldToGoal = VisionKinematics.solveFieldToGoal(
+                DrivetrainSubsystem.driveState.getLatestFieldToVehicle().value,
+                Geometry.VisionGeometry.robotToFrontCamera,
+                VisionManager.frontCamera.frame.toPose2d()
+            )
+        }
+    }
+
+    whenButton(Buttons.STICK_RIGHT) {
+        pressed {
+            VisionOdometryUpdater.enable(DrivetrainSubsystem.activeFieldToGoal, Geometry.VisionGeometry.robotToFrontCamera)
+            DrivetrainSubsystem.driveMachine
+        }
+    }
+*/
+    /*
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
             DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing)
@@ -40,9 +67,14 @@ val LeftStick = HumanControls.t16000m(0) {
             DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
         }
     }
+    */
 }
 
 val RightStick = HumanControls.t16000m(1) {
+
+
+
+    /*
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
             ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
@@ -51,13 +83,17 @@ val RightStick = HumanControls.t16000m(1) {
             ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
         }
     }
+    */
+
 
     whenButton(Buttons.STICK_RIGHT) {
         pressed {
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbPull)
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbReposition)
 
             if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Stowed)) {
                 //We want to start climbing
+                SuperstructureRoutines.ccMaybe(true)
+                SuperstructureMotionPlanner.goToClimb()
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL3)
             } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)) {
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL3)
@@ -75,6 +111,33 @@ val RightStick = HumanControls.t16000m(1) {
             }
         }
     }
+
+    whenButton(Buttons.STICK_LEFT) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbReposition)
+
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Stowed)) {
+                //We want to start climbing
+                SuperstructureRoutines.ccMaybe(true)
+                SuperstructureMotionPlanner.goToClimb()
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL2)
+            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)) {
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL2)
+            }
+
+        }
+        released {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.DownL2)) {
+                //We are in the process of climbing, slowly go down
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
+            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.FallL2)) {
+                //We have climbed up and pulled ourselves onto the platform, we now want to retract the front legs
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)
+            }
+        }
+    }
+
 
 }
 
@@ -97,7 +160,7 @@ val Gamepad = HumanControls.dualAction(2){
 
     whenButton(Buttons.B) {
         pressed {
-            SuperstructureRoutines.intake(readButton(Buttons.LEFT_TRIGGER), readButton(Buttons.RIGHT_TRIGGER))
+            SuperstructureRoutines.intake(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
         }
 
         released {
@@ -116,9 +179,10 @@ val Gamepad = HumanControls.dualAction(2){
 
     whenHatChanged(Hats.D_PAD) {
         when (it) {
-            Direction.NORTH -> SuperstructureRoutines.goToHigh(readButton(Buttons.LEFT_TRIGGER), readButton(Buttons.RIGHT_TRIGGER))
-            Direction.WEST -> SuperstructureRoutines.goToMid(readButton(Buttons.LEFT_TRIGGER), readButton(Buttons.RIGHT_TRIGGER))
-            Direction.SOUTH -> SuperstructureRoutines.goToLow(readButton(Buttons.LEFT_TRIGGER), readButton(Buttons.RIGHT_TRIGGER))
+            Direction.NORTH -> SuperstructureRoutines.goToHigh(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
+            Direction.WEST -> SuperstructureRoutines.goToMid(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
+            Direction.SOUTH -> SuperstructureRoutines.goToLow(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
+            Direction.EAST -> SuperstructureRoutines.goToCargoShip(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
             //TODO add cargo ship
         }
     }

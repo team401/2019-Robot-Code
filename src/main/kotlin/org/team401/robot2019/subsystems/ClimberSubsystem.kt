@@ -339,11 +339,50 @@ object ClimberSubsystem: Subsystem() {
                 upwardsMoveBack(ControlParameters.ClimberPositions.stowed)
             }
         }
-        
+
         state (ClimberStates.DownL2) {
+            var started = false
+
             entry {
-                downwardsMoveFront(ControlParameters.ClimberPositions.l2Climb)
-                downwardsMoveBack(ControlParameters.ClimberPositions.l2Climb)
+                started = false
+                upwardsMoveFront(ControlParameters.ClimberPositions.stowed) //Move the climber to the stowed position
+                upwardsMoveBack(ControlParameters.ClimberPositions.stowed) //Upwards is fine since we just need to get there fast
+            }
+
+            rtAction {
+                //Check and see if we're at the stowed position
+                if (!started && backWithinTolerance(ControlParameters.ClimberPositions.stowed)
+                    && frontWithinTolerance(ControlParameters.ClimberPositions.stowed)) {
+                    back.master.config_kP(0, ControlParameters.ClimberParameters.BackDownPIDF.kP, 30)
+                    front.master.config_kP(0, ControlParameters.ClimberParameters.FrontDownPIDF.kP, 30)
+                    //Start the profile
+                    ClimbingController.setSetpoint(getCurrentClimberState(), ControlParameters.ClimberPositions.l2Climb)
+                    started = true
+                }
+
+                if (started) {
+                    //Update controller
+                    val desiredState = ClimbingController.update(dt, getChassisPitch())
+                    //Convert setpoints
+                    val backPosition = desiredState.backPosition.toAngularDistance(Geometry.ClimberGeometry.backPitchRadius).toMagEncoderTicks().value
+                    val frontPosition = desiredState.frontPosition.toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius).toMagEncoderTicks().value
+                    //Set controllers
+                    back.set(ControlMode.Position, backPosition)
+                    front.set(ControlMode.Position, frontPosition)
+                    if (ClimbingController.isDone()) {
+                        println("Climb done.")
+                    }
+                    //Start checking our position.  If we're >= the setpoint - tolerance, move on.
+                    if (ClimbingController.isDone() || (frontWithinTolerance(ControlParameters.ClimberPositions.l2Climb)
+                                && backWithinTolerance(ControlParameters.ClimberPositions.l2Climb))) {
+                        setState(ClimberStates.FallL2)
+                    }
+                }
+            }
+
+            exit {
+                front.stop()
+                back.stop()
             }
         }
         
@@ -380,8 +419,8 @@ object ClimberSubsystem: Subsystem() {
                         println("Climb done.")
                     }
                     //Start checking our position.  If we're >= the setpoint - tolerance, move on.
-                    if (frontWithinTolerance(ControlParameters.ClimberPositions.l3Climb)
-                        && backWithinTolerance(ControlParameters.ClimberPositions.l3Climb)) {
+                    if (ClimbingController.isDone() || (frontWithinTolerance(ControlParameters.ClimberPositions.l3Climb)
+                        && backWithinTolerance(ControlParameters.ClimberPositions.l3Climb))) {
                         setState(ClimberStates.FallL3)
                     }
                 }

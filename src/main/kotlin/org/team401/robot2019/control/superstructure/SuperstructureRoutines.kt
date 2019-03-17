@@ -24,6 +24,23 @@ object SuperstructureRoutines {
         }
     }
 
+    fun goToCargoShip(front: Boolean, back: Boolean) {
+        val currentTool = SuperstructureMotionPlanner.activeTool
+        when (currentTool) {
+            WristMotionPlanner.Tool.HatchPanelTool -> {
+                //not possible
+            }
+
+            WristMotionPlanner.Tool.CargoTool -> {
+                if (front && !back) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoShipCargoFront))
+                } else if (back && !front) {
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoShipCargoBack))
+                }
+            }
+        }
+    }
+
     fun goToLow(front: Boolean, back: Boolean) {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
@@ -100,7 +117,7 @@ object SuperstructureRoutines {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupBack))
                 }
                 if (back != front) { //If they only pushed one button, this is effectively making sure this doesn't run if neither case above ran
-                    WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Unclamped)
+                    WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped)
                     WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
                 }
             }

@@ -119,7 +119,7 @@ class LimelightCamera(val name: String, val constantLatency: TimeMeasureMillisec
     @Synchronized fun startListening() {
         //Listen for camtran.  This should update once every frame, and once when we transition to no targets.
         if (activeListener == -1) {
-            activeListener = table.addEntryListener("tx", Listener(), EntryListenerFlags.kUpdate)
+            activeListener = table.addEntryListener("camtran", Listener(), EntryListenerFlags.kUpdate)
         }
         //If activeListener is not -1, we are already listening and should not start a new listener
     }

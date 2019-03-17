@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
+import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
@@ -62,6 +63,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
     private val shifter = Solenoid(HardwareMap.Drivetrain.shifterSolenoid)
 
+    var activeFieldToGoal by LockingDelegate(Pose2d.identity())
+
     /**
      * Shifts the drivetrain to the selected gear.  The available shifter states are available in ShifterStates.
      */
@@ -76,6 +79,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         ClimbPull,
         ClimbStop,
         ClimbReposition,
+        VisionAlign
     }
 
     enum class DriveFaults {
@@ -322,7 +326,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
             setPosition(0.0.Radians)
         }
 
-        on(Events.TELEOP_ENABLED) {
+        on(Events.ENABLED) { //TODO TELEOP ENABLED!!!
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)
         }
 

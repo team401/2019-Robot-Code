@@ -117,7 +117,7 @@ object ArmSim {
 
         val output = runSimulation(
             ControlParameters.ArmPositions.cargoFloorPickupBack,
-            ControlParameters.ArmPositions.rocketCargoBottomBack
+            ControlParameters.ArmPositions.cargoShipCargoBack
             )
 
 

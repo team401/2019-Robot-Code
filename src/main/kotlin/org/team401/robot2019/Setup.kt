@@ -48,12 +48,15 @@ fun setup() {
 
     Selectable.selected = RobotIndex.COMP
 
+    //AutoManager.setAutoLoop(CollectLinearTorqueData(DrivetrainSubsystem, .25, 3.0.Seconds))
+
     //Register components
-    Subsystems.add(DrivetrainSubsystem, WristSubsystem)
-    Controllers.add(LeftStick, RightStick)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, ClimberSubsystem)
+    Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
     LEDManager.init()
+    //VisionManager.start()
     SuperstructureMotionPlanner.preCompile()
 
     //Initialize real-time tasks

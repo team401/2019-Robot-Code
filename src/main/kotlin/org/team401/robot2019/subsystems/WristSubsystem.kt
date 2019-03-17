@@ -72,7 +72,8 @@ object WristSubsystem: Subsystem(100L) {
     enum class CargoWheelsStates {
         Intake,
         Idle,
-        Scoring
+        Scoring,
+        Holding
     }
 
     enum class HatchClawStates {
@@ -140,7 +141,6 @@ object WristSubsystem: Subsystem(100L) {
 
             action {
                 if (ArmSubsystem.getCurrentArmState().armRadius >= Geometry.ArmGeometry.minSafeArmLength) {
-                    //println("MOVING TO 0")
                     move(0.0.Degrees)
                 }
             }
@@ -208,6 +208,12 @@ object WristSubsystem: Subsystem(100L) {
                 leftIntake.set(0.0)
                 rightIntake.set(0.0)
             }
+
+            action {
+                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
+                    setState(CargoWheelsStates.Holding)
+                }
+            }
         }
 
         state (CargoWheelsStates.Intake) {
@@ -232,6 +238,19 @@ object WristSubsystem: Subsystem(100L) {
                 rightIntake.set(ControlParameters.WristParameters.scoringPower)
             }
         }
+
+        state (CargoWheelsStates.Holding) {
+            entry {
+                leftIntake.set(ControlParameters.WristParameters.holdingPower)
+                rightIntake.set(ControlParameters.WristParameters.holdingPower)
+            }
+
+            action {
+                if (SuperstructureController.output.wristTool != WristMotionPlanner.Tool.CargoTool) {
+                    setState(CargoWheelsStates.Idle)
+                }
+            }
+        }
     }
 
     /**
@@ -240,7 +259,8 @@ object WristSubsystem: Subsystem(100L) {
      * to both automatically close the intake as well as detect continuous presence.
      */
     private fun systemSeesCargo(): Boolean {
-        return cargoSensorNO.get()
+        //return cargoSensorNO.get()
+        return false
     }
 
     /**
@@ -265,7 +285,8 @@ object WristSubsystem: Subsystem(100L) {
         LEDManager.updateGamepieceStatus(systemSeesHatch(), systemSeesCargo()) //Update gamepiece status from sensors
 
         //debug
-        println("Raw: ${pot.value}\tDegrees: ${getPotAngleDegrees()}\tEnc: ${rotation.getPosition().toDegrees()}")
+        //
+        //println("Raw: ${pot.value}\tDegrees: ${getPotAngleDegrees()}\tEnc: ${rotation.getPosition().toDegrees()}")
     }
 
     override fun setup() {
@@ -286,6 +307,7 @@ object WristSubsystem: Subsystem(100L) {
         }
         */
 
+        /*
         val samples = arrayListOf<Double>()
 
         for (i in 0 until 10) {
@@ -294,6 +316,24 @@ object WristSubsystem: Subsystem(100L) {
         }
 
         rotation.master.selectedSensorPosition = samples.average().Degrees.toMagEncoderTicks().value.roundToInt()
+
+*/
+        if (Math.abs(rotation.master.selectedSensorPosition - rotation.master.sensorCollection.pulseWidthPosition) >= 10.0) {
+            //We need to reset the wrist home
+            rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
+            //TODO
+            //TODO
+            //TODO
+            //TODO
+            //TODO
+            //TODO FIND A SOLUTION TO THIS!!!!!
+            //TODO
+            //TODO
+            //TODO
+            //TODO
+            //TODO
+        }
+
 
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
@@ -315,12 +355,15 @@ object WristSubsystem: Subsystem(100L) {
             cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
             hatchClawMachine.setState(HatchClawStates.Clamped)
 
+            /*
             val armState = ArmKinematics.forward(ArmSubsystem.getCurrentArmState())
             val currentTool = when {
                 armState.x >= 0.0.Inches -> WristMotionPlanner.Tool.HatchPanelTool
                 else -> WristMotionPlanner.Tool.CargoTool
             }
             SuperstructureMotionPlanner.activeTool = currentTool
+            */
+
             wristMachine.setState(WristStates.GoTo0)
         }
     }

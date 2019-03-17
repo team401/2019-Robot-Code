@@ -272,8 +272,20 @@ object SuperstructureMotionPlanner {
         }
         val safePoint = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches, lastObservedArmState.armAngle))
 
+        activeToolAngle = 0.0.Radians
+
         //Now we need to move the arm to the safe location
         commandQueue.add(MoveSuperstructureCommandStaticWrist(safePoint, Point2d(0.0.Inches, Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches), activeTool, 0.0.Radians, Geometry.ArmGeometry.minSafeArmLength))
+    }
+
+    @Synchronized fun goToClimb() {
+        reset()
+
+        commandQueue.add(RotationOnlyCommand(90.0.Degrees.toRadians(), WristMotionPlanner.Tool.HatchPanelTool))
+        commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches, WristMotionPlanner.Tool.HatchPanelTool))
+        commandQueue.add(SetWristAngleCommand(WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians, ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches, 90.0.Degrees.toRadians()))))
+        commandQueue.add(DelayCommand(1.0.Seconds))
+        commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.armBaseLength + Geometry.ArmGeometry.armExtensionStickout + 2.0.Inches, WristMotionPlanner.Tool.HatchPanelTool))
     }
 
     /**
