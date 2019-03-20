@@ -22,8 +22,8 @@ object ControlParameters{
         val extensionAcceleration = (36.0 * 3.5).InchesPerSecond //PER SECOND
 
 
-        val ROTATION_MAX_ACCELERATION = 1.0.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
-        val ROTATION_MAX_VELOCITY = 0.5.RevolutionsPerSecond.toRadiansPerSecond()
+        val ROTATION_MAX_ACCELERATION = 0.8.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
+        val ROTATION_MAX_VELOCITY = 0.4.RevolutionsPerSecond.toRadiansPerSecond()
 
 
         val MIN_POS = 0.57.Radians.value
@@ -50,9 +50,9 @@ object ControlParameters{
         val extensionHomingPower = -0.1
 
         object ArmRotationPIDF: PIDFTemplate{
-            override val kP = 6.0
+            override val kP = 2.5
             override val kI = 0.0
-            override val kD = 12.0
+            override val kD = 20.0
             override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
         }
 
@@ -70,8 +70,13 @@ object ControlParameters{
 
         val hasCargoTime = 0.25.Seconds
 
-        val intakePower = -.75
+        val intakePower = -1.0
+        val holdingPower = -0.1
         val scoringPower = 1.0
+
+        const val invertPot = true
+        const val degreesPerPotValue = (180.0 / 805.0)
+        const val potOffset = 1965
 
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 2.3
@@ -84,19 +89,19 @@ object ControlParameters{
     object ArmPositions {
         //Floor pickup positions
         val cargoFloorPickupFront = SuperstructureSetpoint.intakingCargo(
-            Point2d(35.0.Inches, 14.5.Inches),
+            Point2d(30.0.Inches, 9.5.Inches),
             0.0.Radians
-        ).withAngle((-25.0).Degrees.toRadians()).fromFloor()
+        ).withAngle((0.0).Degrees.toRadians()).fromFloor()
 
-        val cargoFloorPickupBack = cargoFloorPickupFront.flipped()
+        val cargoFloorPickupBack = cargoFloorPickupFront.flipped().upBy((-1.0).Inches)
 
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
-            Point2d(33.0.Inches, 27.5.Inches),
+            Point2d(31.0.Inches, 27.5.Inches),
             0.0.Radians
         ).fromFloor()
-        val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.0.Inches)
-        val rocketCargoHighFront = rocketCargoMidFront.upBy(16.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians())
+        val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.75.Inches).atX(12.0.Inches)
+        val rocketCargoHighFront = rocketCargoMidFront.upBy(17.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians())
 
         val rocketCargoBottomBack = rocketCargoBottomFront.flipped()
         val rocketCargoMidBack = rocketCargoMidFront.flipped()
@@ -104,7 +109,7 @@ object ControlParameters{
 
         //Intake hatch positions
         val hatchIntakeFront = SuperstructureSetpoint.intakingHatch(
-            Point2d(34.0.Inches, 19.0.Inches),
+            Point2d(30.0.Inches, 19.0.Inches),
             0.0.Radians
         ).fromFloor()
 
@@ -115,12 +120,15 @@ object ControlParameters{
             Point2d(34.0.Inches, 19.0.Inches),
             0.0.Radians
         ).fromFloor()
-        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches)
-        val rocketHatchHighFront = rocketHatchMidFront.upBy(16.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians())
+        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(14.0.Inches)
+        val rocketHatchHighFront = rocketHatchMidFront.upBy(26.0.Inches).atX((18.0).Inches).withAngle(0.0.Degrees.toRadians())
 
         val rocketHatchBottomBack = rocketHatchBottomFront.flipped()
         val rocketHatchMidBack = rocketHatchMidFront.flipped()
         val rocketHatchHighBack = rocketHatchHighFront.flipped()
+
+        val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(28.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians()).fromFloor()
+        val cargoShipCargoBack = cargoShipCargoFront.flipped()
     }
 
     object DrivetrainParameters {
@@ -134,7 +142,7 @@ object ControlParameters{
         /**
          * The power to drive onto the level 3 or 2 platforms
          */
-        val climbPullPower = -0.25
+        val climbPullPower = -0.5
 
         /**
          * Climb in low gear
@@ -143,7 +151,7 @@ object ControlParameters{
 
         val climbWheelStopDelay = 0.5.Seconds
 
-        val slowingFactor = 1 / 4.0
+        val slowingFactor = 1 / 2.0
     }
 
     object DrivetrainCheesyDriveParameters: CheesyDriveController.DefaultParameters() {
@@ -159,35 +167,41 @@ object ControlParameters{
 
     object ClimberParameters {
         object BackDownPIDF: PIDFTemplate {
-            override val kP = 1.25
+            override val kP = .7
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0
         }
 
         object BackUpPIDF: PIDFTemplate {
-            override val kP = 1.25
+            override val kP = .7
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0
         }
 
         object FrontDownPIDF: PIDFTemplate {
-            override val kP = .45
+            override val kP = .9
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0
         }
 
         object FrontUpPIDF: PIDFTemplate {
-            override val kP = .45
+            override val kP = .9
             override val kI = 0.0
             override val kD = 0.0
             override val kF = 0.0
         }
 
-        val climberVelocityDown = 7.5.InchesPerSecond
-        val climberAccelerationDown = 7.5.InchesPerSecond //per second.  We are using a velocity unit here because the unit library can't convert lin -> ang accel
+        /**
+         * Velocities for the actual climb.  The climb will use the normal acceleration values.
+         */
+        val climberVelocityDownClimbBack = 10.0.InchesPerSecond
+        val climberVelocityDownClimbFront = 14.0.InchesPerSecond
+
+        val climberVelocityDown = 10.0.InchesPerSecond
+        val climberAccelerationDown = 10.0.InchesPerSecond //per second.  We are using a velocity unit here because the unit library can't convert lin -> ang accel
 
         val climberVelocityUp = 36.0.InchesPerSecond
         val climberAccelerationUp = 72.0.InchesPerSecond //per second
@@ -208,7 +222,7 @@ object ControlParameters{
         /**
          * Tolerance for checking whether or not the climber is at the desired height
          */
-        val climberTolerance = 1.0.Inches
+        val climberTolerance = 2.0.Inches
     }
 
     object ClimberPositions {

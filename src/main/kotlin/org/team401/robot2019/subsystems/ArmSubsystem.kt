@@ -184,7 +184,7 @@ object ArmSubsystem: Subsystem() {
         state (ArmExtensionStates.CoordinatedControl) {
             rtAction {
                 val output = SuperstructureController.output
-                if (output.armRadius > 51.5.Inches) {
+                if (output.armRadius > 60.0.Inches) {
                     println("ARM EXTENSION OVERTRAVEL!  STOPPING MOTION")
                     setState(ArmExtensionStates.EStopped)
                     armPivotMachine.setState(ArmPivotStates.EStopped)

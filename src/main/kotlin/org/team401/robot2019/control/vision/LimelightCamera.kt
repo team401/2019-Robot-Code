@@ -48,6 +48,7 @@ class LimelightCamera(val name: String, val constantLatency: TimeMeasureMillisec
      * Inner class for holding the TableEntry objects that are used for the limelight
      */
     private inner class TableEntries {
+        val camtran = table.getEntry("camtran")
         val tv = table.getEntry("tv")
         val tx = table.getEntry("tx")
         val ty = table.getEntry("ty")
@@ -68,6 +69,8 @@ class LimelightCamera(val name: String, val constantLatency: TimeMeasureMillisec
      * Inner class responsible for listening for camera data and storing it in the outer field
      */
     private inner class Listener: TableEntryListener {
+        private val camtranDefault = DoubleArray(6)
+
         override fun valueChanged(
             table: NetworkTable,
             key: String,
@@ -76,7 +79,7 @@ class LimelightCamera(val name: String, val constantLatency: TimeMeasureMillisec
             flags: Int
         ) {
             val timestamp = Hardware.getRelativeTime() //Capture the timestamp as soon as possible.
-            val camtran = value.doubleArray
+            val camtran = entries.camtran.getDoubleArray(camtranDefault)
             val tv = entries.tv.getDouble(0.0) == 1.0 //Has targets.  If it's 1.0, it's true, otherwise false
             val tx = entries.tx.getDouble(0.0) //Target angle x
             val ty = entries.ty.getDouble(0.0) //Target angle y
@@ -182,5 +185,9 @@ class LimelightCamera(val name: String, val constantLatency: TimeMeasureMillisec
     @Synchronized fun configForDriverView() {
         entries.camMode.setNumber(CameraMode.DriverCamera)
         entries.ledMode.setNumber(LedMode.Off)
+    }
+
+    @Synchronized fun resetFrame() {
+        frame = VisionFrame.identity()
     }
 }

@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.SensorCollection
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
+import edu.wpi.first.wpilibj.AnalogInput
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
@@ -26,6 +27,7 @@ import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.util.LEDManager
 import kotlin.math.roundToInt
 
 /**
@@ -33,7 +35,7 @@ import kotlin.math.roundToInt
  * @version 2/10/2019
  *
  */
-object WristSubsystem: Subsystem() {
+object WristSubsystem: Subsystem(100L) {
     private val rotationTalon = TalonSRX(HardwareMap.Arm.wristTalonId)
     val leftIntakeTalon = TalonSRX(HardwareMap.Arm.leftIntakeWheelTalonId)
     val rightIntakeTalon = TalonSRX(HardwareMap.Arm.rightIntakeWheelTalonId)
@@ -47,6 +49,8 @@ object WristSubsystem: Subsystem() {
     private val cargoSensorNO = DigitalInput(HardwareMap.Wrist.ballSensorNOPort)
     private val cargoSensorNC = DigitalInput(HardwareMap.Wrist.ballSensorNCPort)
     private val leftHatchSensor = DigitalInput(4)
+
+    private val pot = AnalogInput(HardwareMap.Wrist.potPort)
 
     private val cargoHistory = History<Boolean>()
 
@@ -69,12 +73,25 @@ object WristSubsystem: Subsystem() {
     enum class CargoWheelsStates {
         Intake,
         Idle,
-        Scoring
+        Scoring,
+        Holding
     }
 
     enum class HatchClawStates {
         Clamped, //Clamped around a gamepiece
         Unclamped
+    }
+
+    /**
+     * Returns the current reading on the pot, scaled correctly, in degrees
+     */
+    private fun getPotAngleDegrees(): AngularDistanceMeasureDegrees {
+        val potMaybeInverted = if (ControlParameters.WristParameters.invertPot) {
+            4095 - pot.value
+        } else {
+            pot.value
+        }
+        return ((potMaybeInverted - ControlParameters.WristParameters.potOffset) * ControlParameters.WristParameters.degreesPerPotValue).Degrees
     }
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
@@ -128,7 +145,6 @@ object WristSubsystem: Subsystem() {
 
             action {
                 if (ArmSubsystem.getCurrentArmState().armRadius >= Geometry.ArmGeometry.minSafeArmLength) {
-                    //println("MOVING TO 0")
                     move(0.0.Degrees)
                 }
             }
@@ -196,6 +212,12 @@ object WristSubsystem: Subsystem() {
                 leftIntake.set(0.0)
                 rightIntake.set(0.0)
             }
+
+            action {
+                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
+                    setState(CargoWheelsStates.Holding)
+                }
+            }
         }
 
         state (CargoWheelsStates.Intake) {
@@ -205,12 +227,14 @@ object WristSubsystem: Subsystem() {
             }
 
             action {
+                /*
                 cargoHistory.update(cargoSensorNO.get())
                 if (cargoHistory.current == true && cargoHistory.last == false) {
                     send(RobotEvents.CargoAcquired)
                     cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
                     setState(WristSubsystem.CargoWheelsStates.Idle)
                 }
+                */
             }
         }
 
@@ -218,6 +242,19 @@ object WristSubsystem: Subsystem() {
             entry {
                 leftIntake.set(ControlParameters.WristParameters.scoringPower)
                 rightIntake.set(ControlParameters.WristParameters.scoringPower)
+            }
+        }
+
+        state (CargoWheelsStates.Holding) {
+            entry {
+                leftIntake.set(ControlParameters.WristParameters.holdingPower)
+                rightIntake.set(ControlParameters.WristParameters.holdingPower)
+            }
+
+            action {
+                if (SuperstructureController.output.wristTool != WristMotionPlanner.Tool.CargoTool) {
+                    setState(CargoWheelsStates.Idle)
+                }
             }
         }
     }
@@ -228,7 +265,8 @@ object WristSubsystem: Subsystem() {
      * to both automatically close the intake as well as detect continuous presence.
      */
     private fun systemSeesCargo(): Boolean {
-        return cargoSensorNO.get()
+        //return cargoSensorNO.get()
+        return false
     }
 
     /**
@@ -250,10 +288,11 @@ object WristSubsystem: Subsystem() {
     }
 
     override fun action() {
-        //println(cargoSensorNO.get())
-        //println(cargoSensor.get())
-        //println("pwp: ${rotation.master.sensorCollection.pulseWidthPosition}\t pos: ${rotation.master.getSelectedSensorPosition(0)}  act: ${rotation.getPosition().toDegrees()}" )
-        //println(rotation.getPosition().toDegrees())
+        LEDManager.updateGamepieceStatus(systemSeesHatch(), systemSeesCargo()) //Update gamepiece status from sensors
+
+        //debug
+        //
+        //println("Raw: ${pot.value}\tDegrees: ${getPotAngleDegrees()}\tEnc: ${rotation.getPosition().toDegrees()}")
     }
 
     override fun setup() {
@@ -266,10 +305,40 @@ object WristSubsystem: Subsystem() {
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
 
+        /*
         if (Math.abs(rotation.master.selectedSensorPosition - rotation.master.sensorCollection.pulseWidthPosition) >= 10.0) {
             //We need to reset the wrist home
             rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2396 + (2048)
         }
+        */
+
+        /*
+        val samples = arrayListOf<Double>()
+
+        for (i in 0 until 10) {
+            samples.add(getPotAngleDegrees().value) //Take sample
+            Thread.sleep(10) //Wait ~10 ms
+        }
+
+        rotation.master.selectedSensorPosition = samples.average().Degrees.toMagEncoderTicks().value.roundToInt()
+
+*/
+        if (Math.abs(rotation.master.selectedSensorPosition - rotation.master.sensorCollection.pulseWidthPosition) >= 10.0) {
+            //We need to reset the wrist home
+            rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
+            //TODO
+            //TODO
+            //TODO
+            //TODO
+            //TODO
+            //TODO FIND A SOLUTION TO THIS!!!!!
+            //TODO
+            //TODO
+            //TODO
+            //TODO
+            //TODO
+        }
+
 
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
@@ -291,12 +360,15 @@ object WristSubsystem: Subsystem() {
             cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
             hatchClawMachine.setState(HatchClawStates.Clamped)
 
+            /*
             val armState = ArmKinematics.forward(ArmSubsystem.getCurrentArmState())
             val currentTool = when {
                 armState.x >= 0.0.Inches -> WristMotionPlanner.Tool.HatchPanelTool
                 else -> WristMotionPlanner.Tool.CargoTool
             }
             SuperstructureMotionPlanner.activeTool = currentTool
+            */
+
             wristMachine.setState(WristStates.GoTo0)
         }
     }

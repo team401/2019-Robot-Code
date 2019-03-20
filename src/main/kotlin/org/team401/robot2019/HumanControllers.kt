@@ -5,10 +5,15 @@ import org.snakeskin.dsl.HumanControls
 import org.snakeskin.logic.Direction
 import org.snakeskin.measure.Inches
 import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.vision.VisionKinematics
+import org.team401.robot2019.control.vision.VisionManager
+import org.team401.robot2019.control.vision.VisionOdometryUpdater
 import org.team401.robot2019.subsystems.*
+import org.team401.robot2019.util.LEDManager
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.geometry.Translation2d
@@ -18,7 +23,7 @@ import org.team401.taxis.geometry.Translation2d
  * @version 1/5/2019
  *
  */
-/*
+
 val LeftStick = HumanControls.t16000m(0) {
     invertAxis(Axes.PITCH)
 
@@ -33,20 +38,100 @@ val LeftStick = HumanControls.t16000m(0) {
 
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
+            //Vision localize
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.HatchAlignFront)
+        }
+
+        released {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
+        }
+    }
+
+    /*
+    whenButton(Buttons.STICK_BOTTOM) {
+        pressed {
             DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing)
         }
         released {
             DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
         }
     }
+    */
 }
 
 val RightStick = HumanControls.t16000m(1) {
 
-}
-*/
 
-val Gamepad = HumanControls.f310(2){
+
+    /*
+    whenButton(Buttons.STICK_BOTTOM) {
+        pressed {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
+        }
+        released {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
+        }
+    }
+    */
+
+
+    whenButton(Buttons.STICK_RIGHT) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbReposition)
+
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Stowed)) {
+                //We want to start climbing
+                SuperstructureRoutines.ccMaybe(true)
+                SuperstructureMotionPlanner.goToClimb()
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL3)
+            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)) {
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL3)
+            }
+
+        }
+        released {
+            //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.DownL3)) {
+                //We are in the process of climbing, slowly go down
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
+            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.FallL3)) {
+                //We have climbed up and pulled ourselves onto the platform, we now want to retract the front legs
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)
+            }
+        }
+    }
+
+    whenButton(Buttons.STICK_LEFT) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbReposition)
+
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Stowed)) {
+                //We want to start climbing
+                SuperstructureRoutines.ccMaybe(true)
+                SuperstructureMotionPlanner.goToClimb()
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL2)
+            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)) {
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL2)
+            }
+
+        }
+        released {
+            //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.DownL2)) {
+                //We are in the process of climbing, slowly go down
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
+            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.FallL2)) {
+                //We have climbed up and pulled ourselves onto the platform, we now want to retract the front legs
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)
+            }
+        }
+    }
+
+
+}
+
+
+val Gamepad = HumanControls.dualAction(2){
     whenButton(Buttons.Y) {
         pressed {
             SuperstructureMotionPlanner.goHome()
@@ -64,7 +149,7 @@ val Gamepad = HumanControls.f310(2){
 
     whenButton(Buttons.B) {
         pressed {
-            SuperstructureRoutines.intake(readAxis(Axes.LEFT_TRIGGER) > 0.5, readAxis(Axes.RIGHT_TRIGGER) > 0.5)
+            SuperstructureRoutines.intake(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
         }
 
         released {
@@ -83,9 +168,10 @@ val Gamepad = HumanControls.f310(2){
 
     whenHatChanged(Hats.D_PAD) {
         when (it) {
-            Direction.NORTH -> SuperstructureRoutines.goToHigh(readAxis(Axes.LEFT_TRIGGER) > 0.5, readAxis(Axes.RIGHT_TRIGGER) > 0.5)
-            Direction.WEST -> SuperstructureRoutines.goToMid(readAxis(Axes.LEFT_TRIGGER) > 0.5, readAxis(Axes.RIGHT_TRIGGER) > 0.5)
-            Direction.SOUTH -> SuperstructureRoutines.goToLow(readAxis(Axes.LEFT_TRIGGER) > 0.5, readAxis(Axes.RIGHT_TRIGGER) > 0.5)
+            Direction.NORTH -> SuperstructureRoutines.goToHigh(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
+            Direction.WEST -> SuperstructureRoutines.goToMid(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
+            Direction.SOUTH -> SuperstructureRoutines.goToLow(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
+            Direction.EAST -> SuperstructureRoutines.goToCargoShip(readButton(Buttons.RIGHT_TRIGGER), readButton(Buttons.LEFT_TRIGGER))
             //TODO add cargo ship
         }
     }
@@ -109,72 +195,22 @@ val Gamepad = HumanControls.f310(2){
             SuperstructureRoutines.stopScoring(false, false)
         }
     }
-}
 
-
-val LeftStick = HumanControls.attack3(0) {
-    invertAxis(Axes.PITCH)
-
-    whenButton(Buttons.STICK_TOP) {
+    whenButton(Buttons.LEFT_TRIGGER) {
         pressed {
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbPull)
-
-            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Stowed)) {
-                //We want to start climbing
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL3)
-            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)) {
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL3)
-            }
-
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
         }
         released {
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
-            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.DownL3)) {
-                //We are in the process of climbing, slowly go down
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
-            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.FallL3)) {
-                //We have climbed up and pulled ourselves onto the platform, we now want to retract the front legs
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)
-            }
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.SideIndicator)
         }
     }
-}
 
-val RightStick = HumanControls.attack3(1) {
-    whenButton(Buttons.STICK_TOP) {
+    whenButton(Buttons.RIGHT_TRIGGER) {
         pressed {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierRed)
         }
         released {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.SideIndicator)
         }
     }
 }
-
-/*
-val TestGamepad = HumanControls.f310(2) {
-    whenButton(Buttons.Y) {
-        pressed {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL3)
-        }
-    }
-
-    whenButton(Buttons.A) {
-        pressed {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Stowed)
-        }
-    }
-
-    whenButton(Buttons.B) {
-        pressed {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
-        }
-    }
-
-    whenButton(Buttons.X) {
-        pressed {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL3)
-        }
-    }
-}
-        */

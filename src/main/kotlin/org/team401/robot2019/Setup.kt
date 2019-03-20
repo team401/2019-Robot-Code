@@ -17,9 +17,14 @@ import org.team401.robot2019.auto.CollectAngularTorqueData
 import org.team401.robot2019.auto.CollectLinearTorqueData
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureUpdater
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.control.vision.VisionKinematics
+import org.team401.robot2019.control.vision.VisionManager
 import org.team401.robot2019.subsystems.*
+import org.team401.robot2019.util.LEDManager
 import org.team401.taxis.diffdrive.autotune.autos.TuningAutoCollectDynamicsData
 import org.team401.taxis.diffdrive.autotune.autos.TuningAutoTuneTrackScrubFactor
 import org.team401.taxis.diffdrive.autotune.autos.TuningAutoTuneWheelRadius
@@ -43,24 +48,31 @@ object RobotIndex {
 @Setup
 fun setup() {
     ControlPoller.pollInAutonomous = true
-    RealTimeExecutor.rate = 0.02
+    RealTimeExecutor.rate = 0.01
 
-    Selectable.selected = RobotIndex.PRACTICE
+    Selectable.selected = RobotIndex.COMP
 
-    //AutoManager.setAutoLoop(CollectAngularTorqueData.createAuto(DrivetrainSubsystem, 0.5, 2.0.Seconds, 14.68094497,2))
+    //AutoManager.setAutoLoop(CollectLinearTorqueData(DrivetrainSubsystem, .25, 3.0.Seconds))
 
-    //AutoManager.setAutoLoop(TuningAutoCollectDynamicsData(DrivetrainSubsystem))
+    //Register components
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, ClimberSubsystem)
+    Controllers.add(LeftStick, RightStick, Gamepad)
 
-    //AutoManager.setAutoLoop(TuningAutoTuneTrackScrubFactor(DrivetrainSubsystem, 10, .5))
+    //Miscellaneous initialization
+    LEDManager.init()
+    VisionManager.start()
+    SuperstructureMotionPlanner.preCompile()
 
-    //Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem)
-    Subsystems.add(DrivetrainSubsystem, ClimberSubsystem)
-    Controllers.add(LeftStick, RightStick)
+    //Initialize real-time tasks
+    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
+    RealTimeExecutor.addTask(SuperstructureUpdater)
 
-    //Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem)
-    //Controllers.add(LeftStick, RightStick, Gamepad)
-
-    //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
-    //SuperstructureMotionPlanner.preCompile()
-    //RealTimeExecutor.addTask(SuperstructureUpdater)
+    //Events
+    /*
+    on (RobotEvents.VLoc) {
+        if (SuperstructureMotionPlanner.activeTool == WristMotionPlanner.Tool.HatchPanelTool) {
+            SuperstructureRoutines.intake(true, false)
+        }
+    }
+    */
 }

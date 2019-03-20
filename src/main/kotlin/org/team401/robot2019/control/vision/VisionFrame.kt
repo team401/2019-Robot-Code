@@ -9,6 +9,7 @@ import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.measure.time.TimeMeasureMilliseconds
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.geometry.Rotation2d
 
 /**
  * Represents a single frame from the vision system.
@@ -28,7 +29,7 @@ data class VisionFrame(val timeReceived: TimeMeasureSeconds,
     val timeCaptured = (timeReceived - latency).toSeconds()
 
     fun toPose2d(): Pose2d {
-        return Pose2d()
+        return Pose2d(z.value, -x.value, Rotation2d.fromDegrees(yaw.value))
     }
 
     companion object {

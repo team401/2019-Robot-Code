@@ -5,10 +5,10 @@ import org.snakeskin.logic.LockingDelegate
 
 object VisionManager {
     val frontCamera = LimelightCamera("limelight-front")
-    //val backCamera = LimelightCamera("limelight-back")
+    val backCamera = LimelightCamera("limelight-back")
 
     fun start() {
         frontCamera.startListening()
-        //backCamera.startListening()
+        backCamera.startListening()
     }
 }

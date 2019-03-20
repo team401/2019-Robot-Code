@@ -1,10 +1,13 @@
 package org.team401.robot2019.config
 
+import org.snakeskin.measure.Centimeters
 import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.MagEncoderTicks
 import org.snakeskin.template.TankDrivetrainGeometryTemplate
 import org.snakeskin.utility.Selectable
+import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.geometry.Rotation2d
 import kotlin.math.atan2
 
 /**
@@ -22,7 +25,7 @@ object Geometry {
         //All values with the pivot as the origin, wrist pivot as the endpoint
         val maxX = 70.0.Inches
         val maxY = 70.0.Inches
-        val minY = (-25.0).Inches
+        val minY = (-30.0).Inches
         val maxExtension = 0.0.Inches
         val maxArmLength = 0.0.Inches
 
@@ -43,10 +46,10 @@ object Geometry {
          * Minimum effective radius of the system that allows the wrist to rotate (i.e. not collide with the base)
          * Measured by rotating the longest side of the wrist towards the end of the arm
          */
-        val minSafeArmLength = armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
         val hatchPanelToolMinSafeLength = armBaseLength + armExtensionStickout + 5.0.Inches
-        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 10.0.Inches + (5.0/8.0).Inches
+        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 8.5.Inches
+        val minSafeArmLength = cargoToolMinSafeLength//armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
 
         /**
@@ -122,5 +125,10 @@ object Geometry {
          */
         val frontHomeOffset = (-0.5).Inches
         val backHomeOffset = (-1.25).Inches
+    }
+
+    object VisionGeometry {
+        val robotToFrontCamera = Pose2d(12.75.Centimeters.toInches().value, 20.5.Centimeters.toInches().value, Rotation2d.fromDegrees(0.0))
+        val robotToBackCamera = Pose2d(0.0, 0.0, Rotation2d.fromDegrees(180.0))
     }
 }

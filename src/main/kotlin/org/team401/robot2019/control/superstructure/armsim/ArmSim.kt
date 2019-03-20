@@ -116,8 +116,8 @@ object ArmSim {
     fun main(args: Array<String>) {
 
         val output = runSimulation(
-            ControlParameters.ArmPositions.cargoFloorPickupBack,
-            ControlParameters.ArmPositions.rocketCargoBottomBack
+            ControlParameters.ArmPositions.hatchIntakeBack,
+            ControlParameters.ArmPositions.rocketHatchHighFront
             )
 
 
