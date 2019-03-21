@@ -48,22 +48,22 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Selectable.selected = RobotIndex.COMP
+    Selectable.selected = RobotIndex.PRACTICE
 
     //AutoManager.setAutoLoop(CollectLinearTorqueData(DrivetrainSubsystem, .25, 3.0.Seconds))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, ClimberSubsystem)
+    Subsystems.add(DrivetrainSubsystem/*, ArmSubsystem, ClimberSubsystem*/)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
     LEDManager.init()
     VisionManager.start()
-    SuperstructureMotionPlanner.preCompile()
+    //SuperstructureMotionPlanner.preCompile()
 
     //Initialize real-time tasks
     RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
-    RealTimeExecutor.addTask(SuperstructureUpdater)
+    //RealTimeExecutor.addTask(SuperstructureUpdater)
 
     //Events
     /*
