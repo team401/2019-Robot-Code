@@ -62,7 +62,6 @@ object PathReader{
         path.forEach{
             val waypoint = JsonObject()
             waypoint.addProperty("x", it.translation.x())
-            println("x : ${it.translation.x()}")
             waypoint.addProperty("y", it.translation.y())
             waypoint.addProperty("angle", it.translation.direction().degrees)
             waypoints.add(waypoint)
@@ -72,7 +71,8 @@ object PathReader{
         settings.addProperty("maxVoltage", trajectory.maxVoltage)
         settings.addProperty("maxVelocity", trajectory.maxVel)
         settings.addProperty("maxAcceleration", trajectory.maxAccel)
-        settings.addProperty("maxAcceleration", trajectory.reverse)
+        settings.addProperty("maxCentripetalAcceleration", 130.0)//TODO update this
+        settings.addProperty("reverse", trajectory.reverse)
 
         waypoints.add(settings)
         val writer = FileWriter("paths\\$fileName.json")

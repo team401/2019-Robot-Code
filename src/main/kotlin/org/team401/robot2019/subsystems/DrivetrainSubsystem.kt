@@ -30,6 +30,8 @@ import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.vision.LimelightCamera
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
+import org.team401.robot2019.util.PathReader
+import org.team401.robot2019.util.TrajectoryPath
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
@@ -249,6 +251,20 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                         val goal = fieldToGoal.transformBy(Pose2d(-38.0, 0.0, Rotation2d.identity())) //Account for arm length
                         val straightPart = goal.transformBy(Pose2d(-6.0, 0.0, Rotation2d.identity())) //Add some points in the profile to drive straight
 
+                        val maxVelocity = 6.0 * 12.0
+                        val maxAcceleration = 4.0 * 12.0
+                        val maxVoltage = 9.0
+
+                        PathReader.outputToPathViewer(
+                            TrajectoryPath(
+                                false,
+                                listOf(startPose, straightPart, goal),
+                                maxVelocity,
+                                maxAcceleration,
+                                maxVoltage
+                            ), "Vision Alignment"
+                        )
+
                         trajectory = TrajectoryIterator(
                             TimedView(
                                 pathManager.generateTrajectory(
@@ -257,9 +273,9 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                                     listOf(),
                                     startVelocity.value,
                                     0.0,
-                                    6.0 * 12.0,
-                                    4.0 * 12.0,
-                                    9.0
+                                    maxVelocity,
+                                    maxAcceleration,
+                                    maxVoltage
                                 )
                             )
                         )
