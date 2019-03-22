@@ -17,10 +17,10 @@ object LEDManager {
      * LightLink indices of the various LED strips
      */
     object Indices {
-        const val ArmStrip = 0
-        const val TrussBackLeftStrip = 2
-        const val TrussFrontLeftStrip = 4
-        const val TrussBackRightStrip = 1
+        const val ArmStrip = 4
+        const val TrussBackLeftStrip = 0
+        const val TrussFrontLeftStrip = 1
+        const val TrussBackRightStrip = 2
         const val TrussFrontRightStrip = 3
     }
 
@@ -69,10 +69,10 @@ object LEDManager {
             }
             
             TrussLedMode.Rainbow -> {
-                ll.rainbow(Indices.TrussBackLeftStrip)
-                ll.rainbow(Indices.TrussFrontLeftStrip)
-                ll.rainbow(Indices.TrussBackRightStrip)
-                ll.rainbow(Indices.TrussFrontRightStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.TrussFrontLeftStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.TrussFrontRightStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.TrussBackLeftStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
             }
             
             TrussLedMode.SideIndicator -> {
@@ -133,7 +133,7 @@ object LEDManager {
             }
 
             ArmLedMode.Rainbow -> {
-                ll.rainbow(Indices.ArmStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.ArmStrip)
             }
 
             ArmLedMode.HasHatch -> {

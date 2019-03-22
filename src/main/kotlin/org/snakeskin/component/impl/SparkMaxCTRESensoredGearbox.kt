@@ -13,7 +13,7 @@ import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSe
  * @version 2/2/2019
  *
  */
-class SparkMaxCTRESensoredGearbox(val ctreController: IMotorController, val master: CANSparkMax, vararg val slaves: CANSparkMax): ISmartGearbox<CANSparkMax> by SparkMaxGearbox(master, *slaves) {
+class SparkMaxCTRESensoredGearbox<out C: IMotorController>(val ctreController: C, val master: CANSparkMax, vararg val slaves: CANSparkMax): ISmartGearbox<CANSparkMax> by SparkMaxGearbox(master, *slaves) {
     override fun getPosition(): AngularDistanceMeasureRadians {
         return AngularDistanceMeasureMagEncoderTicks(ctreController.getSelectedSensorPosition(0).toDouble()).toRadians()
     }

@@ -2,11 +2,9 @@ package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
-import com.ctre.phoenix.motorcontrol.SensorCollection
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.AnalogInput
 import edu.wpi.first.wpilibj.DigitalInput
-import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
@@ -15,18 +13,13 @@ import org.snakeskin.event.Events
 import org.snakeskin.logic.History
 import org.snakeskin.measure.*
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
-import org.snakeskin.subsystem.SubsystemCheckContext
-import org.snakeskin.utility.Ticker
-import org.team401.robot2019.DriverstationDisplay
-import org.team401.robot2019.RobotEvents
+import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.WristState
-import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.util.LEDManager
 import kotlin.math.roundToInt
 
@@ -109,7 +102,7 @@ object WristSubsystem: Subsystem(100L) {
 
         state (WristStates.EStopped) {
             entry {
-                DriverstationDisplay.wristStopped.setBoolean(true)
+                DriverStationDisplay.wristStopped.setBoolean(true)
             }
             action {
                 rotation.set(0.0)

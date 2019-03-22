@@ -1,8 +1,6 @@
 package org.team401.robot2019
 
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType
 
 /**
  * @author Eli Jelesko
@@ -10,7 +8,7 @@ import edu.wpi.first.wpilibj.shuffleboard.WidgetType
  *
  */
 
-object DriverStationDisplay {
+object DriverstationDisplay{
     private val mainTab = Shuffleboard.getTab("Main")
 
     /**

@@ -10,14 +10,13 @@ import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.ControlType
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.*
 import org.snakeskin.utility.CheesyDriveController
-import org.team401.robot2019.DriverstationDisplay
+import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.LeftStick
 import org.team401.robot2019.RightStick
 import org.team401.robot2019.RobotEvents
@@ -25,8 +24,6 @@ import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
-import org.team401.robot2019.control.superstructure.SuperstructureController
-import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.vision.LimelightCamera
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
@@ -41,7 +38,6 @@ import org.team401.taxis.geometry.Pose2dWithCurvature
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.trajectory.TimedView
 import org.team401.taxis.trajectory.TrajectoryIterator
-import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
 import org.team401.taxis.trajectory.timing.TimedState
 
 /**
@@ -50,7 +46,7 @@ import org.team401.taxis.trajectory.timing.TimedState
  *
  */
 
-object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox> by PigeonPathFollowingDiffDrive(
+object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox<TalonSRX>> by PigeonPathFollowingDiffDrive(
     SparkMaxCTRESensoredGearbox(
         WristSubsystem.leftIntakeTalon,
         CANSparkMax(HardwareMap.Drivetrain.leftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
@@ -81,11 +77,10 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         shifter.set(state)
     }
 
-
-    enum class DriveStates {
+    enum class DriveStates(val reqiuresSensors: Boolean = false) {
         DisabledForFault,
         OpenLoopOperatorControl,
-        PathFollowing,
+        PathFollowing(true),
         ClimbPull,
         ClimbStop,
         ClimbReposition,
@@ -93,7 +88,10 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     }
 
     enum class DriveFaults {
-        MotorControllerReset
+        MotorControllerReset,
+        LeftEncoderFailure,
+        RightEncoderFailure,
+        IMUFailure
     }
 
     private val cheesyController = CheesyDriveController(ControlParameters.DrivetrainCheesyDriveParameters)
@@ -187,14 +185,14 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
         state(DriveStates.ClimbReposition){
             entry {
-                DriverstationDisplay.climbRepositionModeEnabled.setBoolean(true)
+                DriverStationDisplay.climbRepositionModeEnabled.setBoolean(true)
             }
             action {
                 arcade(LeftStick.readAxis { PITCH } * ControlParameters.DrivetrainParameters.slowingFactor,
                     RightStick.readAxis { ROLL } * ControlParameters.DrivetrainParameters.slowingFactor)
             }
             exit{
-                DriverstationDisplay.climbRepositionModeEnabled.setBoolean(false)
+                DriverStationDisplay.climbRepositionModeEnabled.setBoolean(false)
             }
         }
 
@@ -355,7 +353,9 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     }
 
     override fun action() {
-        //Detect faults
+        // Detect faults
+
+        //Motor controller reset fault
         if (left.master.getStickyFault(CANSparkMax.FaultID.kHasReset) || left.slaves.any { it.getStickyFault(CANSparkMax.FaultID.kHasReset) } ||
             right.master.getStickyFault(CANSparkMax.FaultID.kHasReset) || right.slaves.any {
                 it.getStickyFault(
@@ -366,7 +366,33 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
             DriverStation.reportWarning("[Fault] A drive motor controller has reset!", false)
         }
 
-        //Respond to faults
+        //Sensor faults
+        if (left.ctreController.sensorCollection.pulseWidthRiseToRiseUs == 0) {
+            fault(DriveFaults.LeftEncoderFailure)
+            DriverStation.reportWarning("[Fault] Left encoder failed!", false)
+        }
+        if (right.ctreController.sensorCollection.pulseWidthRiseToRiseUs == 0) {
+            fault(DriveFaults.RightEncoderFailure)
+            DriverStation.reportWarning("[Fault] Right encoder failed!", false)
+        }
+        if (imu.state != PigeonIMU.PigeonState.Ready) {
+            fault(DriveFaults.IMUFailure)
+            DriverStation.reportWarning("[Fault] IMU failed!", false)
+        }
+
+
+        // Break state
+        if (isFaulted(DriveFaults.LeftEncoderFailure, DriveFaults.RightEncoderFailure, DriveFaults.IMUFailure)) {
+            //A sensor has failed, if we're in a state that requires sensors, drop into a safe state
+            if ((driveMachine.getState() as? DriveStates)?.reqiuresSensors == true) {
+                //The current state requires sensors, drop into manual control
+                driveMachine.setState(DriveStates.OpenLoopOperatorControl)
+            }
+        }
+
+        // Respond to faults
+
+        //Motor controller reset fault
         if (isFaulted(DriveFaults.MotorControllerReset)) {
             driveMachine.setState(DriveStates.DisabledForFault).waitFor()
             configureDriveMotorControllers() //Reconfigure motor controllers
@@ -381,9 +407,27 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)
         }
 
-        //debug
-        //println("Left: ${left.getPosition().toDegrees()}\t Right: ${right.getPosition().toDegrees()}")
-        //println(driveState.getLatestFieldToVehicle().value)
+        //Sensor faults
+        if (isFaulted(DriveFaults.LeftEncoderFailure)) {
+            if (left.ctreController.sensorCollection.pulseWidthRiseToRiseUs != 0) {
+                clearFault(DriveFaults.LeftEncoderFailure)
+                println("[Fault Cleared] Left encoder restored")
+            }
+        }
+        if (isFaulted(DriveFaults.RightEncoderFailure)) {
+            if (right.ctreController.sensorCollection.pulseWidthRiseToRiseUs != 0) {
+                clearFault(DriveFaults.RightEncoderFailure)
+                println("[Fault Cleared] Right encoder restored")
+            }
+        }
+        if (isFaulted(DriveFaults.IMUFailure)) {
+            if (imu.state == PigeonIMU.PigeonState.Ready) {
+                clearFault(DriveFaults.IMUFailure)
+                println("[Fault Cleared] IMU restored")
+            }
+        }
+
+        //Insert debug println statements below:
     }
 
     override fun setup() {
@@ -393,19 +437,14 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
             WristSubsystem.rightIntakeTalon
         )
 
-
         both {
             setPosition(0.0.Radians)
         }
 
-        on(Events.ENABLED) { //TODO TELEOP ENABLED!!!
-            driveMachine.setState(DriveStates.OpenLoopOperatorControl)
-        }
-
         setPose(Pose2d.identity())
 
-        SmartDashboard.putNumber("driveP", 0.0)
-        SmartDashboard.putNumber("driveI", 0.0)
-        SmartDashboard.putNumber("driveD", 0.0)
+        on (Events.TELEOP_ENABLED) {
+            driveMachine.setState(DriveStates.OpenLoopOperatorControl)
+        }
     }
 }

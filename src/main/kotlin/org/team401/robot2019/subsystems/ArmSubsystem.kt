@@ -5,7 +5,6 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
@@ -26,8 +25,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 import org.snakeskin.dsl.*
-import org.team401.robot2019.DriverstationDisplay
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.DriverStationDisplay
 
 object ArmSubsystem: Subsystem() {
     private val pivotLeftTalon = TalonSRX(HardwareMap.Arm.pivotLeftTalonId)
@@ -129,7 +127,7 @@ object ArmSubsystem: Subsystem() {
     val armExtensionMachine: StateMachine<ArmExtensionStates> = stateMachine {
         state (ArmExtensionStates.EStopped) {
             entry {
-                DriverstationDisplay.armStopped.setBoolean(true)
+                DriverStationDisplay.armStopped.setBoolean(true)
             }
             action {
                 extension.stop()
@@ -276,8 +274,9 @@ object ArmSubsystem: Subsystem() {
         pivot.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         pivot.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
         pivot.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-        pivot.master.selectedSensorPosition = Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - 1800 + 1024
-
+        val multiplier = if (ControlParameters.ArmParameters.armEncoderPhase) -1 else 1
+        pivot.master.selectedSensorPosition = multiplier * (Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - ControlParameters.ArmParameters.armEncoderValueAtVertical + 1024)
+        pivot.setSensorPhase(ControlParameters.ArmParameters.armEncoderPhase)
         pivot.setPIDF(ControlParameters.ArmParameters.ArmRotationPIDF)
 
         extension.inverted = false

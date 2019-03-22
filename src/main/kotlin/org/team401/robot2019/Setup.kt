@@ -15,6 +15,7 @@ import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.utility.Selectable
 import org.team401.robot2019.auto.CollectAngularTorqueData
 import org.team401.robot2019.auto.CollectLinearTorqueData
+import org.team401.robot2019.auto.DeepSpaceAuto
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
@@ -52,10 +53,12 @@ fun setup() {
 
     Selectable.selected = RobotIndex.PRACTICE
 
+    AutoManager.setAutoLoop(DeepSpaceAuto)
+
     //AutoManager.setAutoLoop(CollectLinearTorqueData(DrivetrainSubsystem, .25, 3.0.Seconds))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem/*, ArmSubsystem, ClimberSubsystem*/)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem/*, ClimberSubsystem*/)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization

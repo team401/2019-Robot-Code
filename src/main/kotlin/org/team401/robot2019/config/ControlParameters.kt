@@ -6,6 +6,7 @@ import org.snakeskin.logic.scalars.SquareScalar
 import org.snakeskin.measure.*
 import org.snakeskin.template.PIDFTemplate
 import org.snakeskin.utility.CheesyDriveController
+import org.snakeskin.utility.Selectable
 import org.team401.robot2019.control.superstructure.geometry.SuperstructureSetpoint
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
@@ -13,6 +14,19 @@ import org.team401.robot2019.subsystems.DrivetrainSubsystem
 
 object ControlParameters{
     object ArmParameters{
+        /**
+         * The mechanical goons put the arm encoder on the incorrect side of the practice robot.
+         * As a result, we have to do this now.  Thanks Patrick.
+         */
+
+        val armEncoderPhase by Selectable(false, true)
+
+        /**
+         * Raw, native reading of the pulse width sensor on the arm pivot when the arm is at 90 degrees (vertical)
+         * This is used to set the offset correctly between the different robots.
+         */
+        val armEncoderValueAtVertical by Selectable(1800, 2278)
+
         /**
          * Max velocity and acceleration values to configure the extension motion magic controller
          */
