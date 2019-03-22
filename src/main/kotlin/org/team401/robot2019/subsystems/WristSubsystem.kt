@@ -49,6 +49,7 @@ object WristSubsystem: Subsystem(100L) {
     private val cargoSensorNO = DigitalInput(HardwareMap.Wrist.ballSensorNOPort)
     private val cargoSensorNC = DigitalInput(HardwareMap.Wrist.ballSensorNCPort)
     private val leftHatchSensor = DigitalInput(4)
+    private val rightHatchSensor = DigitalInput(4)
 
     private val pot = AnalogInput(HardwareMap.Wrist.potPort)
 

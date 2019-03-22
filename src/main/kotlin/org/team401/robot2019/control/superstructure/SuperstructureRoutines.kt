@@ -5,6 +5,7 @@ import org.team401.robot2019.control.superstructure.planning.SuperstructureMotio
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.ArmSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
+import org.team401.robot2019.util.LEDManager
 
 /**
  * @author Cameron Earle
@@ -12,6 +13,35 @@ import org.team401.robot2019.subsystems.WristSubsystem
  *
  */
 object SuperstructureRoutines {
+
+    enum class Side{
+        FRONT, BACK
+    }
+
+    private var side = Side.FRONT
+
+    init {
+        if (side == Side.FRONT){
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierRed)
+        }else{
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
+        }
+    }
+
+    fun switchSides(){
+        if (side == Side.FRONT){
+            side = Side.BACK
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
+        }else{
+            side = Side.FRONT
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierRed)
+        }
+    }
+
+    fun getSide(): Side{
+        return side
+    }
+
     fun ccMaybe(enterCC: Boolean) {
         if (enterCC) {
             ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
@@ -24,7 +54,7 @@ object SuperstructureRoutines {
         }
     }
 
-    fun goToCargoShip(front: Boolean, back: Boolean) {
+    fun goToCargoShip() {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -32,71 +62,71 @@ object SuperstructureRoutines {
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoShipCargoFront))
-                } else if (back && !front) {
+                } else if (side == Side.BACK) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoShipCargoBack))
                 }
             }
         }
     }
 
-    fun goToLow(front: Boolean, back: Boolean) {
+    fun goToLow() {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchBottomFront))
-                } else if (back && !front) {
+                } else if (side == Side.BACK) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchBottomBack))
                 }
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoBottomFront))
-                } else if (back && !front) {
+                } else if (side == Side.BACK) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoBottomBack))
                 }
             }
         }
     }
 
-    fun goToMid(front: Boolean, back: Boolean) {
+    fun goToMid() {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchMidFront))
-                } else if (back && !front) {
+                } else if (side == Side.BACK) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchMidBack))
                 }
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoMidFront))
-                } else if (back && !front) {
+                } else if (side == Side.BACK) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoMidBack))
                 }        
             }
         }
     }
 
-    fun goToHigh(front: Boolean, back: Boolean) {
+    fun goToHigh() {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchHighFront))
-                } else if (back && !front) {
+                } else if (side == Side.BACK) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchHighBack))
                 }            }
 
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoHighFront))
-                } else if (back && !front) {
+                } else if (side == Side.BACK) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoHighBack))
                 }
             }
@@ -107,29 +137,22 @@ object SuperstructureRoutines {
         ccMaybe(SuperstructureMotionPlanner.requestToolChange(SuperstructureMotionPlanner.notActiveTool()))
     }
 
-    fun intake(front: Boolean, back: Boolean) {
+    fun intake() {
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupFront))
-                } else if (back && !front){
+                } else if (side == Side.BACK){
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupBack))
-                }
-                if (back != front) { //If they only pushed one button, this is effectively making sure this doesn't run if neither case above ran
-                    WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped)
-                    WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
                 }
             }
 
             WristMotionPlanner.Tool.HatchPanelTool -> {
-                if (front && !back) {
+                if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.hatchIntakeFront))
-                } else if (back && !front){
+                } else if (side == Side.BACK){
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.hatchIntakeBack))
-                }
-                if (back != front) { //If they only pushed one button, this is effectively making sure this doesn't run if neither case above ran
-                    WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
                 }
             }
         }
@@ -163,9 +186,7 @@ object SuperstructureRoutines {
         }
     }
 
-    fun stopScoring(left: Boolean, right: Boolean) {
-        if (!left && !right) {
-            WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
-        }
+    fun stopScoring() {
+        WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
     }
 }
