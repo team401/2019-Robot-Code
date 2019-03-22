@@ -27,6 +27,7 @@ import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.control.vision.LimelightCamera
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
@@ -202,14 +203,18 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
             var startVelocity = 0.0.InchesPerSecond
             var trajectory: TrajectoryIterator<TimedState<Pose2dWithCurvature>>
 
+            /*
             rejectIf {
                 SuperstructureController.output.wristTool != WristMotionPlanner.Tool.HatchPanelTool
             }
+            */
 
             entry {
+                setPose(Pose2d.identity())
                 vLoc = false
                 tGen = false
                 VisionManager.frontCamera.configForVision(1)
+                VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
                 VisionManager.frontCamera.resetFrame()
                 Thread.sleep(100) //Give the camera some time to enter the state
             }
@@ -247,18 +252,21 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                             TimedView(
                                 pathManager.generateTrajectory(
                                     false,
-                                    listOf(startPose, straightPart, goal),
+                                    listOf(startPose, goal),
                                     listOf(),
                                     startVelocity.value,
                                     0.0,
-                                    2.0 * 12.0,
-                                    2.0 * 12.0,
+                                    6.0 * 12.0,
+                                    4.0 * 12.0,
                                     9.0
                                 )
                             )
                         )
 
-                        /*
+                        println("Driving: ${listOf(startPose, goal)}")
+                        println("Straight Part: $straightPart")
+
+
                         //Run the trajectory
                         pathManager.reset()
                         pathManager.setTrajectory(
@@ -267,16 +275,13 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
                         tGen = true
                         setState(DriveStates.PathFollowing)
-                        */
-                        println(listOf(startPose, straightPart, goal))
-
-                        setState(DriveStates.OpenLoopOperatorControl)
                     }
                 }
             }
 
             exit {
-                VisionManager.frontCamera.configForVision(0)
+                //VisionManager.frontCamera.configForVision(1)
+                //VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
             }
         }
 
