@@ -36,8 +36,8 @@ object ControlParameters{
         val extensionAcceleration = (36.0 * 3.5).InchesPerSecond //PER SECOND
 
 
-        val ROTATION_MAX_ACCELERATION = 0.8.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
-        val ROTATION_MAX_VELOCITY = 0.4.RevolutionsPerSecond.toRadiansPerSecond()
+        val ROTATION_MAX_ACCELERATION = 0.6.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
+        val ROTATION_MAX_VELOCITY = 0.2.RevolutionsPerSecond.toRadiansPerSecond()
 
 
         val MIN_POS = 0.57.Radians.value
@@ -63,7 +63,14 @@ object ControlParameters{
          */
         val extensionHomingPower = -0.1
 
-        object ArmRotationPIDF: PIDFTemplate{
+        object ArmRotationMovePIDF: PIDFTemplate{
+            override val kP = 3.0
+            override val kI = 0.0
+            override val kD = 20.0
+            override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
+        }
+
+        object ArmRotationVerticalPIDF: PIDFTemplate {
             override val kP = 2.5
             override val kI = 0.0
             override val kD = 20.0
@@ -93,7 +100,7 @@ object ControlParameters{
         const val potOffset = 1965
 
         object WristRotationPIDF: PIDFTemplate {
-            override val kP = 2.3
+            override val kP = 1.6
             override val kI = 0.0
             override val kD = 200.0
             override val kF = 0.84
@@ -103,11 +110,11 @@ object ControlParameters{
     object ArmPositions {
         //Floor pickup positions
         val cargoFloorPickupFront = SuperstructureSetpoint.intakingCargo(
-            Point2d(30.0.Inches, 9.5.Inches),
+            Point2d(26.0.Inches, 8.5.Inches),
             0.0.Radians
         ).withAngle((0.0).Degrees.toRadians()).fromFloor()
 
-        val cargoFloorPickupBack = cargoFloorPickupFront.flipped().upBy((-1.0).Inches)
+        val cargoFloorPickupBack = cargoFloorPickupFront.flipped()//.upBy((-1.0).Inches)
 
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
@@ -123,19 +130,19 @@ object ControlParameters{
 
         //Intake hatch positions
         val hatchIntakeFront = SuperstructureSetpoint.intakingHatch(
-            Point2d(30.0.Inches, 19.0.Inches),
+            Point2d(32.0.Inches, 17.0.Inches),
             0.0.Radians
         ).fromFloor()
 
-        val hatchIntakeBack = hatchIntakeFront.flipped()
+        val hatchIntakeBack = hatchIntakeFront.flipped().upBy(2.0.Inches)
 
         //Rocket hatch positions
         val rocketHatchBottomFront = SuperstructureSetpoint.holdingHatch(
             Point2d(34.0.Inches, 19.0.Inches),
             0.0.Radians
         ).fromFloor()
-        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(14.0.Inches)
-        val rocketHatchHighFront = rocketHatchMidFront.upBy(26.0.Inches).atX((18.0).Inches).withAngle(0.0.Degrees.toRadians())
+        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(20.0.Inches)
+        val rocketHatchHighFront = rocketHatchMidFront.upBy(24.0.Inches).atX((18.0).Inches).withAngle(0.0.Degrees.toRadians())
 
         val rocketHatchBottomBack = rocketHatchBottomFront.flipped()
         val rocketHatchMidBack = rocketHatchMidFront.flipped()

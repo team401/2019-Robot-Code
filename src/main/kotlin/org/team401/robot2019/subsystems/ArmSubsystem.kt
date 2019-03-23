@@ -38,6 +38,25 @@ object ArmSubsystem: Subsystem() {
     var extensionHomed by LockingDelegate(false)
 
     /**
+     * Represents which set of gains is selected.  If true, the arm is the "vertical holding" gain set
+     */
+    private var isInVerticalMode = false
+
+    private fun configureForMoveToVertical(force: Boolean = false) {
+        if (force || !isInVerticalMode) {
+            pivot.setPIDF(ControlParameters.ArmParameters.ArmRotationVerticalPIDF)
+        }
+        isInVerticalMode = true
+    }
+
+    private fun configureForMove(force: Boolean = false) {
+        if (force || isInVerticalMode) {
+            pivot.setPIDF(ControlParameters.ArmParameters.ArmRotationMovePIDF)
+        }
+        isInVerticalMode = false
+    }
+
+    /**
      * Gets the current state of the arm as measured by sensors
      */
     fun getCurrentArmState(): ArmState {
@@ -86,6 +105,7 @@ object ArmSubsystem: Subsystem() {
 
         state (ArmPivotStates.Holding) {
             entry {
+                configureForMoveToVertical(true) //Use the less aggressive gains for holding mode
                 val currentPosition = pivot.getPosition().toMagEncoderTicks().value
                 pivot.set(ControlMode.Position, currentPosition)
             }
@@ -94,6 +114,11 @@ object ArmSubsystem: Subsystem() {
         state (ArmPivotStates.CoordinatedControl) {
             rtAction {
                 val output = SuperstructureController.output
+                if (output.armAngle.toDegrees().value in 80.0..100.0) {
+                    configureForMoveToVertical()
+                } else {
+                    configureForMove()
+                }
                 val angle = output.armAngle.toMagEncoderTicks().value
                 val ffVoltage = output.armFeedForwardVoltage
                 val ffPercent = ffVoltage / 12.0
@@ -258,8 +283,9 @@ object ArmSubsystem: Subsystem() {
     }
 
     override fun action() {
-        val armState = getCurrentArmState()
-        //println(ArmKinematics.forward(armState))
+        // armState = getCurrentArmState()
+        //println("Arm radius: ${armState.armRadius}")
+        //println("ArmState: ${armState.armAngle.toDegrees()} Raw Pos: ${pivot.getPosition().toDegrees()}")
         //println(SuperstructureController.output.armFeedForwardVoltage)
         //println(pivot.getPosition().toDegrees())
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
@@ -274,10 +300,14 @@ object ArmSubsystem: Subsystem() {
         pivot.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         pivot.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
         pivot.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-        val multiplier = if (ControlParameters.ArmParameters.armEncoderPhase) -1 else 1
-        pivot.master.selectedSensorPosition = multiplier * (Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - ControlParameters.ArmParameters.armEncoderValueAtVertical + 1024)
+        if (ControlParameters.ArmParameters.armEncoderPhase) {
+            pivot.master.selectedSensorPosition = (Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - ControlParameters.ArmParameters.armEncoderValueAtVertical - 1024)
+
+        } else {
+            pivot.master.selectedSensorPosition = (Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - ControlParameters.ArmParameters.armEncoderValueAtVertical + 1024)
+        }
         pivot.setSensorPhase(ControlParameters.ArmParameters.armEncoderPhase)
-        pivot.setPIDF(ControlParameters.ArmParameters.ArmRotationPIDF)
+        configureForMoveToVertical(true)
 
         extension.inverted = false
         extension.setSensorPhase(true)

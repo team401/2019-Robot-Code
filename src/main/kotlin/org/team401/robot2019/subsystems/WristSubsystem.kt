@@ -42,7 +42,7 @@ object WristSubsystem: Subsystem(100L) {
     private val cargoSensorNO = DigitalInput(HardwareMap.Wrist.ballSensorNOPort)
     private val cargoSensorNC = DigitalInput(HardwareMap.Wrist.ballSensorNCPort)
     private val leftHatchSensor = DigitalInput(4)
-    private val rightHatchSensor = DigitalInput(4)
+    private val rightHatchSensor = DigitalInput(5)
 
     private val pot = AnalogInput(HardwareMap.Wrist.potPort)
 
@@ -317,22 +317,10 @@ object WristSubsystem: Subsystem(100L) {
         rotation.master.selectedSensorPosition = samples.average().Degrees.toMagEncoderTicks().value.roundToInt()
 
 */
-        if (Math.abs(rotation.master.selectedSensorPosition - rotation.master.sensorCollection.pulseWidthPosition) >= 10.0) {
-            //We need to reset the wrist home
+        if (rotation.master.selectedSensorPosition < rotation.master.sensorCollection.pulseWidthPosition) {
+            //Sensor offest not set, configure it now
             rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
-            //TODO
-            //TODO
-            //TODO
-            //TODO
-            //TODO
-            //TODO FIND A SOLUTION TO THIS!!!!!
-            //TODO
-            //TODO
-            //TODO
-            //TODO
-            //TODO
         }
-
 
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)

@@ -6,6 +6,7 @@ import org.lightlink.LightLink
 import org.snakeskin.dsl.on
 import org.snakeskin.event.Events
 import org.snakeskin.logic.History
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 
 object LEDManager {
     /**
@@ -30,7 +31,7 @@ object LEDManager {
     enum class TrussLedMode {
         Off, //All truss LEDs are off
         Rainbow, //All truss LEDs are in rainbow pattern
-        SideIndicator, //Front truss LEDs indicate "red side", back truss LEDs indicate "blue side"
+        //SideIndicator, //Front truss LEDs indicate "red side", back truss LEDs indicate "blue side"
         ModifierRed, //Front truss LEDs are off, back truss LEDs indicate "blue side"
         ModifierBlue //Front truss LEDs indicate "red side", back truss LEDs are off
     }
@@ -74,26 +75,28 @@ object LEDManager {
                 ll.rainbow(LightLink.Speed.SLOW, Indices.TrussBackLeftStrip)
                 ll.rainbow(LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
             }
-            
+
+            /*
             TrussLedMode.SideIndicator -> {
                 ll.solid(LightLink.Color.RED, Indices.TrussFrontLeftStrip)
                 ll.solid(LightLink.Color.RED, Indices.TrussFrontRightStrip)
                 ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
                 ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
             }
+            */
 
             TrussLedMode.ModifierRed -> {
-                ll.off(Indices.TrussFrontLeftStrip)
-                ll.off(Indices.TrussFrontRightStrip)
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
-            }
-
-            TrussLedMode.ModifierBlue -> {
                 ll.solid(LightLink.Color.RED, Indices.TrussFrontLeftStrip)
                 ll.solid(LightLink.Color.RED, Indices.TrussFrontRightStrip)
                 ll.off(Indices.TrussBackLeftStrip)
                 ll.off(Indices.TrussBackRightStrip)
+            }
+
+            TrussLedMode.ModifierBlue -> {
+                ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
+                ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
+                ll.off(Indices.TrussFrontLeftStrip)
+                ll.off(Indices.TrussFrontRightStrip)
             }
         }
         trussModeHistory.update(mode)
@@ -207,8 +210,11 @@ object LEDManager {
         }
 
         on (Events.TELEOP_ENABLED) {
-            setTrussLedMode(TrussLedMode.SideIndicator)
-            setArmLedMode(ArmLedMode.Off)
+            if (SuperstructureRoutines.side == SuperstructureRoutines.Side.FRONT) {
+                setTrussLedMode(TrussLedMode.ModifierRed)
+            } else {
+                setTrussLedMode(TrussLedMode.ModifierBlue)
+            }
         }
     }
 }

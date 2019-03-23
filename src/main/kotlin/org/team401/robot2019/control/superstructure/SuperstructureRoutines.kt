@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure
 
+import org.snakeskin.logic.LockingDelegate
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
@@ -13,33 +14,21 @@ import org.team401.robot2019.util.LEDManager
  *
  */
 object SuperstructureRoutines {
-
-    enum class Side{
+    enum class Side {
         FRONT, BACK
     }
 
-    private var side = Side.FRONT
+    var side by LockingDelegate(Side.FRONT)
+    private set
 
-    init {
-        if (side == Side.FRONT){
-            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierRed)
-        }else{
-            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
-        }
-    }
-
-    fun switchSides(){
+    fun switchSides() {
         if (side == Side.FRONT){
             side = Side.BACK
             LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
-        }else{
+        } else {
             side = Side.FRONT
             LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierRed)
         }
-    }
-
-    fun getSide(): Side{
-        return side
     }
 
     fun ccMaybe(enterCC: Boolean) {
@@ -146,6 +135,8 @@ object SuperstructureRoutines {
                 } else if (side == Side.BACK){
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupBack))
                 }
+                WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped)
+                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
             }
 
             WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -154,6 +145,7 @@ object SuperstructureRoutines {
                 } else if (side == Side.BACK){
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.hatchIntakeBack))
                 }
+                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
             }
         }
     }
