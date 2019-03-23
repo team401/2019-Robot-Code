@@ -9,9 +9,47 @@ import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.control.superstructure.planning.command.*
 import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.util.epsGt
+import org.team401.taxis.geometry.Pose2d
 import java.util.*
 
 object SuperstructureMotionPlanner {
+    enum class ControlMode {
+        Planning, //Coordinated, motion planned control
+        Jog //Manual jogging
+    }
+
+    /**
+     * The control mode that the system is currently in
+     */
+    var activeControlMode = ControlMode.Planning
+    private set
+    @Synchronized get
+
+    private var jogArmPose = Point2d(0.0.Inches, 0.0.Inches)
+    private var jogWristState = WristState(0.0.Radians, false, false)
+    private var jogXRate = 0.0
+    private var jogYRate = 0.0
+
+    @Synchronized fun setToPlanningMode() {
+        reset()
+        activeControlMode = ControlMode.Planning
+    }
+
+    @Synchronized fun setToJogMode() {
+        reset()
+        jogArmPose = ArmKinematics.forward(lastObservedArmState)
+        jogWristState = lastObservedWristState
+        activeControlMode = ControlMode.Jog
+    }
+
+    /**
+     * Updates the jog values
+     */
+    @Synchronized fun updateJog(x: Double, y: Double) {
+        jogXRate = x
+        jogYRate = y
+    }
+
     val commandQueue = LinkedList<SuperstructureCommand>()
 
     /**
@@ -52,24 +90,41 @@ object SuperstructureMotionPlanner {
         lastObservedArmState = armState     //Update state variables
         lastObservedWristState = wristState
 
-        //Pop the first command from the queue
-        if (commandQueue.isNotEmpty()) { //If there are commands in the queue
-            val currentCommand = commandQueue.pop() //Remove the first element
+        when (activeControlMode) {
+            ControlMode.Planning -> {
+                //Pop the first command from the queue
+                if (commandQueue.isNotEmpty()) { //If there are commands in the queue
+                    val currentCommand = commandQueue.pop() //Remove the first element
 
-            try {
-                currentCommand.update(dt, armState, wristState) //Update the command
-                if (!currentCommand.isDone()) { //If the command isn't done
-                    commandQueue.push(currentCommand) //Put it back at the start of the queue
+                    try {
+                        currentCommand.update(dt, armState, wristState) //Update the command
+                        if (!currentCommand.isDone()) { //If the command isn't done
+                            commandQueue.push(currentCommand) //Put it back at the start of the queue
+                        }
+                    } catch (e: Exception) {
+                        //An exception occured during this command.  Print out some debug info and reset the motion planner.
+                        System.err.println("Exception encountered in Superstructure Motion Planner")
+                        System.err.println("Active Command:\t${currentCommand.javaClass.simpleName}")
+                        System.err.println("Description:\t${currentCommand.getDescription()}")
+                        System.err.println("Stack trace:")
+                        e.printStackTrace()
+
+                        reset() //Reset the planner
+                    }
                 }
-            } catch (e: Exception) {
-                //An exception occured during this command.  Print out some debug info and reset the motion planner.
-                System.err.println("Exception encountered in Superstructure Motion Planner")
-                System.err.println("Active Command:\t${currentCommand.javaClass.simpleName}")
-                System.err.println("Description:\t${currentCommand.getDescription()}")
-                System.err.println("Stack trace:")
-                e.printStackTrace()
+            }
 
-                reset() //Reset the planner
+            ControlMode.Jog -> {
+                val newX = jogArmPose.x.value + jogXRate
+                val newY = jogArmPose.y.value + jogYRate
+                val newPose = Point2d(newX.Inches, newY.Inches)
+                val newState = ArmKinematics.inverse(newPose)
+                //TODO check limits
+                SuperstructureController.update(
+                    ArmState(newState.r, newState.theta, 0.0.RadiansPerSecond),
+                    jogWristState,
+                    activeTool
+                )
             }
         }
     }

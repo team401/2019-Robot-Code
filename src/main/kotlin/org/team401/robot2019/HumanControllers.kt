@@ -191,6 +191,15 @@ val Gamepad = HumanControls.dualAction(2){
         }
     }
 
+    whenButton(Buttons.LEFT_STICK) {
+        pressed {
+            SuperstructureMotionPlanner.setToJogMode()
+        }
+        released {
+            SuperstructureMotionPlanner.setToPlanningMode()
+        }
+    }
+
     /*
     whenButton(Buttons.LEFT_TRIGGER) {
         pressed {
