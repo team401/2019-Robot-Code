@@ -1,7 +1,6 @@
 package org.team401.robot2019.control.superstructure.planning.command
 
 import org.team401.robot2019.control.superstructure.geometry.ArmState
-import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.WristState
 
 /**

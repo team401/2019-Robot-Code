@@ -39,6 +39,9 @@ object ArmMotionPlanner{
     private lateinit var profile: Profile2d
     private lateinit var rotationProfile: TrapezoidalProfileGenerator
 
+    private var rotationVelocity = SuperstructureMotionPlanner.SpeedMode.Normal.velocity
+    private var rotationAcceleration = SuperstructureMotionPlanner.SpeedMode.Normal.acceleration
+
     private var done = false
 
     fun setDesiredTrajectory(startPos: Point2d, endPos: Point2d, minimumRadius: LinearDistanceMeasureInches){
@@ -52,11 +55,16 @@ object ArmMotionPlanner{
         path = calculatePath(minimumRadius)
         profile = Profile2d(path)
         rotationProfile = TrapezoidalProfileGenerator(
-            ControlParameters.ArmParameters.rotationVelocity,
-            ControlParameters.ArmParameters.rotationAcceleration,
+            rotationVelocity,
+            rotationAcceleration,
             startTheta,
             endTheta
         )
+    }
+
+    fun setSpeed(speed: SuperstructureMotionPlanner.SpeedMode){
+        rotationVelocity = speed.velocity
+        rotationAcceleration = speed.acceleration
     }
 
     fun reset(){

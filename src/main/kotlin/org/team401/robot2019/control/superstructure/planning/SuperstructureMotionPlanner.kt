@@ -48,11 +48,13 @@ object SuperstructureMotionPlanner {
     @Synchronized fun setToSlowSpeedMode() {
         reset()
         activeSpeedMode = SpeedMode.Slow
+        ArmMotionPlanner.setSpeed(SpeedMode.Slow)
     }
 
     @Synchronized fun setToNormalSpeedMode() {
         reset()
         activeSpeedMode = SpeedMode.Normal
+        ArmMotionPlanner.setSpeed(SpeedMode.Normal)
     }
 
     @Synchronized fun setToPlanningMode() {
@@ -158,7 +160,7 @@ object SuperstructureMotionPlanner {
                         Geometry.ArmGeometry.minY.value
                     }
                 }
-                
+
                 val newPose = Point2d(newX.Inches, newY.Inches)
                 val newState = ArmKinematics.inverse(newPose)
 
