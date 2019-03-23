@@ -36,8 +36,11 @@ object ControlParameters{
         val extensionAcceleration = (36.0 * 3.5).InchesPerSecond //PER SECOND
 
 
-        val ROTATION_MAX_ACCELERATION = 0.6.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
-        val ROTATION_MAX_VELOCITY = 0.2.RevolutionsPerSecond.toRadiansPerSecond()
+        val rotationAcceleration = 0.6.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
+        val rotationVelocity = 0.2.RevolutionsPerSecond.toRadiansPerSecond()
+
+        val rotationSlowAcceleration = 0.6.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
+        val rotationSlowVelocity = 0.2.RevolutionsPerSecond.toRadiansPerSecond()
 
 
         val MIN_POS = 0.57.Radians.value

@@ -1,6 +1,5 @@
 package org.team401.robot2019.control.superstructure.planning
 
-import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.Seconds
@@ -16,7 +15,6 @@ import org.team401.robot2019.control.superstructure.planning.profile.LinearProfi
 import org.team401.robot2019.control.superstructure.planning.profile.Profile2d
 import org.team401.robot2019.control.superstructure.planning.profile.ProfileSegment
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.planning.profile.TrapezoidalProfilePoint
 /**
@@ -54,8 +52,8 @@ object ArmMotionPlanner{
         path = calculatePath(minimumRadius)
         profile = Profile2d(path)
         rotationProfile = TrapezoidalProfileGenerator(
-            ControlParameters.ArmParameters.ROTATION_MAX_VELOCITY,
-            ControlParameters.ArmParameters.ROTATION_MAX_ACCELERATION,
+            ControlParameters.ArmParameters.rotationVelocity,
+            ControlParameters.ArmParameters.rotationAcceleration,
             startTheta,
             endTheta
         )

@@ -1,7 +1,10 @@
 package org.team401.robot2019.control.superstructure.planning
 
 import org.snakeskin.measure.*
+import org.snakeskin.measure.acceleration.angular.AngularAccelerationMeasureRadiansPerSecondPerSecond
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
+import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
+import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureController
@@ -18,6 +21,14 @@ object SuperstructureMotionPlanner {
         Jog //Manual jogging
     }
 
+    enum class SpeedMode(
+        val acceleration: AngularAccelerationMeasureRadiansPerSecondPerSecond,
+        val velocity: AngularVelocityMeasureRadiansPerSecond
+    ) {
+        Slow(ControlParameters.ArmParameters.rotationSlowAcceleration, ControlParameters.ArmParameters.rotationSlowVelocity),
+        Normal(ControlParameters.ArmParameters.rotationAcceleration, ControlParameters.ArmParameters.rotationVelocity)
+    }
+
     /**
      * The control mode that the system is currently in
      */
@@ -25,10 +36,24 @@ object SuperstructureMotionPlanner {
     private set
     @Synchronized get
 
+    var activeSpeedMode = SpeedMode.Normal
+    private set
+    @Synchronized get
+
     private var jogArmPose = Point2d(0.0.Inches, 0.0.Inches)
     private var jogWristState = WristState(0.0.Radians, false, false)
     private var jogXRate = 0.0
     private var jogYRate = 0.0
+
+    @Synchronized fun setToSlowSpeedMode() {
+        reset()
+        activeSpeedMode = SpeedMode.Slow
+    }
+
+    @Synchronized fun setToNormalSpeedMode() {
+        reset()
+        activeSpeedMode = SpeedMode.Normal
+    }
 
     @Synchronized fun setToPlanningMode() {
         reset()
