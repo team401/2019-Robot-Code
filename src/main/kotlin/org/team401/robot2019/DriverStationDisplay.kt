@@ -2,7 +2,6 @@ package org.team401.robot2019
 
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType
 
 /**
  * @author Eli Jelesko
@@ -16,7 +15,8 @@ object DriverStationDisplay {
     /**
      * Displays if the arm has been E stopped
      */
-    val armStopped = mainTab.add("Arm Enabled", true)
+    val armStopped = mainTab.add("Arm Enabled", false)
+        .withWidget(BuiltInWidgets.kToggleButton)
         .withSize(1,1)
         .withPosition(6, 1)
         .entry
@@ -24,9 +24,19 @@ object DriverStationDisplay {
     /**
      * Displays if the wrist has been E stopped
      */
-    val wristStopped = mainTab.add("Wrist Enabled", true)
+    val wristStopped = mainTab.add("Wrist Enabled", false)
+        .withWidget(BuiltInWidgets.kToggleButton)
         .withSize(1,1)
         .withPosition(7, 1)
+        .entry
+
+    /**
+     * Displays if the drivetrain has been E stopped
+     */
+    val driveStopped = mainTab.add("Drivetrain Enabled", false)
+        .withWidget(BuiltInWidgets.kToggleButton)
+        .withSize(1,1)
+        .withPosition(8, 1)
         .entry
 
     /**
@@ -53,4 +63,13 @@ object DriverStationDisplay {
         .withPosition(7, 3)
         .entry
 
+
+    fun init(){
+        armStopped.setBoolean(false)
+        wristStopped.setBoolean(false)
+        driveStopped.setBoolean(false)
+        manualOverride.setBoolean(false)
+        hasGamePiece.setBoolean(false)
+        climbRepositionModeEnabled.setBoolean(false)
+    }
 }

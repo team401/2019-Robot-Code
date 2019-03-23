@@ -77,7 +77,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         shifter.set(state)
     }
 
-    enum class DriveStates(val reqiuresSensors: Boolean = false) {
+    enum class DriveStates(val requiresSensors: Boolean = false) {
+        EStopped,
         DisabledForFault,
         OpenLoopOperatorControl,
         PathFollowing(true),
@@ -101,6 +102,14 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
     const val gearRatioHigh = (50.0/28.0) * (64.0 / 15.0)
 
     val driveMachine: StateMachine<DriveStates> = stateMachine {
+        rejectAllIf(*DriveStates.values()){isInState(DriveStates.EStopped)}
+
+        state(DriveStates.EStopped){
+            entry {
+                println("DRIVETRAIN E STOP")
+                stop()
+            }
+        }
         state(DriveStates.DisabledForFault) {
             entry {
                 stop() //Send no more commands to the controllers
@@ -384,7 +393,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         // Break state
         if (isFaulted(DriveFaults.LeftEncoderFailure, DriveFaults.RightEncoderFailure, DriveFaults.IMUFailure)) {
             //A sensor has failed, if we're in a state that requires sensors, drop into a safe state
-            if ((driveMachine.getState() as? DriveStates)?.reqiuresSensors == true) {
+            if ((driveMachine.getState() as? DriveStates)?.requiresSensors == true) {
                 //The current state requires sensors, drop into manual control
                 driveMachine.setState(DriveStates.OpenLoopOperatorControl)
             }
@@ -425,6 +434,11 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                 clearFault(DriveFaults.IMUFailure)
                 println("[Fault Cleared] IMU restored")
             }
+        }
+
+        // Driver Station Shutoff
+        if (DriverStationDisplay.driveStopped.getBoolean(false)) {
+            driveMachine.setState(DriveStates.EStopped)
         }
 
         //Insert debug println statements below:

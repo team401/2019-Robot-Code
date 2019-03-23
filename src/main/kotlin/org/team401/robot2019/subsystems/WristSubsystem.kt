@@ -5,6 +5,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.AnalogInput
 import edu.wpi.first.wpilibj.DigitalInput
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
@@ -76,6 +77,11 @@ object WristSubsystem: Subsystem(100L) {
         Unclamped
     }
 
+    enum class WristFaults {
+        WristEncoderFault,
+        BannerSensorFault
+    }
+
     /**
      * Returns the current reading on the pot, scaled correctly, in degrees
      */
@@ -102,7 +108,7 @@ object WristSubsystem: Subsystem(100L) {
 
         state (WristStates.EStopped) {
             entry {
-                DriverStationDisplay.wristStopped.setBoolean(true)
+                println("Wrist Subsystem is E Stopped")
             }
             action {
                 rotation.set(0.0)
@@ -283,6 +289,19 @@ object WristSubsystem: Subsystem(100L) {
 
     override fun action() {
         LEDManager.updateGamepieceStatus(systemSeesHatch(), systemSeesCargo()) //Update gamepiece status from sensors
+
+
+        // Faults
+        if (rotation.getSensorCollection().pulseWidthRiseToRiseUs == 0) {
+            fault(WristFaults.WristEncoderFault)
+            DriverStation.reportWarning("[Fault] Wrist Encoder has failed!", false)
+        }
+
+
+        // Driver Station Shutoff
+        if (DriverStationDisplay.wristStopped.getBoolean(false)) {
+            wristMachine.setState(WristStates.EStopped)
+        }
 
         //debug
         //

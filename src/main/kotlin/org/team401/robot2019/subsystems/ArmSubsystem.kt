@@ -1,10 +1,8 @@
 package org.team401.robot2019.subsystems
 
-import com.ctre.phoenix.motorcontrol.ControlMode
-import com.ctre.phoenix.motorcontrol.FeedbackDevice
-import com.ctre.phoenix.motorcontrol.LimitSwitchNormal
-import com.ctre.phoenix.motorcontrol.LimitSwitchSource
+import com.ctre.phoenix.motorcontrol.*
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
@@ -77,6 +75,11 @@ object ArmSubsystem: Subsystem() {
         TuneKs, //Tunes the gain required to hold the arm
     }
 
+    enum class ArmFaults {
+        PivotEncoderFault,
+        ExtensionEncoderFault,
+    }
+
     enum class ArmExtensionStates {
         EStopped, //System is stopped.  No commands sent to motors
         Homing, //System is homing.  This means that it is slowly retracted to locate its home position
@@ -95,9 +98,12 @@ object ArmSubsystem: Subsystem() {
     }
 
     val armPivotMachine: StateMachine<ArmPivotStates> = stateMachine {
-        //rejectAllIf(*ArmPivotStates.values()) {isInState(ArmPivotStates.EStopped)}
+        rejectAllIf(*ArmPivotStates.values()) {isInState(ArmPivotStates.EStopped)}
 
         state (ArmPivotStates.EStopped) {
+            entry {
+                println("ARM PIVOT E STOP")
+            }
             action {
                 pivot.stop()
             }
@@ -150,9 +156,11 @@ object ArmSubsystem: Subsystem() {
     }
 
     val armExtensionMachine: StateMachine<ArmExtensionStates> = stateMachine {
+        rejectAllIf(*ArmExtensionStates.values()){isInState(ArmExtensionStates.EStopped)}
+
         state (ArmExtensionStates.EStopped) {
             entry {
-                DriverStationDisplay.armStopped.setBoolean(true)
+                println("ARM EXTENSION E STOP")
             }
             action {
                 extension.stop()
@@ -282,13 +290,29 @@ object ArmSubsystem: Subsystem() {
         }
     }
 
-    override fun action() {
+    override fun action() { //TODO change loop rate to 100ms
+        // Faults
+        if (pivot.getSensorCollection().pulseWidthRiseToRiseUs == 0) {
+            fault(ArmFaults.PivotEncoderFault)
+            DriverStation.reportWarning("[Fault] Arm Pivot Encoder has failed!", false)
+        }
+        if (extension.getSensorCollection().pulseWidthRiseToRiseUs == 0) {
+            fault(ArmFaults.ExtensionEncoderFault)
+            DriverStation.reportWarning("[Fault] Arm Extension Encoder has failed!", false)
+        }
+
+        // Driver Station Shutoff
+        if(DriverStationDisplay.armStopped.getBoolean(false)){
+            armPivotMachine.setState(ArmPivotStates.EStopped)
+            armExtensionMachine.setState(ArmExtensionStates.EStopped)
+        }
         // armState = getCurrentArmState()
         //println("Arm radius: ${armState.armRadius}")
         //println("ArmState: ${armState.armAngle.toDegrees()} Raw Pos: ${pivot.getPosition().toDegrees()}")
         //println(SuperstructureController.output.armFeedForwardVoltage)
         //println(pivot.getPosition().toDegrees())
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
+
     }
 
     override fun setup() {

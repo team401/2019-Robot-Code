@@ -140,11 +140,28 @@ object SuperstructureMotionPlanner {
             }
 
             ControlMode.Jog -> {
-                val newX = jogArmPose.x.value + jogXRate
-                val newY = jogArmPose.y.value + jogYRate
+                var newX = jogArmPose.x.value + jogXRate
+                var newY = jogArmPose.y.value + jogYRate
+
+                // Check limits
+                if (newX !in -Geometry.ArmGeometry.maxX.value .. Geometry.ArmGeometry.maxX.value) {
+                    newX = if (newX < -Geometry.ArmGeometry.maxX.value) {
+                        -Geometry.ArmGeometry.maxX.value
+                    }else{
+                        Geometry.ArmGeometry.maxX.value
+                    }
+                }
+                if (newY !in Geometry.ArmGeometry.minY.value .. Geometry.ArmGeometry.maxY.value) {
+                    newY = if (newY > Geometry.ArmGeometry.maxY.value){
+                        Geometry.ArmGeometry.maxY.value
+                    }else{
+                        Geometry.ArmGeometry.minY.value
+                    }
+                }
+                
                 val newPose = Point2d(newX.Inches, newY.Inches)
                 val newState = ArmKinematics.inverse(newPose)
-                //TODO check limits
+
                 SuperstructureController.update(
                     ArmState(newState.r, newState.theta, 0.0.RadiansPerSecond),
                     jogWristState,

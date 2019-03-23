@@ -64,6 +64,7 @@ fun setup() {
     //Miscellaneous initialization
     LEDManager.init()
     VisionManager.start()
+    DriverStationDisplay.init()
     SuperstructureMotionPlanner.preCompile()
 
     //Initialize real-time tasks
