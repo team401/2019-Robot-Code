@@ -191,6 +191,7 @@ val Gamepad = HumanControls.dualAction(2){
         }
     }
 
+    /*
     whenButton(Buttons.LEFT_TRIGGER) {
         pressed {
             LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
@@ -208,4 +209,5 @@ val Gamepad = HumanControls.dualAction(2){
             LEDManager.setTrussLedMode(LEDManager.TrussLedMode.SideIndicator)
         }
     }
+    */
 }

@@ -47,9 +47,9 @@ object Geometry {
          * Measured by rotating the longest side of the wrist towards the end of the arm
          */
 
-        val hatchPanelToolMinSafeLength = armBaseLength + armExtensionStickout + 5.0.Inches
-        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 8.5.Inches
-        val minSafeArmLength = cargoToolMinSafeLength//armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
+        val hatchPanelToolMinSafeLength = armBaseLength + armExtensionStickout + 8.375.Inches
+        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 6.875.Inches
+        val minSafeArmLength = hatchPanelToolMinSafeLength//armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
 
         /**
