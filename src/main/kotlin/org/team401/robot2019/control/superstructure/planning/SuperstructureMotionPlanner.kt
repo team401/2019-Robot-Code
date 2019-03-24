@@ -142,8 +142,10 @@ object SuperstructureMotionPlanner {
             }
 
             ControlMode.Jog -> {
-                var newX = jogArmPose.x.value + jogXRate
-                var newY = jogArmPose.y.value + jogYRate
+                var newX = jogArmPose.x.value + (jogXRate * 0.1)
+                var newY = jogArmPose.y.value + (jogYRate * 0.1)
+
+                val checkPose = ArmKinematics.inverse(Point2d(newX.Inches, newY.Inches))
 
                 // Check limits
                 if (newX !in -Geometry.ArmGeometry.maxX.value .. Geometry.ArmGeometry.maxX.value) {
@@ -161,8 +163,16 @@ object SuperstructureMotionPlanner {
                     }
                 }
 
+                if (checkPose.r < Geometry.ArmGeometry.minSafeArmLength) {
+                    val temp = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength, checkPose.theta))
+                    newX = temp.x.value
+                    newY = temp.y.value
+                }
+
                 val newPose = Point2d(newX.Inches, newY.Inches)
                 val newState = ArmKinematics.inverse(newPose)
+
+                jogArmPose = newPose
 
                 SuperstructureController.update(
                     ArmState(newState.r, newState.theta, 0.0.RadiansPerSecond),
@@ -482,5 +492,16 @@ object SuperstructureMotionPlanner {
         activeToolAngle = setpoint.toolAngle
 
         return true
+    }
+
+    @Synchronized fun goToFloorPickup(){ //TODO Make sure this won't extend into the floor
+        reset()
+        val pickUpPoint = ArmKinematics.inverse(Point2d(18.8.Inches, (-16.0).Inches))
+
+        commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))
+        commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, (-162.0).Degrees.toRadians()))
+        commandQueue.add(DelayCommand(2.0.Seconds))
+        commandQueue.add(ExtensionOnlyCommand(pickUpPoint.r, activeTool))
+        commandQueue.add(RotationOnlyCommand(pickUpPoint.theta, activeTool))
     }
 }

@@ -33,7 +33,7 @@ class RotationOnlyCommand(val angle: AngularDistanceMeasureRadians, val tool: Wr
             ArmMotionPlanner.setDesiredTrajectory(
                 ArmKinematics.forward(PointPolar(1.0.Inches, armInitial!!.armAngle)),
                 ArmKinematics.forward(PointPolar(1.0.Inches, angle)),
-                1.0.Inches
+                0.9.Inches
             )
         }
         val armCommand = ArmMotionPlanner.update(dt)

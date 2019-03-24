@@ -132,6 +132,7 @@ val RightStick = HumanControls.t16000m(1) {
 
 
 val Gamepad = HumanControls.dualAction(2){
+    invertAxis(Axes.LEFT_Y)
     whenButton(Buttons.Y) {
         pressed {
             SuperstructureMotionPlanner.goHome()
@@ -193,10 +194,18 @@ val Gamepad = HumanControls.dualAction(2){
 
     whenButton(Buttons.LEFT_STICK) {
         pressed {
+            SuperstructureRoutines.ccMaybe(true)
             SuperstructureMotionPlanner.setToJogMode()
         }
         released {
             SuperstructureMotionPlanner.setToPlanningMode()
+        }
+    }
+
+    whenButton(Buttons.START){
+        pressed {
+            SuperstructureRoutines.ccMaybe(true)
+            SuperstructureMotionPlanner.goToFloorPickup()
         }
     }
 

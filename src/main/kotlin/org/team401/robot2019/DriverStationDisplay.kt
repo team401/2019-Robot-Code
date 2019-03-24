@@ -18,7 +18,7 @@ object DriverStationDisplay {
     val armStopped = mainTab.add("Arm Enabled", false)
         .withWidget(BuiltInWidgets.kToggleButton)
         .withSize(1,1)
-        .withPosition(6, 1)
+        .withPosition(0, 1)
         .entry
 
     /**
@@ -27,7 +27,7 @@ object DriverStationDisplay {
     val wristStopped = mainTab.add("Wrist Enabled", false)
         .withWidget(BuiltInWidgets.kToggleButton)
         .withSize(1,1)
-        .withPosition(7, 1)
+        .withPosition(1, 1)
         .entry
 
     /**
@@ -36,7 +36,7 @@ object DriverStationDisplay {
     val driveStopped = mainTab.add("Drivetrain Enabled", false)
         .withWidget(BuiltInWidgets.kToggleButton)
         .withSize(1,1)
-        .withPosition(8, 1)
+        .withPosition(2, 1)
         .entry
 
     /**
@@ -44,7 +44,7 @@ object DriverStationDisplay {
      */
     val manualOverride = mainTab.add("Manual Override", false)
         .withSize(1,1)
-        .withPosition(6, 2)
+        .withPosition(3, 2)
         .entry
 
     /**
@@ -52,7 +52,7 @@ object DriverStationDisplay {
      */
     val hasGamePiece = mainTab.add("Have a game piece", false)
         .withSize(1,1)
-        .withPosition(6, 3)
+        .withPosition(1, 3)
         .entry
 
     /**
@@ -60,7 +60,7 @@ object DriverStationDisplay {
      */
     val climbRepositionModeEnabled = mainTab.add("ClimbAlign", false)
         .withSize(1,1)
-        .withPosition(7, 3)
+        .withPosition(2, 3)
         .entry
 
 

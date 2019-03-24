@@ -1,5 +1,6 @@
 package org.team401.robot2019.subsystems
 
+import com.ctre.phoenix.ParamEnum
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
@@ -306,11 +307,18 @@ object WristSubsystem: Subsystem(100L) {
         //debug
         //
         //println("Raw: ${pot.value}\tDegrees: ${getPotAngleDegrees()}\tEnc: ${rotation.getPosition().toDegrees()}")
+        //println("Wrist angle: ${rotation.getPosition().toDegrees()}")
     }
 
     override fun setup() {
+        //rotation.master.configSetCustomParam(1, 0)
+        println("reset: ${rotation.master.configGetParameter(ParamEnum.eCustomParam,0)}")
+        println("custom param : ${rotation.master.configGetCustomParam(0)}")
+
         leftIntakeTalon.inverted = true
         rightIntakeTalon.inverted = false
+
+        println("PWP: ${rotation.master.sensorCollection.pulseWidthPosition} set : ${rotation.master.selectedSensorPosition}")
 
         DrivetrainSubsystem.configureFeedbackTalonsForDrive(leftIntakeTalon, rightIntakeTalon)
 
@@ -336,8 +344,8 @@ object WristSubsystem: Subsystem(100L) {
         rotation.master.selectedSensorPosition = samples.average().Degrees.toMagEncoderTicks().value.roundToInt()
 
 */
-        if (rotation.master.selectedSensorPosition < rotation.master.sensorCollection.pulseWidthPosition) {
-            //Sensor offest not set, configure it now
+        if (false) {
+            //Sensor offset not set, configure it now
             rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
         }
 

@@ -115,6 +115,7 @@ object ArmSim {
     @JvmStatic
     fun main(args: Array<String>) {
 
+        /*
         val output = runSimulation(
             ControlParameters.ArmPositions.rocketHatchMidBack,
             ControlParameters.ArmPositions.hatchIntakeBack
@@ -131,5 +132,13 @@ object ArmSim {
         //Wrist pivot to hatch closed: 12 in.
         //Wrist pivot to hatch open: 10 in.
         createSimulationGraphics(3.0, output, 13.0.Inches, 10.0.Inches)
+        */
+        // Wrist is 40 degrees
+        val pickupPoint = Point2d(18.8.Inches, (-16.0).Inches)
+        val radius = ArmKinematics.inverse(pickupPoint).r
+        val theta = ArmKinematics.inverse(pickupPoint).theta
+
+        println("Radius : $radius")
+        println("Theta: $theta")
     }
 }

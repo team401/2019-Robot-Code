@@ -27,7 +27,8 @@ object WristMotionPlanner {
     //Control modes for the wrist
     enum class ControlMode {
         MaintainAngle,
-        AngleCommand
+        AngleCommand,
+        AbsoluteAngle
     }
 
     private var commandedMode = ControlMode.MaintainAngle
@@ -46,6 +47,11 @@ object WristMotionPlanner {
         commandedTool = tool
         commandedArmStateRectangular = finalState
         commandedArmState = ArmKinematics.inverse(finalState)
+    }
+
+    fun setToAbsoluteAngleMode(angle: AngularDistanceMeasureRadians) {
+        commandedMode = ControlMode.AbsoluteAngle
+        commandedAngle = angle
     }
 
     /**
@@ -136,6 +142,8 @@ object WristMotionPlanner {
                     sideOffset
                 )
             }
+
+            ControlMode.AbsoluteAngle -> commandedAngle
 
             ControlMode.MaintainAngle -> {
                 val currentArmRectangular = ArmKinematics.forward(armState)

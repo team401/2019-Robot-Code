@@ -24,6 +24,7 @@ import kotlin.math.roundToInt
 
 import org.snakeskin.dsl.*
 import org.team401.robot2019.DriverStationDisplay
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
 object ArmSubsystem: Subsystem() {
     private val pivotLeftTalon = TalonSRX(HardwareMap.Arm.pivotLeftTalonId)
@@ -312,6 +313,7 @@ object ArmSubsystem: Subsystem() {
         //println(SuperstructureController.output.armFeedForwardVoltage)
         //println(pivot.getPosition().toDegrees())
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
+        //println("Arm Position : ${ArmKinematics.forward(getCurrentArmState())}")
 
     }
 
