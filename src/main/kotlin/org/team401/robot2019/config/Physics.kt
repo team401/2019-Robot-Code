@@ -8,6 +8,8 @@ import org.team401.taxis.template.DriveDynamicsTemplate
  * @version 1/5/2019
  *
  */
+
+//TODO PLEASE RETUNE THIS MODEL
 object Physics {
     object DrivetrainDynamics: DriveDynamicsTemplate {
         override val angularDrag by Selectable(1.0, 1.0)

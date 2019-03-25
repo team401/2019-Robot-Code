@@ -8,11 +8,12 @@ import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Milliseconds
 import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.time.TimeMeasureMilliseconds
+import org.team401.taxis.geometry.Pose2d
 
 /**
  * Class for reading data from and controlling a Limelight camera.
  */
-class LimelightCamera(val name: String, val constantLatency: TimeMeasureMilliseconds = 11.0.Milliseconds) {
+class LimelightCamera(val name: String, val robotToCamera: Pose2d, val constantLatency: TimeMeasureMilliseconds = 11.0.Milliseconds) {
     /**
      * Represents the different modes for the limelight camera.
      * @property VisionProcessor Puts the camera in vision mode, which will run the selected pipeline

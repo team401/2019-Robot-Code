@@ -27,6 +27,7 @@ import org.team401.robot2019.config.Physics
 import org.team401.robot2019.control.vision.LimelightCamera
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
+import org.team401.robot2019.control.vision.VisionState
 import org.team401.robot2019.util.PathReader
 import org.team401.robot2019.util.TrajectoryPath
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
@@ -38,6 +39,7 @@ import org.team401.taxis.geometry.Pose2dWithCurvature
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.trajectory.TimedView
 import org.team401.taxis.trajectory.TrajectoryIterator
+import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
 import org.team401.taxis.trajectory.timing.TimedState
 
 /**
@@ -149,10 +151,29 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                     setDeadband(0.0)
                 }
 
+                setPose(Pose2d(5.5 * 12, 17.25 * 12, Rotation2d.fromDegrees(0.0)))
+
+                VisionState.reset()
+                pathManager.reset()
+                pathManager.setTrajectory(TrajectoryIterator(TimedView(
+                    pathManager.generateTrajectory(
+                        false,
+                        listOf(
+                            Pose2d(5.5 * 12, 17.25 * 12, Rotation2d.fromDegrees(0.0)),
+                            Pose2d(19.5 * 12, 18.5 * 12, Rotation2d.fromDegrees(15.0)),
+                            Pose2d(20.75 * 12, 25.0 * 12, Rotation2d.fromDegrees(145.0))
+                        ),
+                        listOf(CentripetalAccelerationConstraint(130.0)),
+                        4.0 * 12,
+                        4.0 * 12,
+                        9.0
+                    )
+                )))
             }
 
             rtAction {
-                val output = pathManager.update(time, driveState.getFieldToVehicle(time))
+                //TODO return this to the pose from the regular driveState
+                val output = pathManager.update(time, VisionState.getFieldToRobot(time))
 
                 val leftVelocityRpm = output.left_velocity.RadiansPerSecond.toRevolutionsPerMinute().value * gearRatioHigh
                 val rightVelocityRpm = output.right_velocity.RadiansPerSecond.toRevolutionsPerMinute().value * gearRatioHigh
@@ -168,6 +189,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
                 left.master.pidController.setReference(leftVelocityRpm, ControlType.kVelocity, 0, totalFfLeft)
                 right.master.pidController.setReference(rightVelocityRpm, ControlType.kVelocity, 0, totalFfRight)
+
+                println("error: ${pathManager.error}")
             }
 
             exit {
@@ -320,7 +343,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         both {
             master.idleMode = CANSparkMax.IdleMode.kBrake
             master.setSmartCurrentLimit(40)
-            master.setControlFramePeriodMs(10)
+            master.setControlFramePeriodMs(5)
             master.openLoopRampRate = 0.25
             master.closedLoopRampRate = 0.0
             master.pidController.p = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kP

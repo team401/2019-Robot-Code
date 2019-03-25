@@ -24,6 +24,7 @@ import org.team401.robot2019.control.superstructure.planning.SuperstructureMotio
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
+import org.team401.robot2019.control.vision.VisionOdometryUpdater
 import org.team401.robot2019.subsystems.*
 import org.team401.robot2019.util.LEDManager
 import org.team401.taxis.diffdrive.autotune.autos.TuningAutoCollectDynamicsData
@@ -33,6 +34,7 @@ import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.trajectory.TimedView
 import org.team401.taxis.trajectory.TrajectoryIterator
+import org.team401.taxis.util.InterpolatingDouble
 import java.util.concurrent.TimeUnit
 
 /**
@@ -58,7 +60,7 @@ fun setup() {
     //AutoManager.setAutoLoop(CollectLinearTorqueData(DrivetrainSubsystem, .25, 3.0.Seconds))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem/*, ClimberSubsystem*/)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem/*,WristSubsystem/*, ClimberSubsystem*/*/)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
@@ -69,7 +71,11 @@ fun setup() {
 
     //Initialize real-time tasks
     RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
+    RealTimeExecutor.addTask(VisionOdometryUpdater)
     RealTimeExecutor.addTask(SuperstructureUpdater)
+
+    println("InterpolatingDouble equals: ${InterpolatingDouble(5.0).compareTo(InterpolatingDouble(5.0))}")
+
 
     //Events
     /*

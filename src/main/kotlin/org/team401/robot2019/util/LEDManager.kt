@@ -31,6 +31,7 @@ object LEDManager {
     enum class TrussLedMode {
         Off, //All truss LEDs are off
         Rainbow, //All truss LEDs are in rainbow pattern
+        Race, //All truss LEDs race orange for maximum robot performance
         //SideIndicator, //Front truss LEDs indicate "red side", back truss LEDs indicate "blue side"
         ModifierRed, //Front truss LEDs are off, back truss LEDs indicate "blue side"
         ModifierBlue //Front truss LEDs indicate "red side", back truss LEDs are off
@@ -42,6 +43,7 @@ object LEDManager {
     enum class TrussLedSignal {
         FrontTargeted, //Front truss LEDs blink yellow to indicate target found
         BackTargeted, //Back truss LEDs blink yellow to indicate target found
+        WristHomed, //The wrist is homed
     }
 
     /**
@@ -74,6 +76,13 @@ object LEDManager {
                 ll.rainbow(LightLink.Speed.SLOW, Indices.TrussFrontRightStrip)
                 ll.rainbow(LightLink.Speed.SLOW, Indices.TrussBackLeftStrip)
                 ll.rainbow(LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
+            }
+
+            TrussLedMode.Race -> {
+                ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussFrontLeftStrip)
+                ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussFrontRightStrip)
+                ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackLeftStrip)
+                ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
             }
 
             /*
@@ -122,6 +131,13 @@ object LEDManager {
             TrussLedSignal.FrontTargeted -> {
                 ll.signal(LightLink.Color.YELLOW, Indices.TrussFrontLeftStrip)
                 ll.signal(LightLink.Color.YELLOW, Indices.TrussFrontRightStrip)
+            }
+
+            TrussLedSignal.WristHomed -> {
+                ll.signal(LightLink.Color.GREEN, Indices.TrussBackLeftStrip)
+                ll.signal(LightLink.Color.GREEN, Indices.TrussBackRightStrip)
+                ll.signal(LightLink.Color.GREEN, Indices.TrussFrontLeftStrip)
+                ll.signal(LightLink.Color.GREEN, Indices.TrussFrontRightStrip)
             }
         }
     }

@@ -22,6 +22,8 @@ object VisionKinematics {
      * @param cameraToGoal Pose measurement of the goal relative to the origin of the camera
      *
      * @return The actual field to robot measurement from the camera
+     *
+     * TODO This calculation can be done without knowing fieldToRobot, revise this to not require it
      */
     fun solveFieldToRobot(fieldToRobot: Pose2d, fieldToGoal: Pose2d, robotToCamera: Pose2d, cameraToGoal: Pose2d): Pose2d {
         //Calculate the pose of the camera, from odometry, on the field
@@ -52,23 +54,4 @@ object VisionKinematics {
         val displacement = poseAtCapture.inverse().transformBy(currentPose)
         return poseToAdjust.transformBy(displacement)
     }
-}
-
-fun main(args: Array<String>) {
-    val setpoint = ControlParameters.ArmPositions.hatchIntakeFront
-    val armPolar = ArmKinematics.inverse(setpoint.point)
-    println(
-        EndpointKinematics.forward(
-            ArmState(armPolar.r, armPolar.theta, 0.0.RadiansPerSecond),
-            WristState(
-                WristMotionPlanner.calculateFinalFloorAngle(
-                    ArmState(armPolar.r, armPolar.theta, 0.0.RadiansPerSecond),
-                    setpoint.toolAngle,
-                    setpoint.tool
-                ), false ,false
-            ),
-            setpoint.cargoGrabberState,
-            WristSubsystem.HatchClawStates.Clamped
-        )
-    )
 }

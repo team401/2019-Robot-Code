@@ -3,6 +3,7 @@ package org.team401.robot2019.subsystems
 import com.ctre.phoenix.ParamEnum
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
+import com.ctre.phoenix.motorcontrol.StatusFrame
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.AnalogInput
 import edu.wpi.first.wpilibj.DigitalInput
@@ -311,10 +312,6 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     override fun setup() {
-        //rotation.master.configSetCustomParam(1, 0)
-        println("reset: ${rotation.master.configGetParameter(ParamEnum.eCustomParam,0)}")
-        println("custom param : ${rotation.master.configGetCustomParam(0)}")
-
         leftIntakeTalon.inverted = true
         rightIntakeTalon.inverted = false
 
@@ -344,9 +341,14 @@ object WristSubsystem: Subsystem(100L) {
         rotation.master.selectedSensorPosition = samples.average().Degrees.toMagEncoderTicks().value.roundToInt()
 
 */
-        if (false) {
+        //We're using this status frame that we don't plan on using to determine whether the talon has ever been
+        //initialized by the application.  This is what is known in the industry as a HACK
+        if (true/*rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000) <= 200*/) {
             //Sensor offset not set, configure it now
             rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
+            //We homed the sensor, blink the lights for a second to indicate this.
+            LEDManager.signalTruss(LEDManager.TrussLedSignal.WristHomed)
+            rotation.master.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000, 1000)
         }
 
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)

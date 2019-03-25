@@ -39,7 +39,8 @@ val LeftStick = HumanControls.t16000m(0) {
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
             //Vision localize
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.HatchAlignFront)
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing)
+            //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.HatchAlignFront)
         }
 
         released {
@@ -60,20 +61,19 @@ val LeftStick = HumanControls.t16000m(0) {
 }
 
 val RightStick = HumanControls.t16000m(1) {
-
-
-
-    /*
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
+            VisionOdometryUpdater.enable(
+                Pose2d(19.0 * 12, 26.0 * 12, Rotation2d.fromDegrees(150.0)),
+                VisionManager.frontCamera
+            )
+            //ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
         }
         released {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
+            VisionOdometryUpdater.disable()
+            //ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
         }
     }
-    */
-
 
     whenButton(Buttons.STICK_RIGHT) {
         pressed {
@@ -208,24 +208,4 @@ val Gamepad = HumanControls.dualAction(2){
             SuperstructureMotionPlanner.goToFloorPickup()
         }
     }
-
-    /*
-    whenButton(Buttons.LEFT_TRIGGER) {
-        pressed {
-            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
-        }
-        released {
-            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.SideIndicator)
-        }
-    }
-
-    whenButton(Buttons.RIGHT_TRIGGER) {
-        pressed {
-            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierRed)
-        }
-        released {
-            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.SideIndicator)
-        }
-    }
-    */
 }

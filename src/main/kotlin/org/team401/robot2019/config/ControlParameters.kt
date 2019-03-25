@@ -147,7 +147,7 @@ object ControlParameters{
         val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(20.0.Inches)
         val rocketHatchHighFront = rocketHatchMidFront.upBy(24.0.Inches).atX((18.0).Inches).withAngle(0.0.Degrees.toRadians())
 
-        val rocketHatchBottomBack = rocketHatchBottomFront.flipped()
+        val rocketHatchBottomBack = rocketHatchBottomFront.flipped().upBy(4.0.Inches)
         val rocketHatchMidBack = rocketHatchMidFront.flipped()
         val rocketHatchHighBack = rocketHatchHighFront.flipped()
 
