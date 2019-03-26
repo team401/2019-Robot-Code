@@ -14,11 +14,14 @@ import org.snakeskin.measure.*
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.utility.Ticker
+import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.climbing.ClimberState
 import org.team401.robot2019.control.climbing.ClimbingController
+import org.team401.robot2019.subsystems.ArmSubsystem.armExtensionMachine
+import org.team401.robot2019.subsystems.ArmSubsystem.armPivotMachine
 import kotlin.math.roundToInt
 
 /**
@@ -26,7 +29,7 @@ import kotlin.math.roundToInt
  * @version 2/15/2019
  *
  */
-object ClimberSubsystem: Subsystem() {
+object ClimberSubsystem: Subsystem(100L) {
     private val backTalon = TalonSRX(HardwareMap.Climber.backTalonId)
     private val frontTalon = TalonSRX(HardwareMap.Climber.frontTalonId)
 
@@ -45,6 +48,7 @@ object ClimberSubsystem: Subsystem() {
     }
 
     enum class ClimberStates {
+        EStopped,
         Disabled,
         TestDown,
         Homing, //Home both sets of legs,  by driving them up at a fixed voltage until they stop moving
@@ -224,6 +228,17 @@ object ClimberSubsystem: Subsystem() {
     var homed by LockingDelegate(false)
 
     val climberMachine: StateMachine<ClimberStates> = stateMachine {
+
+        state(ClimberStates.EStopped){
+            entry {
+                println("CLIMB E STOP")
+                front.stop()
+                back.stop()
+            }
+            exit {
+                println("Climbing Operational")
+            }
+        }
         state(ClimberStates.Disabled) {
             action {
                 front.stop()
@@ -506,6 +521,15 @@ object ClimberSubsystem: Subsystem() {
             }
             clearFault(ClimberFaults.HomeLost)
             println("[Fault Cleared] Climber is homing")
+        }
+
+        // Driver Station Shutoff
+        if(DriverStationDisplay.climbStopped.getBoolean(false)){
+            climberMachine.setState(ClimberStates.EStopped)
+        }else if (climberMachine.isInState(ClimberStates.EStopped) ||
+            climberMachine.isInState(ClimberStates.EStopped) && !DriverStationDisplay.climbStopped.getBoolean(false)
+        ){
+            climberMachine.setState(ClimberStates.Homing)
         }
 
         //println(getChassisPitch())

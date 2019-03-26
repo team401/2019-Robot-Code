@@ -26,7 +26,7 @@ import org.snakeskin.dsl.*
 import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
-object ArmSubsystem: Subsystem() {
+object ArmSubsystem: Subsystem(100L) {
     private val pivotLeftTalon = TalonSRX(HardwareMap.Arm.pivotLeftTalonId)
     private val pivotRightTalon = TalonSRX(HardwareMap.Arm.pivotRightTalonId)
     private val extensionTalon = TalonSRX(HardwareMap.Arm.extensionTalonId)
@@ -99,7 +99,7 @@ object ArmSubsystem: Subsystem() {
     }
 
     val armPivotMachine: StateMachine<ArmPivotStates> = stateMachine {
-        rejectAllIf(*ArmPivotStates.values()) {isInState(ArmPivotStates.EStopped)}
+        //rejectAllIf(*ArmPivotStates.values()) {isInState(ArmPivotStates.EStopped)}
 
         state (ArmPivotStates.EStopped) {
             entry {
@@ -107,6 +107,9 @@ object ArmSubsystem: Subsystem() {
             }
             action {
                 pivot.stop()
+            }
+            exit {
+                println("Arm pivot operational")
             }
         }
 
@@ -157,7 +160,7 @@ object ArmSubsystem: Subsystem() {
     }
 
     val armExtensionMachine: StateMachine<ArmExtensionStates> = stateMachine {
-        rejectAllIf(*ArmExtensionStates.values()){isInState(ArmExtensionStates.EStopped)}
+        //rejectAllIf(*ArmExtensionStates.values()){isInState(ArmExtensionStates.EStopped)}
 
         state (ArmExtensionStates.EStopped) {
             entry {
@@ -165,6 +168,9 @@ object ArmSubsystem: Subsystem() {
             }
             action {
                 extension.stop()
+            }
+            exit {
+                println("Arm Extension Operational")
             }
         }
 
@@ -306,6 +312,11 @@ object ArmSubsystem: Subsystem() {
         if(DriverStationDisplay.armStopped.getBoolean(false)){
             armPivotMachine.setState(ArmPivotStates.EStopped)
             armExtensionMachine.setState(ArmExtensionStates.EStopped)
+        }else if (armPivotMachine.isInState(ArmPivotStates.EStopped) ||
+            armExtensionMachine.isInState(ArmExtensionStates.EStopped) && !DriverStationDisplay.armStopped.getBoolean(false)
+            ){
+            armPivotMachine.setState(ArmPivotStates.Holding)
+            armExtensionMachine.setState(ArmExtensionStates.Holding)
         }
         // armState = getCurrentArmState()
         //println("Arm radius: ${armState.armRadius}")

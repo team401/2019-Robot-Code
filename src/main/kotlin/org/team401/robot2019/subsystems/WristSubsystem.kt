@@ -106,14 +106,17 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     val wristMachine: StateMachine<WristStates> = stateMachine {
-        rejectAllIf(*WristStates.values()){isInState(WristStates.EStopped)}
+        //rejectAllIf(*WristStates.values()){isInState(WristStates.EStopped)}
 
         state (WristStates.EStopped) {
             entry {
-                println("Wrist Subsystem is E Stopped")
+                println("WRIST E STOP")
             }
             action {
                 rotation.set(0.0)
+            }
+            exit {
+                println("Wrist is operational")
             }
         }
 
@@ -303,6 +306,8 @@ object WristSubsystem: Subsystem(100L) {
         // Driver Station Shutoff
         if (DriverStationDisplay.wristStopped.getBoolean(false)) {
             wristMachine.setState(WristStates.EStopped)
+        }else if (wristMachine.isInState(WristStates.EStopped) && !DriverStationDisplay.wristStopped.getBoolean(false)) {
+            wristMachine.setState(WristStates.Holding)
         }
 
         //debug

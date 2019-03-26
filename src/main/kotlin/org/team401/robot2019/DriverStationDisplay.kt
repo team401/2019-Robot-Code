@@ -33,10 +33,28 @@ object DriverStationDisplay {
     /**
      * Displays if the drivetrain has been E stopped
      */
-    val driveStopped = mainTab.add("Drivetrain Enabled", false)
+    val driveStopped = mainTab.add("Drive Enabled", false)
         .withWidget(BuiltInWidgets.kToggleButton)
         .withSize(1,1)
         .withPosition(2, 1)
+        .entry
+
+    /**
+     * Displays if the climbing system has been E stopped
+     */
+    val climbStopped = mainTab.add("Climbing Enabled", false)
+        .withWidget(BuiltInWidgets.kToggleButton)
+        .withSize(1,1)
+        .withPosition(3, 1)
+        .entry
+
+    /**
+     * Displays if the floor pickup has been E stopped
+     */
+    val floorPickupStopped = mainTab.add("Floor Stopped", false)
+        .withWidget(BuiltInWidgets.kToggleButton)
+        .withSize(1,1)
+        .withPosition(4,1)
         .entry
 
     /**
@@ -44,7 +62,7 @@ object DriverStationDisplay {
      */
     val manualOverride = mainTab.add("Manual Override", false)
         .withSize(1,1)
-        .withPosition(3, 2)
+        .withPosition(0, 0)
         .entry
 
     /**
@@ -52,7 +70,7 @@ object DriverStationDisplay {
      */
     val hasGamePiece = mainTab.add("Have a game piece", false)
         .withSize(1,1)
-        .withPosition(1, 3)
+        .withPosition(1, 0)
         .entry
 
     /**
@@ -60,7 +78,7 @@ object DriverStationDisplay {
      */
     val climbRepositionModeEnabled = mainTab.add("ClimbAlign", false)
         .withSize(1,1)
-        .withPosition(2, 3)
+        .withPosition(2, 0)
         .entry
 
 
@@ -68,6 +86,9 @@ object DriverStationDisplay {
         armStopped.setBoolean(false)
         wristStopped.setBoolean(false)
         driveStopped.setBoolean(false)
+        climbStopped.setBoolean(false)
+        floorPickupStopped.setBoolean(false)
+
         manualOverride.setBoolean(false)
         hasGamePiece.setBoolean(false)
         climbRepositionModeEnabled.setBoolean(false)

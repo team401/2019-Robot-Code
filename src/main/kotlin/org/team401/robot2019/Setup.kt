@@ -60,8 +60,8 @@ fun setup() {
     //AutoManager.setAutoLoop(CollectLinearTorqueData(DrivetrainSubsystem, .25, 3.0.Seconds))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem/*,WristSubsystem/*, ClimberSubsystem*/*/)
-    Controllers.add(LeftStick, RightStick, Gamepad)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem , ClimberSubsystem )
+    //Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
     LEDManager.init()

@@ -48,7 +48,7 @@ import org.team401.taxis.trajectory.timing.TimedState
  *
  */
 
-object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox<TalonSRX>> by PigeonPathFollowingDiffDrive(
+object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox<TalonSRX>> by PigeonPathFollowingDiffDrive(
     SparkMaxCTRESensoredGearbox(
         WristSubsystem.leftIntakeTalon,
         CANSparkMax(HardwareMap.Drivetrain.leftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
@@ -110,6 +110,9 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
             entry {
                 println("DRIVETRAIN E STOP")
                 stop()
+            }
+            exit {
+                println("Drivetrain Operational")
             }
         }
         state(DriveStates.Disabled) {
@@ -469,6 +472,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
         // Driver Station Shutoff
         if (DriverStationDisplay.driveStopped.getBoolean(false)) {
             driveMachine.setState(DriveStates.EStopped)
+        }else if (driveMachine.isInState(DriveStates.EStopped) && !DriverStationDisplay.driveStopped.getBoolean(false)) {
+            driveMachine.setState(DriveStates.Disabled)
         }
 
         //Insert debug println statements below:
