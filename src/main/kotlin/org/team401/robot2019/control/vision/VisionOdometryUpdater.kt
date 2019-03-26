@@ -38,13 +38,12 @@ object VisionOdometryUpdater: RealTimeTask {
         val frame = activeCamera.frame
         if (enabled && frame.hasTarget) {
             if (frame.timeCaptured.value > lastFrameCaptureTime) {
+                //println("x: ${frame.x} y: ${frame.y} yaw: ${frame.yaw}")
                 //We got a new frame, let's process it
-                //Get pose at the time the frame was captured
-                val poseAtCapture = driveState.getFieldToVehicle(frame.timeCaptured.value)
                 //Create a pose from the camera data
-                val cameraToGoal = frame.toPose2d()
+                val goalToCamera = frame.toPose2d()
                 //Run kinematics.  This is the actual pose at the time of capture
-                val observedFieldToRobot = VisionKinematics.solveFieldToRobot(poseAtCapture, fieldToGoal, activeCamera.robotToCamera, cameraToGoal)
+                val observedFieldToRobot = VisionKinematics.solveFieldToRobot(fieldToGoal, activeCamera.robotToCamera, goalToCamera)
                 //Store this observation in the state tracker
                 VisionState.addVisionObservation(frame.timeCaptured.value, observedFieldToRobot)
                 //Update this so we don't process this frame again

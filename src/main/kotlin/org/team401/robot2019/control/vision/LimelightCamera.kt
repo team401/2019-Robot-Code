@@ -12,6 +12,11 @@ import org.team401.taxis.geometry.Pose2d
 
 /**
  * Class for reading data from and controlling a Limelight camera.
+ *
+ * Some notes about the pose data returned by the Limelight:
+ * 1. The distance away from the target (x in our coordinate system) is z, and gets smaller (negative) as you move away
+ * 2. The horizontal displacement from the target (y in our coordinate system) is x, and gets larger (positive) as you move right
+ * 3. The yaw decreases (negative) as the camera looks more rightward from the target
  */
 class LimelightCamera(val name: String, val robotToCamera: Pose2d, val constantLatency: TimeMeasureMilliseconds = 11.0.Milliseconds) {
     /**

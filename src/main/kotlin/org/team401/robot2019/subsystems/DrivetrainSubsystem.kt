@@ -81,7 +81,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
     enum class DriveStates(val requiresSensors: Boolean = false) {
         EStopped,
-        DisabledForFault,
+        Disabled,
         OpenLoopOperatorControl,
         PathFollowing(true),
         ClimbPull,
@@ -112,7 +112,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                 stop()
             }
         }
-        state(DriveStates.DisabledForFault) {
+        state(DriveStates.Disabled) {
             entry {
                 stop() //Send no more commands to the controllers
             }
@@ -133,6 +133,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                 )
 
                 tank(output.left, output.right)
+                println("Hybrid Pose: ${VisionState.getLatestFieldToRobot()}")
             }
         }
 
@@ -151,7 +152,8 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                     setDeadband(0.0)
                 }
 
-                setPose(Pose2d(5.5 * 12, 17.25 * 12, Rotation2d.fromDegrees(0.0)))
+                /*
+                setPose(Pose2d(18.0, 207.0, Rotation2d.fromDegrees(0.0)))
 
                 VisionState.reset()
                 pathManager.reset()
@@ -159,16 +161,21 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
                     pathManager.generateTrajectory(
                         false,
                         listOf(
-                            Pose2d(5.5 * 12, 17.25 * 12, Rotation2d.fromDegrees(0.0)),
-                            Pose2d(19.5 * 12, 18.5 * 12, Rotation2d.fromDegrees(15.0)),
-                            Pose2d(20.75 * 12, 25.0 * 12, Rotation2d.fromDegrees(145.0))
+                            Pose2d(18.0, 207.0, Rotation2d.fromDegrees(0.0)),
+                            Pose2d(273.0, 222.0, Rotation2d.fromDegrees(0.0)),
+                            Pose2d(282.0, 285.0, Rotation2d.fromDegrees(150.0)),
+                            Pose2d(237.0, 309.0, Rotation2d.fromDegrees(150.0))
                         ),
-                        listOf(CentripetalAccelerationConstraint(130.0)),
-                        4.0 * 12,
-                        4.0 * 12,
+                        listOf(
+                            CentripetalAccelerationConstraint(110.0)
+
+                        ),
+                        8.0 * 12,
+                        8.0 * 12,
                         9.0
                     )
                 )))
+                */
             }
 
             rtAction {
@@ -426,7 +433,7 @@ object DrivetrainSubsystem: Subsystem(500L), IPathFollowingDiffDrive<SparkMaxCTR
 
         //Motor controller reset fault
         if (isFaulted(DriveFaults.MotorControllerReset)) {
-            driveMachine.setState(DriveStates.DisabledForFault).waitFor()
+            driveMachine.setState(DriveStates.Disabled).waitFor()
             configureDriveMotorControllers() //Reconfigure motor controllers
             clearFault(DriveFaults.MotorControllerReset)
             both {

@@ -74,9 +74,6 @@ fun setup() {
     RealTimeExecutor.addTask(VisionOdometryUpdater)
     RealTimeExecutor.addTask(SuperstructureUpdater)
 
-    println("InterpolatingDouble equals: ${InterpolatingDouble(5.0).compareTo(InterpolatingDouble(5.0))}")
-
-
     //Events
     /*
     on (RobotEvents.VLoc) {
