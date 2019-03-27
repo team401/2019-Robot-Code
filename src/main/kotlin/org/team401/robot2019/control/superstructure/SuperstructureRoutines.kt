@@ -20,10 +20,11 @@ object SuperstructureRoutines {
         FRONT, BACK
     }
 
-    var side by LockingDelegate(Side.FRONT)
-    private set
+    var side = Side.FRONT
+    @Synchronized get
+    @Synchronized private set
 
-    fun switchSides() {
+    @Synchronized fun switchSides() {
         if (side == Side.FRONT){
             side = Side.BACK
             LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
@@ -39,9 +40,9 @@ object SuperstructureRoutines {
             ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
             WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.CoordinatedControl)
         } else {
-            ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.Holding)
-            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.Holding)
-            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.Holding)
+            //ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.Holding)
+            //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.Holding)
+            //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.Holding)
         }
     }
 

@@ -350,7 +350,7 @@ object WristSubsystem: Subsystem(100L) {
         //initialized by the application.  This is what is known in the industry as a HACK
         if (true/*rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000) <= 200*/) {
             //Sensor offset not set, configure it now
-            rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
+            rotation.master.selectedSensorPosition = (0.0).Degrees.toMagEncoderTicks().value.roundToInt()
             //We homed the sensor, blink the lights for a second to indicate this.
             LEDManager.signalTruss(LEDManager.TrussLedSignal.WristHomed)
             rotation.master.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000, 1000)

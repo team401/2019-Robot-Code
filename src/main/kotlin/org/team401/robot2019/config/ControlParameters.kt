@@ -36,8 +36,8 @@ object ControlParameters{
         val extensionAcceleration = (36.0 * 3.5).InchesPerSecond //PER SECOND
 
 
-        val rotationAcceleration = 0.6.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
-        val rotationVelocity = 0.2.RevolutionsPerSecond.toRadiansPerSecond()
+        val rotationAcceleration = 0.7.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
+        val rotationVelocity = 0.6.RevolutionsPerSecond.toRadiansPerSecond()
 
         val rotationSlowAcceleration = 0.6.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
         val rotationSlowVelocity = 0.2.RevolutionsPerSecond.toRadiansPerSecond()
@@ -105,7 +105,7 @@ object ControlParameters{
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 1.6
             override val kI = 0.0
-            override val kD = 200.0
+            override val kD = 400.0
             override val kF = 0.84
         }
     }
