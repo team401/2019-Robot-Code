@@ -325,6 +325,7 @@ object ArmSubsystem: Subsystem(100L) {
         //println(pivot.getPosition().toDegrees())
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
         //println("Arm Position : ${ArmKinematics.forward(getCurrentArmState())}")
+        //println(SuperstructureController.output.visionHeightMode)
 
     }
 

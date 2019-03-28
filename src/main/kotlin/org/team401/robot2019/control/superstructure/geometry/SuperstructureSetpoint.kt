@@ -16,44 +16,50 @@ data class SuperstructureSetpoint(val point: Point2d,
                                   val tool: WristMotionPlanner.Tool,
                                   val toolAngle: AngularDistanceMeasureRadians,
                                   val cargoGrabberState: WristSubsystem.CargoGrabberStates,
-                                  val hatchClawState: WristSubsystem.HatchClawStates) {
+                                  val hatchClawState: WristSubsystem.HatchClawStates,
+                                  val visionHeightMode: VisionHeightMode) {
     companion object {
-        fun holdingCargo(point: Point2d, toolAngle: AngularDistanceMeasureRadians): SuperstructureSetpoint {
+        fun holdingCargo(point: Point2d, toolAngle: AngularDistanceMeasureRadians, visionHeightMode: VisionHeightMode): SuperstructureSetpoint {
             return SuperstructureSetpoint(
                 point,
                 WristMotionPlanner.Tool.CargoTool,
                 toolAngle,
                 WristSubsystem.CargoGrabberStates.Clamped,
-                WristSubsystem.HatchClawStates.Clamped)
+                WristSubsystem.HatchClawStates.Clamped,
+                visionHeightMode
+            )
         }
 
-        fun holdingHatch(point: Point2d, toolAngle: AngularDistanceMeasureRadians): SuperstructureSetpoint {
+        fun holdingHatch(point: Point2d, toolAngle: AngularDistanceMeasureRadians, visionHeightMode: VisionHeightMode): SuperstructureSetpoint {
             return SuperstructureSetpoint(
                 point,
                 WristMotionPlanner.Tool.HatchPanelTool,
                 toolAngle,
                 WristSubsystem.CargoGrabberStates.Unclamped,
-                WristSubsystem.HatchClawStates.Clamped
+                WristSubsystem.HatchClawStates.Clamped,
+                visionHeightMode
             )
         }
 
-        fun intakingCargo(point: Point2d, toolAngle: AngularDistanceMeasureRadians): SuperstructureSetpoint {
+        fun intakingCargo(point: Point2d, toolAngle: AngularDistanceMeasureRadians, visionHeightMode: VisionHeightMode): SuperstructureSetpoint {
             return SuperstructureSetpoint(
                 point,
                 WristMotionPlanner.Tool.CargoTool,
                 toolAngle,
                 WristSubsystem.CargoGrabberStates.Unclamped,
-                WristSubsystem.HatchClawStates.Clamped
+                WristSubsystem.HatchClawStates.Clamped,
+                visionHeightMode
             )
         }
 
-        fun intakingHatch(point: Point2d, toolAngle: AngularDistanceMeasureRadians): SuperstructureSetpoint {
+        fun intakingHatch(point: Point2d, toolAngle: AngularDistanceMeasureRadians, visionHeightMode: VisionHeightMode): SuperstructureSetpoint {
             return SuperstructureSetpoint(
                 point,
                 WristMotionPlanner.Tool.HatchPanelTool,
                 toolAngle,
                 WristSubsystem.CargoGrabberStates.Unclamped,
-                WristSubsystem.HatchClawStates.Unclamped
+                WristSubsystem.HatchClawStates.Unclamped,
+                visionHeightMode
             )
         }
     }
@@ -64,7 +70,8 @@ data class SuperstructureSetpoint(val point: Point2d,
             tool,
             toolAngle,
             cargoGrabberState,
-            hatchClawState
+            hatchClawState,
+            visionHeightMode
         )
     }
 
@@ -74,7 +81,8 @@ data class SuperstructureSetpoint(val point: Point2d,
             tool,
             toolAngle,
             cargoGrabberState,
-            hatchClawState
+            hatchClawState,
+            visionHeightMode
         )
     }
 
@@ -83,7 +91,8 @@ data class SuperstructureSetpoint(val point: Point2d,
             tool,
             toolAngle,
             cargoGrabberState,
-            hatchClawState
+            hatchClawState,
+            visionHeightMode
         )
     }
 
@@ -93,7 +102,8 @@ data class SuperstructureSetpoint(val point: Point2d,
             tool,
             angle,
             cargoGrabberState,
-            hatchClawState
+            hatchClawState,
+            visionHeightMode
         )
     }
 
@@ -102,7 +112,19 @@ data class SuperstructureSetpoint(val point: Point2d,
             tool,
             toolAngle,
             cargoGrabberState,
-            hatchClawState
+            hatchClawState,
+            visionHeightMode
+        )
+    }
+
+    fun withHeightMode(newHeightMode: VisionHeightMode): SuperstructureSetpoint {
+        return SuperstructureSetpoint(
+            point,
+            tool,
+            toolAngle,
+            cargoGrabberState,
+            hatchClawState,
+            newHeightMode
         )
     }
 }

@@ -177,7 +177,8 @@ object SuperstructureMotionPlanner {
                 SuperstructureController.update(
                     ArmState(newState.r, newState.theta, 0.0.RadiansPerSecond),
                     jogWristState,
-                    activeTool
+                    activeTool,
+                    VisionHeightMode.NONE
                 )
             }
         }
@@ -220,7 +221,7 @@ object SuperstructureMotionPlanner {
             PointPolar(
                 Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches,
                 Math.PI.Radians
-            )), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians, WristSubsystem.CargoGrabberStates.Clamped, WristSubsystem.HatchClawStates.Clamped))
+            )), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians, WristSubsystem.CargoGrabberStates.Clamped, WristSubsystem.HatchClawStates.Clamped, VisionHeightMode.NONE))
 
         var time = 0.0
         val dt = 0.1
@@ -252,7 +253,8 @@ object SuperstructureMotionPlanner {
                 0.0.RadiansPerSecond //Stop arm motion
             ),
             lastObservedWristState,
-            activeTool
+            activeTool,
+            VisionHeightMode.NONE
         )
     }
 
@@ -384,7 +386,7 @@ object SuperstructureMotionPlanner {
         activeToolAngle = 0.0.Radians
 
         //Now we need to move the arm to the safe location
-        commandQueue.add(MoveSuperstructureCommandStaticWrist(safePoint, Point2d(0.0.Inches, Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches), activeTool, 0.0.Radians, Geometry.ArmGeometry.minSafeArmLength))
+        commandQueue.add(MoveSuperstructureCommandStaticWrist(safePoint, Point2d(0.0.Inches, Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches), activeTool, 0.0.Radians, Geometry.ArmGeometry.minSafeArmLength, VisionHeightMode.NONE))
     }
 
     @Synchronized fun goToClimb() {
@@ -474,7 +476,8 @@ object SuperstructureMotionPlanner {
                     targetPose,
                     activeTool,
                     setpoint.toolAngle,
-                    minimumRadius
+                    minimumRadius,
+                    setpoint.visionHeightMode
                 )
             )
         } else {
@@ -484,7 +487,8 @@ object SuperstructureMotionPlanner {
                     targetPose,
                     activeTool,
                     setpoint.toolAngle,
-                    minimumRadius
+                    minimumRadius,
+                    setpoint.visionHeightMode
                 )
             )
         }

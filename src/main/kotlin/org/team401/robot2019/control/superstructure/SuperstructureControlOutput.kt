@@ -3,6 +3,7 @@ package org.team401.robot2019.control.superstructure
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 /**
@@ -16,4 +17,5 @@ data class SuperstructureControlOutput(val armRadius: LinearDistanceMeasureInche
                                        val wristTheta: AngularDistanceMeasureRadians,
                                        val wristTool: WristMotionPlanner.Tool,
                                        val armVelocity: AngularVelocityMeasureRadiansPerSecond,
-                                       val armFeedForwardVoltage: Double)
+                                       val armFeedForwardVoltage: Double,
+                                       val visionHeightMode: VisionHeightMode)

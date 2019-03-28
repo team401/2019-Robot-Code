@@ -6,6 +6,7 @@ import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.ArmMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
@@ -45,7 +46,8 @@ class RotationOnlyCommand(val angle: AngularDistanceMeasureRadians, val tool: Wr
                 armCommand.armVelocity
             ),
             wristInitial!!,
-            tool
+            tool,
+            VisionHeightMode.NONE
         )
     }
 

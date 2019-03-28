@@ -24,10 +24,14 @@ import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
-import org.team401.robot2019.control.vision.LimelightCamera
-import org.team401.robot2019.control.vision.VisionKinematics
-import org.team401.robot2019.control.vision.VisionManager
-import org.team401.robot2019.control.vision.VisionState
+import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
+import org.team401.robot2019.control.superstructure.SuperstructureController
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
+import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.control.superstructure.geometry.PointPolar
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
+import org.team401.robot2019.control.vision.*
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.util.PathReader
 import org.team401.robot2019.util.TrajectoryPath
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
@@ -69,8 +73,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
     object ShifterStates: ShifterState(false, false)
 
     private val shifter = Solenoid(HardwareMap.Drivetrain.shifterSolenoid)
-
-    var activeFieldToGoal by LockingDelegate(Pose2d.identity())
 
     /**
      * Shifts the drivetrain to the selected gear.  The available shifter states are available in ShifterStates.
@@ -123,6 +125,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
         state(DriveStates.OpenLoopOperatorControl) {
             entry {
+                VisionState.reset()
                 cheesyController.reset()
                 shift(ShifterStates.HIGH)
             }
@@ -136,7 +139,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 )
 
                 tank(output.left, output.right)
-                println("Hybrid Pose: ${VisionState.getLatestFieldToRobot()}")
+                //println("Hybrid Pose: ${VisionState.getLatestFieldToRobot()}")
             }
         }
 
@@ -154,31 +157,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                     master.pidController.ff = kF
                     setDeadband(0.0)
                 }
-
-                /*
-                setPose(Pose2d(18.0, 207.0, Rotation2d.fromDegrees(0.0)))
-
-                VisionState.reset()
-                pathManager.reset()
-                pathManager.setTrajectory(TrajectoryIterator(TimedView(
-                    pathManager.generateTrajectory(
-                        false,
-                        listOf(
-                            Pose2d(18.0, 207.0, Rotation2d.fromDegrees(0.0)),
-                            Pose2d(273.0, 222.0, Rotation2d.fromDegrees(0.0)),
-                            Pose2d(282.0, 285.0, Rotation2d.fromDegrees(150.0)),
-                            Pose2d(237.0, 309.0, Rotation2d.fromDegrees(150.0))
-                        ),
-                        listOf(
-                            CentripetalAccelerationConstraint(110.0)
-
-                        ),
-                        8.0 * 12,
-                        8.0 * 12,
-                        9.0
-                    )
-                )))
-                */
             }
 
             rtAction {
@@ -200,7 +178,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 left.master.pidController.setReference(leftVelocityRpm, ControlType.kVelocity, 0, totalFfLeft)
                 right.master.pidController.setReference(rightVelocityRpm, ControlType.kVelocity, 0, totalFfRight)
 
-                println("error: ${pathManager.error}")
+                //println("error: ${pathManager.error}")
             }
 
             exit {
@@ -239,106 +217,106 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
 
         state(DriveStates.HatchAlignFront) {
-            var vLoc = false
-            var tGen = false
-            var fieldToGoal = Pose2d.identity()
-            var startPose = Pose2d.identity()
-            var startVelocity = 0.0.InchesPerSecond
-            var trajectory: TrajectoryIterator<TimedState<Pose2dWithCurvature>>
-
-            /*
-            rejectIf {
-                SuperstructureController.output.wristTool != WristMotionPlanner.Tool.HatchPanelTool
-            }
-            */
+            val trajectoryEndpointLow = Pose2d((-34.0), 0.0, Rotation2d.identity())
+            val trajectoryEndpointMid = Pose2d(-23.0, 0.0, Rotation2d.identity())
+            val trajectoryEndpointHigh = Pose2d(-17.0, 0.0, Rotation2d.identity())
+            lateinit var activeCamera: LimelightCamera
+            var reversed = false
 
             entry {
-                setPose(Pose2d.identity())
-                vLoc = false
-                tGen = false
-                VisionManager.frontCamera.configForVision(1)
-                VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
-                VisionManager.frontCamera.resetFrame()
+                when (SuperstructureRoutines.side) {
+                    SuperstructureRoutines.Side.FRONT -> {
+                        activeCamera = VisionManager.frontCamera
+                        reversed = false
+                    }
+                    SuperstructureRoutines.Side.BACK -> {
+                        activeCamera = VisionManager.backCamera
+                        reversed = true
+                    }
+                }
+                activeCamera.configForVision(1)
+                activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
+                activeCamera.resetFrame()
                 Thread.sleep(100) //Give the camera some time to enter the state
             }
 
             rtAction {
-                if (!vLoc) {
-                    //Look for target
-                    val frame = VisionManager.frontCamera.frame
-                    val poseAtCapture = driveState.getFieldToVehicle(frame.timeCaptured.value)
-                    startPose = driveState.getFieldToVehicle(time)
-                    startVelocity = (left.getVelocity().toLinearVelocity(Geometry.DrivetrainGeometry.wheelRadius) +
-                            right.getVelocity().toLinearVelocity(Geometry.DrivetrainGeometry.wheelRadius)) / 2.0.Unitless
-                    if (frame.hasTarget) {
-                        val fieldToGoalCaptured = VisionKinematics.solveFieldToGoal(
-                            poseAtCapture,
-                            Geometry.VisionGeometry.robotToFrontCamera,
-                            frame.toPose2d()
-                        )
-
-                        println("Start pose: $startPose")
-                        println("Field to goal captured: $fieldToGoalCaptured")
-                        fieldToGoal = VisionKinematics.solveLatencyCorrection(poseAtCapture, startPose, fieldToGoalCaptured)
-                        println("Field to goal latency corrected: $fieldToGoal")
-                        send(RobotEvents.VLoc)
-                        vLoc = true
+                //In this case, we'll make the field frame equal to the field to goal frame.
+                //This allows us to use a single kinematics routine to do all of our math
+                //Look for target
+                val frame = activeCamera.frame
+                if (frame.hasTarget) {
+                    val trajectoryEndpoint = when (SuperstructureController.output.visionHeightMode) {
+                        VisionHeightMode.LOW -> trajectoryEndpointLow
+                        VisionHeightMode.MID -> trajectoryEndpointMid
+                        VisionHeightMode.HIGH -> trajectoryEndpointHigh
+                        VisionHeightMode.NONE -> trajectoryEndpointLow //Pick the safest option
                     }
-                } else {
-                    //Have target, trajectory time
-                    if (!tGen) {
-                        //Generate the trajectory
-                        val goal = fieldToGoal.transformBy(Pose2d(-38.0, 0.0, Rotation2d.identity())) //Account for arm length
-                        val straightPart = goal.transformBy(Pose2d(-6.0, 0.0, Rotation2d.identity())) //Add some points in the profile to drive straight
+                    val trajectoryEndpointRotated = trajectoryEndpoint.transformBy(Pose2d.fromRotation(activeCamera.robotToCamera.rotation))
 
-                        val maxVelocity = 6.0 * 12.0
-                        val maxAcceleration = 4.0 * 12.0
-                        val maxVoltage = 9.0
+                    val goalToCamera = frame.toPose2d()
+                    val fieldToRobotMeasured = VisionKinematics.solveFieldToRobot(
+                        Pose2d.identity(), //Say that the goal is at (0, 0) @ 0 degrees
+                        activeCamera.robotToCamera,
+                        goalToCamera
+                    )
+                    val odometryPoseAtCapture = driveState.getFieldToVehicle(frame.timeCaptured.value)
+                    val currentOdometryPose = driveState.getFieldToVehicle(time)
+                    val startPose = VisionKinematics.solveLatencyCorrection(
+                        odometryPoseAtCapture,
+                        currentOdometryPose,
+                        fieldToRobotMeasured
+                    )
+                    val distFromGoal = trajectoryEndpoint.distance(startPose)
+                    val startPoseFaked = trajectoryEndpoint.transformBy(Pose2d(-distFromGoal, 0.0, startPose.rotation))
+                    setPose(startPose, time)
 
-                        PathReader.outputToPathViewer(
-                            TrajectoryPath(
-                                false,
-                                listOf(startPose, straightPart, goal),
+                    val startVelocity = (left.getVelocity().toLinearVelocity(Geometry.DrivetrainGeometry.wheelRadius) +
+                            right.getVelocity().toLinearVelocity(Geometry.DrivetrainGeometry.wheelRadius)) / 2.0.Unitless
+
+                    println("Start pose: $startPose")
+                    println("Start pose faked: $startPoseFaked")
+                    println("Start velocity: $startVelocity")
+                    send(RobotEvents.VLoc)
+                    //Generate the parameters of the trajectory
+                    val maxVelocity = Math.max(startVelocity.toInchesPerSecond().value, 10.0 * 12)
+                    val maxAcceleration = 6.0 * 12.0
+                    val maxVoltage = 9.0
+                    val maxCentrip = 110.0
+
+                    val trajectory = TrajectoryIterator(
+                        TimedView(
+                            pathManager.generateTrajectory(
+                                reversed,
+                                listOf(startPoseFaked, trajectoryEndpointRotated),
+                                listOf(CentripetalAccelerationConstraint(maxCentrip)),
+                                startVelocity.toInchesPerSecond().value,
+                                0.0,
                                 maxVelocity,
                                 maxAcceleration,
                                 maxVoltage
-                            ), "Vision Alignment"
-                        )
-
-                        trajectory = TrajectoryIterator(
-                            TimedView(
-                                pathManager.generateTrajectory(
-                                    false,
-                                    listOf(startPose, goal),
-                                    listOf(),
-                                    startVelocity.value,
-                                    0.0,
-                                    maxVelocity,
-                                    maxAcceleration,
-                                    maxVoltage
-                                )
                             )
                         )
+                    )
 
-                        println("Driving: ${listOf(startPose, goal)}")
-                        println("Straight Part: $straightPart")
+                    println("Driving: ${listOf(startPoseFaked, trajectoryEndpointRotated)}")
 
+                    //Run the trajectory
+                    pathManager.reset()
+                    pathManager.setTrajectory(
+                        trajectory
+                    )
 
-                        //Run the trajectory
-                        pathManager.reset()
-                        pathManager.setTrajectory(
-                            trajectory
-                        )
+                    //Turn on vision path manager
+                    VisionState.reset()
+                    VisionOdometryUpdater.disable()
 
-                        tGen = true
-                        setState(DriveStates.PathFollowing)
-                    }
+                    setState(DrivetrainSubsystem.DriveStates.PathFollowing)
                 }
             }
 
             exit {
-                //VisionManager.frontCamera.configForVision(1)
-                //VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
+                activeCamera.setLedMode(LimelightCamera.LedMode.Off)
             }
         }
 
@@ -380,7 +358,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         rightTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100)
 
         //Set sensor phase
-        leftTalon.setSensorPhase(true)
+        leftTalon.setSensorPhase(false) //TODO PLEASE PLEASE PLEASE CHECK THIS ON COMP BOT!!!!!
         rightTalon.setSensorPhase(false)
 
         //Configure status frame rate

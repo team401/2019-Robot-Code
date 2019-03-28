@@ -5,6 +5,7 @@ import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
@@ -38,7 +39,8 @@ class ExtensionOnlyCommand(val radius: LinearDistanceMeasureInches, val tool: Wr
                 0.0.RadiansPerSecond
             ),
             wristInitial!!,
-            tool
+            tool,
+            VisionHeightMode.NONE
         )
 
         done = Math.abs(armState.armRadius.value - radius.value) <= tolerance.value //Allow some error

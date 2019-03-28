@@ -9,6 +9,7 @@ import org.snakeskin.utility.CheesyDriveController
 import org.snakeskin.utility.Selectable
 import org.team401.robot2019.control.superstructure.geometry.SuperstructureSetpoint
 import org.team401.robot2019.control.superstructure.geometry.Point2d
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 
@@ -114,7 +115,8 @@ object ControlParameters{
         //Floor pickup positions
         val cargoFloorPickupFront = SuperstructureSetpoint.intakingCargo(
             Point2d(26.0.Inches, 8.5.Inches),
-            0.0.Radians
+            0.0.Radians,
+            VisionHeightMode.NONE
         ).withAngle((0.0).Degrees.toRadians()).fromFloor()
 
         val cargoFloorPickupBack = cargoFloorPickupFront.flipped()//.upBy((-1.0).Inches)
@@ -122,10 +124,11 @@ object ControlParameters{
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
             Point2d(31.0.Inches, 27.5.Inches),
-            0.0.Radians
+            0.0.Radians,
+            VisionHeightMode.LOW
         ).fromFloor()
-        val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.75.Inches).atX(12.0.Inches)
-        val rocketCargoHighFront = rocketCargoMidFront.upBy(17.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians())
+        val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.75.Inches).atX(12.0.Inches).withHeightMode(VisionHeightMode.MID)
+        val rocketCargoHighFront = rocketCargoMidFront.upBy(17.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
 
         val rocketCargoBottomBack = rocketCargoBottomFront.flipped()
         val rocketCargoMidBack = rocketCargoMidFront.flipped()
@@ -134,7 +137,8 @@ object ControlParameters{
         //Intake hatch positions
         val hatchIntakeFront = SuperstructureSetpoint.intakingHatch(
             Point2d(32.0.Inches, 17.0.Inches),
-            0.0.Radians
+            0.0.Radians,
+            VisionHeightMode.LOW
         ).fromFloor()
 
         val hatchIntakeBack = hatchIntakeFront.flipped().upBy(2.0.Inches)
@@ -142,16 +146,17 @@ object ControlParameters{
         //Rocket hatch positions
         val rocketHatchBottomFront = SuperstructureSetpoint.holdingHatch(
             Point2d(34.0.Inches, 19.0.Inches),
-            0.0.Radians
+            0.0.Radians,
+            VisionHeightMode.LOW
         ).fromFloor()
-        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(20.0.Inches)
-        val rocketHatchHighFront = rocketHatchMidFront.upBy(24.0.Inches).atX((18.0).Inches).withAngle(0.0.Degrees.toRadians())
+        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(20.0.Inches).withHeightMode(VisionHeightMode.MID)
+        val rocketHatchHighFront = rocketHatchMidFront.upBy(24.0.Inches).atX((18.0).Inches).withAngle(0.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
 
         val rocketHatchBottomBack = rocketHatchBottomFront.flipped().upBy(4.0.Inches)
         val rocketHatchMidBack = rocketHatchMidFront.flipped()
         val rocketHatchHighBack = rocketHatchHighFront.flipped()
 
-        val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(28.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians()).fromFloor()
+        val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(28.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians(), VisionHeightMode.NONE).fromFloor()
         val cargoShipCargoBack = cargoShipCargoFront.flipped()
     }
 

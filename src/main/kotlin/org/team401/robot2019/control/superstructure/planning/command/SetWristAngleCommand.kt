@@ -6,6 +6,7 @@ import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.Point2d
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
@@ -30,7 +31,7 @@ class SetWristAngleCommand(val tool: WristMotionPlanner.Tool, val angle: Angular
             startArmState = armState
         }
         val wristCommand = WristMotionPlanner.update(armState, wristState)
-        SuperstructureController.update(startArmState!!, wristCommand, tool)
+        SuperstructureController.update(startArmState!!, wristCommand, tool, VisionHeightMode.NONE)
         println("Moving wrist from ${wristState.wristPosition.toDegrees()} to ${wristCommand.wristPosition}")
         done = true
     }

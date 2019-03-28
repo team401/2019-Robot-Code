@@ -8,11 +8,12 @@ import org.snakeskin.measure.RadiansPerSecond
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 object SuperstructureController {
     var output by
-        LockingDelegate(SuperstructureControlOutput(0.0.Inches, 0.0.Radians, 0.0.Radians, WristMotionPlanner.Tool.CargoTool, 0.0.RadiansPerSecond, 0.0))
+        LockingDelegate(SuperstructureControlOutput(0.0.Inches, 0.0.Radians, 0.0.Radians, WristMotionPlanner.Tool.CargoTool, 0.0.RadiansPerSecond, 0.0, VisionHeightMode.NONE))
     private set
 
     private fun calculateCounterbalanceVoltage(commandedArmState: ArmState): Double {
@@ -38,7 +39,7 @@ object SuperstructureController {
      *
      * Updates the field "output" with the current control command
      */
-    fun update(commandedArmState: ArmState, commandedWristState: WristState, commandedWristTool: WristMotionPlanner.Tool) {
+    fun update(commandedArmState: ArmState, commandedWristState: WristState, commandedWristTool: WristMotionPlanner.Tool, visionHeightMode: VisionHeightMode) {
         //Calculate dynamics "counterbalance voltage"
         val counterbalanceFf =
             calculateCounterbalanceVoltage(commandedArmState)
@@ -58,7 +59,8 @@ object SuperstructureController {
                     commandedWristState.wristPosition,
                     commandedWristTool,
                     commandedArmState.armVelocity,
-                    ff
+                    ff,
+                    visionHeightMode
                 )
     }
 }
