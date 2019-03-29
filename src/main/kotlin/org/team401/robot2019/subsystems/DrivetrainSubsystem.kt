@@ -89,7 +89,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         ClimbPull,
         ClimbStop,
         ClimbReposition,
-        HatchAlignFront
+        VisionAlign
     }
 
     enum class DriveFaults {
@@ -216,7 +216,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
-        state(DriveStates.HatchAlignFront) {
+        state(DriveStates.VisionAlign) {
             val trajectoryEndpointLow = Pose2d((-34.0), 0.0, Rotation2d.identity())
             val trajectoryEndpointMid = Pose2d(-23.0, 0.0, Rotation2d.identity())
             val trajectoryEndpointHigh = Pose2d(-17.0, 0.0, Rotation2d.identity())

@@ -40,7 +40,7 @@ val LeftStick = HumanControls.t16000m(0) {
         pressed {
             //Vision localize
             //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing)
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.HatchAlignFront)
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.VisionAlign)
         }
 
         released {
