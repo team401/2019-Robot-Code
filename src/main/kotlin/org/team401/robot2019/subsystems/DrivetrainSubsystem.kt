@@ -125,7 +125,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
         state(DriveStates.OpenLoopOperatorControl) {
             entry {
-                VisionState.reset()
                 cheesyController.reset()
                 shift(ShifterStates.HIGH)
             }
@@ -139,7 +138,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 )
 
                 tank(output.left, output.right)
-                //println("Hybrid Pose: ${VisionState.getLatestFieldToRobot()}")
             }
         }
 

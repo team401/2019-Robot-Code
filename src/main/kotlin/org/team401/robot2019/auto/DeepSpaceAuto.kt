@@ -15,6 +15,7 @@ import org.team401.robot2019.control.drivetrain.Trajectories
 object DeepSpaceAuto: RobotAuto(20L) {
     override fun assembleAuto(): SequentialSteps {
         return auto {
+            /*
             parallel {
                 sequential {
                     delay(2.0.Seconds)
@@ -26,6 +27,9 @@ object DeepSpaceAuto: RobotAuto(20L) {
                     step(DisableVisionStateEstimator())
                 }
             }
+            */
+
+            step(OperatorDriveStep())
         }
     }
 }

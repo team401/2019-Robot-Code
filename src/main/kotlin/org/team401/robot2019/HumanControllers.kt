@@ -38,8 +38,7 @@ val LeftStick = HumanControls.t16000m(0) {
 
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
-            //Vision localize
-            //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing)
+            //Vision aligner
             DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.VisionAlign)
         }
 
@@ -47,30 +46,21 @@ val LeftStick = HumanControls.t16000m(0) {
             DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
         }
     }
-
-    /*
-    whenButton(Buttons.STICK_BOTTOM) {
-        pressed {
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing)
-        }
-        released {
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
-        }
-    }
-    */
 }
 
 val RightStick = HumanControls.t16000m(1) {
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
+            /*
             VisionOdometryUpdater.enable(
                 Pose2d(19.0 * 12, 26.0 * 12, Rotation2d.fromDegrees(150.0)),
                 VisionManager.frontCamera
             )
+            */
             //ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.TestDown)
         }
         released {
-            VisionOdometryUpdater.disable()
+            //VisionOdometryUpdater.disable()
             //ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Disabled)
         }
     }

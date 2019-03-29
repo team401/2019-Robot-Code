@@ -31,6 +31,16 @@ object Trajectories {
         )
     }
 
+    /*
+    val habLeftToRocketFarHigh = generateTrajectory(
+        listOf(
+            Pose2d(66.0, 204.0, Rotation2d.fromDegrees(0.0)),
+            Pose2d(261.0, 216.0, Rotation2d.fromDegrees(0.0)),
+            Pose
+        )
+    )
+    */
+
     val habLeftLowToFarRocketHighLeft = generateTrajectory(
         listOf(
             CriticalPoses.robotStartLeft,

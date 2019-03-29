@@ -106,7 +106,7 @@ object ControlParameters{
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 1.6
             override val kI = 0.0
-            override val kD = 400.0
+            override val kD = 200.0
             override val kF = 0.84
         }
     }
