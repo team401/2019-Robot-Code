@@ -32,9 +32,9 @@ class RotationOnlyCommand(val angle: AngularDistanceMeasureRadians, val tool: Wr
         if (armInitial == null) {
             armInitial = armState
             ArmMotionPlanner.setDesiredTrajectory(
-                ArmKinematics.forward(PointPolar(1.0.Inches, armInitial!!.armAngle)),
-                ArmKinematics.forward(PointPolar(1.0.Inches, angle)),
-                0.9.Inches
+                ArmKinematics.forward(PointPolar(armInitial!!.armRadius, armInitial!!.armAngle)),
+                ArmKinematics.forward(PointPolar(armInitial!!.armRadius, angle)),
+                armInitial!!.armRadius - 0.1.Inches
             )
         }
         val armCommand = ArmMotionPlanner.update(dt)
@@ -49,10 +49,12 @@ class RotationOnlyCommand(val angle: AngularDistanceMeasureRadians, val tool: Wr
             tool,
             VisionHeightMode.NONE
         )
+
+        done = ArmMotionPlanner.isDone()
     }
 
     override fun isDone(): Boolean {
-        return ArmMotionPlanner.isDone()
+        return done
     }
 
     override fun getDescription(): String {

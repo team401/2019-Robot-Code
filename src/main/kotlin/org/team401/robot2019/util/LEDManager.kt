@@ -6,6 +6,7 @@ import org.lightlink.LightLink
 import org.snakeskin.dsl.on
 import org.snakeskin.event.Events
 import org.snakeskin.logic.History
+import org.team401.robot2019.RobotEvents
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 
 object LEDManager {
@@ -44,6 +45,7 @@ object LEDManager {
         FrontTargeted, //Front truss LEDs blink yellow to indicate target found
         BackTargeted, //Back truss LEDs blink yellow to indicate target found
         WristHomed, //The wrist is homed
+        VLoc, //Vision localized
     }
 
     /**
@@ -139,6 +141,13 @@ object LEDManager {
                 ll.signal(LightLink.Color.GREEN, Indices.TrussFrontLeftStrip)
                 ll.signal(LightLink.Color.GREEN, Indices.TrussFrontRightStrip)
             }
+
+            TrussLedSignal.VLoc -> {
+                ll.signal(LightLink.Color.YELLOW, Indices.TrussBackLeftStrip)
+                ll.signal(LightLink.Color.YELLOW, Indices.TrussBackRightStrip)
+                ll.signal(LightLink.Color.YELLOW, Indices.TrussFrontLeftStrip)
+                ll.signal(LightLink.Color.YELLOW, Indices.TrussFrontRightStrip)
+            }
         }
     }
 
@@ -231,6 +240,11 @@ object LEDManager {
             } else {
                 setTrussLedMode(TrussLedMode.ModifierBlue)
             }
+            setArmLedMode(ArmLedMode.Off)
+        }
+
+        on (RobotEvents.VLoc) {
+            signalTruss(TrussLedSignal.VLoc)
         }
     }
 }

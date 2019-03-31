@@ -54,6 +54,7 @@ object FloorPickupSubsystem: Subsystem(100L) {
     }
 
     override fun action() {
+        /*
         if (DriverStationDisplay.floorPickupStopped.getBoolean(false)) {
             pickupMachine.setState(PickupStates.EStopped)
             wheelsMachine.setState(WheelsStates.EStopped)
@@ -62,6 +63,7 @@ object FloorPickupSubsystem: Subsystem(100L) {
             pickupMachine.setState(PickupStates.Stowed)
             wheelsMachine.setState(WheelsStates.Idle)
         }
+        */
     }
     override fun setup() {
         wheels.inverted = false

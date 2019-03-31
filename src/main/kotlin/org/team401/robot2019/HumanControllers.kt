@@ -9,6 +9,7 @@ import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
+import org.team401.robot2019.control.vision.LimelightCamera
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
 import org.team401.robot2019.control.vision.VisionOdometryUpdater
@@ -44,6 +45,23 @@ val LeftStick = HumanControls.t16000m(0) {
 
         released {
             DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
+        }
+    }
+
+    whenButton(Buttons.STICK_LEFT) {
+        pressed {
+            WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.ForceTo0)
+            Thread.sleep(1000)
+            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.Homing)
+        }
+    }
+
+    whenButton(Buttons.STICK_RIGHT) {
+        pressed {
+            VisionManager.frontCamera.configForVision(0)
+            VisionManager.backCamera.configForVision(0)
+            VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
+            VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
         }
     }
 }
@@ -86,7 +104,10 @@ val RightStick = HumanControls.t16000m(1) {
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
             } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.FallL3)) {
                 //We have climbed up and pulled ourselves onto the platform, we now want to retract the front legs
+                //Additionally, thrust the arm forward to shift our cg
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)
+                SuperstructureRoutines.ccMaybe(true)
+                SuperstructureMotionPlanner.climbThrust()
             }
         }
     }
@@ -192,10 +213,12 @@ val Gamepad = HumanControls.dualAction(2){
         }
     }
 
+    /*
     whenButton(Buttons.START){
         pressed {
             SuperstructureRoutines.ccMaybe(true)
-            SuperstructureMotionPlanner.goToFloorPickup()
+            SuperstructureMotionPlanner.climbThrust()
         }
     }
+    */
 }

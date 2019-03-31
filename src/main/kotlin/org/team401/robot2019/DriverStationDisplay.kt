@@ -13,18 +13,26 @@ object DriverStationDisplay {
     private val mainTab = Shuffleboard.getTab("Main")
 
     /**
-     * Displays if the arm has been E stopped
+     * Displays if the arm pivot has been E stopped
      */
-    val armStopped = mainTab.add("Arm Enabled", false)
+    val pivotStopped = mainTab.add("Pivot Stopped", false)
         .withWidget(BuiltInWidgets.kToggleButton)
         .withSize(1,1)
         .withPosition(0, 1)
         .entry
 
     /**
+     * Displays if the arm extension has been E stopped
+     */
+    val extensionStopped = mainTab.add("Extension Stopped", false)
+        .withWidget(BuiltInWidgets.kToggleButton)
+        .withSize(1,1)
+        .withPosition(0, 2)
+        .entry
+    /**
      * Displays if the wrist has been E stopped
      */
-    val wristStopped = mainTab.add("Wrist Enabled", false)
+    val wristStopped = mainTab.add("Wrist Stopped", false)
         .withWidget(BuiltInWidgets.kToggleButton)
         .withSize(1,1)
         .withPosition(1, 1)
@@ -81,9 +89,17 @@ object DriverStationDisplay {
         .withPosition(2, 0)
         .entry
 
+    /**
+     * Shows if the extension is homed
+     */
+    val extensionHomed = mainTab.add("Homed", false)
+        .withSize(1,1)
+        .withPosition(3,0)
+        .entry
+
 
     fun init(){
-        armStopped.setBoolean(false)
+        pivotStopped.setBoolean(false)
         wristStopped.setBoolean(false)
         driveStopped.setBoolean(false)
         climbStopped.setBoolean(false)
@@ -92,5 +108,7 @@ object DriverStationDisplay {
         manualOverride.setBoolean(false)
         hasGamePiece.setBoolean(false)
         climbRepositionModeEnabled.setBoolean(false)
+
+        extensionHomed.setBoolean(false)
     }
 }

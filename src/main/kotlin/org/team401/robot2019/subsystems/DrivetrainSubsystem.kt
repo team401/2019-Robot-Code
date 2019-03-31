@@ -446,12 +446,13 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
 
         // Driver Station Shutoff
+        /*
         if (DriverStationDisplay.driveStopped.getBoolean(false)) {
             driveMachine.setState(DriveStates.EStopped)
         }else if (driveMachine.isInState(DriveStates.EStopped) && !DriverStationDisplay.driveStopped.getBoolean(false)) {
             driveMachine.setState(DriveStates.Disabled)
         }
-
+        */
         //Insert debug println statements below:
     }
 

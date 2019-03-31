@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure
 
+import edu.wpi.first.wpilibj.DriverStation
 import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.rt.RealTimeTask
 import org.team401.robot2019.Gamepad
@@ -15,9 +16,12 @@ import org.team401.robot2019.subsystems.WristSubsystem
  */
 object SuperstructureUpdater: RealTimeTask {
     override val name = "Superstructure Updater"
+    private val ds = DriverStation.getInstance()
 
     override fun action(ctx: RealTimeExecutor.RealTimeContext) {
-        SuperstructureMotionPlanner.updateJog(Gamepad.readAxis { LEFT_X }, Gamepad.readAxis { LEFT_Y })
+        if (ds.isEnabled) {
+            SuperstructureMotionPlanner.updateJog(Gamepad.readAxis { LEFT_X }, Gamepad.readAxis { LEFT_Y })
+        }
         SuperstructureMotionPlanner.update(
             ctx.time,
             ctx.dt,

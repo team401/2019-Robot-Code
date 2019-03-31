@@ -2,6 +2,8 @@ package org.team401.robot2019.control.superstructure.armsim
 
 import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
+import org.snakeskin.hardware.Hardware
+import org.snakeskin.hardware.impl.SoftwareTimeSource
 import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
@@ -114,8 +116,8 @@ object ArmSim {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        Hardware.setTimeSource(SoftwareTimeSource())
 
-        /*
         val output = runSimulation(
             ControlParameters.ArmPositions.rocketHatchMidBack,
             ControlParameters.ArmPositions.hatchIntakeBack
@@ -132,13 +134,14 @@ object ArmSim {
         //Wrist pivot to hatch closed: 12 in.
         //Wrist pivot to hatch open: 10 in.
         createSimulationGraphics(3.0, output, 13.0.Inches, 10.0.Inches)
-        */
+
         // Wrist is 40 degrees
+        /*
         val pickupPoint = Point2d(18.8.Inches, (-16.0).Inches)
         val radius = ArmKinematics.inverse(pickupPoint).r
         val theta = ArmKinematics.inverse(pickupPoint).theta
 
         println("Radius : $radius")
-        println("Theta: $theta")
+        println("Theta: $theta")*/
     }
 }

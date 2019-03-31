@@ -7,6 +7,7 @@ import org.snakeskin.component.ISensoredGearbox
 import org.snakeskin.component.IYawSensoredDifferentialDrivetrain
 import org.snakeskin.controls.ControlPoller
 import org.snakeskin.dsl.*
+import org.snakeskin.event.Events
 import org.snakeskin.factory.ExecutorFactory
 import org.snakeskin.measure.Feet
 import org.snakeskin.measure.Seconds
@@ -22,6 +23,7 @@ import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureUpdater
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.control.vision.LimelightCamera
 import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
 import org.team401.robot2019.control.vision.VisionOdometryUpdater
@@ -57,7 +59,7 @@ fun setup() {
 
     AutoManager.setAutoLoop(DeepSpaceAuto)
 
-    //AutoManager.setAutoLoop(CollectLinearTorqueData(DrivetrainSubsystem, .25, 3.0.Seconds))
+    //AutoManager.setAutoLoop(TuningAutoCollectDynamicsData(DrivetrainSubsystem))
 
     //Register components
     Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, ClimberSubsystem)
@@ -73,4 +75,18 @@ fun setup() {
     RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
     RealTimeExecutor.addTask(VisionOdometryUpdater)
     RealTimeExecutor.addTask(SuperstructureUpdater)
+
+    on (Events.AUTO_ENABLED) {
+        VisionManager.frontCamera.configForVision(0)
+        VisionManager.frontCamera.configForVision(0)
+        //VisionManager.frontCamera.setStreamingMode(LimelightCamera.StreamingMode.PipMain)
+    }
+
+    on (Events.TELEOP_ENABLED) {
+        VisionManager.frontCamera.configForVision(1)
+        VisionManager.backCamera.configForVision(1)
+        VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
+        VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
+        //VisionManager.frontCamera.setStreamingMode(LimelightCamera.StreamingMode.PipSecondary)
+    }
 }

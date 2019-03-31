@@ -58,6 +58,7 @@ object WristSubsystem: Subsystem(100L) {
         EStopped,
         CollectFf,
         GoTo0,
+        ForceTo0,
         Holding,
         CoordinatedControl
     }
@@ -154,6 +155,12 @@ object WristSubsystem: Subsystem(100L) {
                 if (ArmSubsystem.getCurrentArmState().armRadius >= Geometry.ArmGeometry.minSafeArmLength) {
                     move(0.0.Degrees)
                 }
+            }
+        }
+
+        state (WristStates.ForceTo0) {
+            entry {
+                move(0.0.Degrees)
             }
         }
 
@@ -306,12 +313,13 @@ object WristSubsystem: Subsystem(100L) {
 
 
         // Driver Station Shutoff
+        /*
         if (DriverStationDisplay.wristStopped.getBoolean(false)) {
             wristMachine.setState(WristStates.EStopped)
         }else if (wristMachine.isInState(WristStates.EStopped) && !DriverStationDisplay.wristStopped.getBoolean(false)) {
             wristMachine.setState(WristStates.Holding)
         }
-
+        */
         //debug
         //
         //println("Raw: ${pot.value}\tDegrees: ${getPotAngleDegrees()}\tEnc: ${rotation.getPosition().toDegrees()}")
@@ -350,13 +358,15 @@ object WristSubsystem: Subsystem(100L) {
 */
         //We're using this status frame that we don't plan on using to determine whether the talon has ever been
         //initialized by the application.  This is what is known in the industry as a HACK
-        if (true/*rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000) <= 200*/) {
+        if (rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000) >= 240) {
             //Sensor offset not set, configure it now
             rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
             //We homed the sensor, blink the lights for a second to indicate this.
             LEDManager.signalTruss(LEDManager.TrussLedSignal.WristHomed)
             rotation.master.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000, 1000)
         }
+
+        println("ROTATION FRAME 14: ${rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000)}")
 
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)

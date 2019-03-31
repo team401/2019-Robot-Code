@@ -524,6 +524,7 @@ object ClimberSubsystem: Subsystem(100L) {
         }
 
         // Driver Station Shutoff
+        /*
         if(DriverStationDisplay.climbStopped.getBoolean(false)){
             climberMachine.setState(ClimberStates.EStopped)
         }else if (climberMachine.isInState(ClimberStates.EStopped) ||
@@ -531,7 +532,7 @@ object ClimberSubsystem: Subsystem(100L) {
         ){
             climberMachine.setState(ClimberStates.Homing)
         }
-
+        */
         //println(getChassisPitch())
 
         //debug

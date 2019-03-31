@@ -24,7 +24,6 @@ import kotlin.math.roundToInt
 
 import org.snakeskin.dsl.*
 import org.team401.robot2019.DriverStationDisplay
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
 object ArmSubsystem: Subsystem(100L) {
     private val pivotLeftTalon = TalonSRX(HardwareMap.Arm.pivotLeftTalonId)
@@ -184,10 +183,10 @@ object ArmSubsystem: Subsystem(100L) {
             entry {
                 ticker.reset()
                 extensionHomed = false
-                extension.set(ControlParameters.ArmParameters.extensionHomingPower)
             }
 
             action {
+                extension.set(ControlParameters.ArmParameters.extensionHomingPower)
                 ticker.check {
                     extension.master.selectedSensorPosition = (Geometry.ArmGeometry.armBaseLength + Geometry.ArmGeometry.armExtensionStickout)
                         .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
@@ -203,23 +202,29 @@ object ArmSubsystem: Subsystem(100L) {
         }
 
         state (ArmExtensionStates.Holding) {
+            var currentPosition = 0.0
+
             entry {
-                val currentPosition = extension.getPosition().toMagEncoderTicks().value
+                currentPosition = extension.getPosition().toMagEncoderTicks().value
+            }
+
+            action {
                 extension.set(ControlMode.MotionMagic, currentPosition)
             }
         }
 
         state (ArmExtensionStates.GoToSafe) {
-            entry {
-                val target = (Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches)
-                    .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
-                    .toMagEncoderTicks().value
+            val target = (Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches)
+                .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
+                .toMagEncoderTicks().value
 
+            action {
                 extension.set(ControlMode.MotionMagic, target)
             }
         }
 
         state (ArmExtensionStates.CoordinatedControl) {
+            rejectIf { !extensionHomed }
             rtAction {
                 val output = SuperstructureController.output
                 if (output.armRadius > 60.0.Inches) {
@@ -309,15 +314,23 @@ object ArmSubsystem: Subsystem(100L) {
         }
 
         // Driver Station Shutoff
-        if(DriverStationDisplay.armStopped.getBoolean(false)){
+        /*
+        if(DriverStationDisplay.pivotStopped.getBoolean(false)){
             armPivotMachine.setState(ArmPivotStates.EStopped)
-            armExtensionMachine.setState(ArmExtensionStates.EStopped)
-        }else if (armPivotMachine.isInState(ArmPivotStates.EStopped) ||
-            armExtensionMachine.isInState(ArmExtensionStates.EStopped) && !DriverStationDisplay.armStopped.getBoolean(false)
+        }else if (armPivotMachine.isInState(ArmPivotStates.EStopped) && !DriverStationDisplay.pivotStopped.getBoolean(false)
             ){
             armPivotMachine.setState(ArmPivotStates.Holding)
+        }
+        if(DriverStationDisplay.extensionStopped.getBoolean(false)){
+            armExtensionMachine.setState(ArmExtensionStates.EStopped)
+        }else if (armExtensionMachine.isInState(ArmExtensionStates.EStopped) && !DriverStationDisplay.extensionStopped.getBoolean(false)
+        ){
             armExtensionMachine.setState(ArmExtensionStates.Holding)
         }
+        */
+
+        DriverStationDisplay.extensionHomed.setBoolean(extensionHomed)
+
         // armState = getCurrentArmState()
         //println("Arm radius: ${armState.armRadius}")
         //println("ArmState: ${armState.armAngle.toDegrees()} Raw Pos: ${pivot.getPosition().toDegrees()}")

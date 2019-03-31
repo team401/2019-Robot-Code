@@ -114,7 +114,7 @@ object ControlParameters{
     object ArmPositions {
         //Floor pickup positions
         val cargoFloorPickupFront = SuperstructureSetpoint.intakingCargo(
-            Point2d(26.0.Inches, 8.5.Inches),
+            Point2d(26.0.Inches, 9.5.Inches),
             0.0.Radians,
             VisionHeightMode.NONE
         ).withAngle((0.0).Degrees.toRadians()).fromFloor()
@@ -123,15 +123,15 @@ object ControlParameters{
 
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
-            Point2d(31.0.Inches, 27.5.Inches),
+            Point2d(31.0.Inches, 24.5.Inches),
             0.0.Radians,
             VisionHeightMode.LOW
         ).fromFloor()
         val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.75.Inches).atX(12.0.Inches).withHeightMode(VisionHeightMode.MID)
         val rocketCargoHighFront = rocketCargoMidFront.upBy(17.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
 
-        val rocketCargoBottomBack = rocketCargoBottomFront.flipped()
-        val rocketCargoMidBack = rocketCargoMidFront.flipped()
+        val rocketCargoBottomBack = rocketCargoBottomFront.flipped().upBy(6.0.Inches)
+        val rocketCargoMidBack = rocketCargoMidFront.flipped().upBy(6.0.Inches)
         val rocketCargoHighBack = rocketCargoHighFront.flipped()
 
         //Intake hatch positions
@@ -256,7 +256,7 @@ object ControlParameters{
 
     object ClimberPositions {
         val stowed = (-.4).Inches
-        val l2Climb = (10.0).Inches
+        val l2Climb = (16.0).Inches
         val l3Climb = (22.0).Inches
     }
 }
