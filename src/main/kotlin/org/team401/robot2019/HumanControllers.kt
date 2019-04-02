@@ -89,6 +89,8 @@ val RightStick = HumanControls.t16000m(1) {
 
             if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Stowed)) {
                 //We want to start climbing
+                LEDManager.setTrussLedMode(LEDManager.TrussLedMode.Climb)
+                LEDManager.setArmLedMode(LEDManager.ArmLedMode.Climb)
                 SuperstructureRoutines.ccMaybe(true)
                 SuperstructureMotionPlanner.goToClimb()
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL3)

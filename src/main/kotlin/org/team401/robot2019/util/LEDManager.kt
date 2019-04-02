@@ -35,7 +35,8 @@ object LEDManager {
         Race, //All truss LEDs race orange for maximum robot performance
         //SideIndicator, //Front truss LEDs indicate "red side", back truss LEDs indicate "blue side"
         ModifierRed, //Front truss LEDs are off, back truss LEDs indicate "blue side"
-        ModifierBlue //Front truss LEDs indicate "red side", back truss LEDs are off
+        ModifierBlue, //Front truss LEDs indicate "red side", back truss LEDs are off
+        Climb,
     }
 
     /**
@@ -56,6 +57,7 @@ object LEDManager {
         Rainbow, //Arm LEDs are in rainbow pattern
         HasCargo, //Arm LEDs are orange
         HasHatch, //Arn LEDs are yellow
+        Climb,
     }
 
     private var trussModeHistory = History<TrussLedMode>()
@@ -108,6 +110,13 @@ object LEDManager {
                 ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
                 ll.off(Indices.TrussFrontLeftStrip)
                 ll.off(Indices.TrussFrontRightStrip)
+            }
+
+            TrussLedMode.Climb -> {
+                ll.race(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackLeftStrip)
+                ll.race(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
+                ll.race(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussFrontLeftStrip)
+                ll.race(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussFrontRightStrip)
             }
         }
         trussModeHistory.update(mode)
@@ -170,6 +179,10 @@ object LEDManager {
 
             ArmLedMode.HasCargo -> {
                 ll.solid(LightLink.Color.ORANGE, Indices.ArmStrip)
+            }
+
+            ArmLedMode.Climb -> {
+                ll.blink(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.ArmStrip)
             }
         }
         armModeHistory.update(mode)
