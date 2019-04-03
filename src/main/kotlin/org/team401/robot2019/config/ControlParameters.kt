@@ -168,6 +168,10 @@ object ControlParameters{
             override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
         }
 
+        val maxOdometryTranslationError = 24.0.Inches
+        val maxOdometryRotationError = 45.0.Degrees.toRadians()
+        val maxOdometryErrorCycles = 10
+
         /**
          * The power to drive onto the level 3 or 2 platforms
          */

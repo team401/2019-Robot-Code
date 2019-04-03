@@ -19,6 +19,7 @@ import org.team401.robot2019.auto.CollectLinearTorqueData
 import org.team401.robot2019.auto.DeepSpaceAuto
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
+import org.team401.robot2019.control.drivetrain.OdometryWatchdog
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureUpdater
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
@@ -55,7 +56,7 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Selectable.selected = RobotIndex.COMP
+    Selectable.selected = RobotIndex.PRACTICE //CHANGE THIS depending on what robot you're using.
 
     AutoManager.setAutoLoop(DeepSpaceAuto)
 
@@ -72,9 +73,10 @@ fun setup() {
     SuperstructureMotionPlanner.preCompile()
 
     //Initialize real-time tasks
-    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator)
-    RealTimeExecutor.addTask(VisionOdometryUpdater)
-    RealTimeExecutor.addTask(SuperstructureUpdater)
+    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator) //Drivetrain odometry from sensors
+    RealTimeExecutor.addTask(VisionOdometryUpdater)              //Drivetrain odometry from vision
+    RealTimeExecutor.addTask(SuperstructureUpdater)              //Superstrcture motion planning / control
+    //RealTimeExecutor.addTask(OdometryWatchdog)                   //Drivetrain odometry error checking
 
     on (Events.AUTO_ENABLED) {
         VisionManager.frontCamera.configForVision(0)
