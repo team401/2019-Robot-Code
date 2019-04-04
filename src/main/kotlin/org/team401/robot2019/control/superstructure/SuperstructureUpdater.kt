@@ -1,12 +1,15 @@
 package org.team401.robot2019.control.superstructure
 
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.rt.RealTimeTask
 import org.team401.robot2019.Gamepad
+import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.subsystems.ArmSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
 /**
  * @author Cameron Earle
@@ -28,5 +31,11 @@ object SuperstructureUpdater: RealTimeTask {
             ArmSubsystem.getCurrentArmState(),
             WristSubsystem.getCurrentWristState()
         )
+
+        //debug
+        val targetPose = ArmKinematics.forward(PointPolar(SuperstructureController.output.armRadius, SuperstructureController.output.armAngle))
+        val actualPose = ArmKinematics.forward(ArmSubsystem.getCurrentArmState())
+        SmartDashboard.putNumber("superstructure_x_error_inches", (targetPose.x - actualPose.x).value)
+        SmartDashboard.putNumber("superstructure_y_error_inches", (targetPose.y - actualPose.y).value)
     }
 }

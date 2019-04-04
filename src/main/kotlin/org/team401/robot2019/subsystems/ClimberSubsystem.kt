@@ -63,7 +63,8 @@ object ClimberSubsystem: Subsystem(100L) {
 
     enum class ClimberFaults {
         MotorControllerReset,
-        HomeLost
+        HomeLost,
+        EncoderFault,
     }
 
     fun getFrontHeightInches(): LinearDistanceMeasureInches {
@@ -504,6 +505,15 @@ object ClimberSubsystem: Subsystem(100L) {
             fault(ClimberFaults.MotorControllerReset)
         }
 
+        if (front.master.sensorCollection.pulseWidthRiseToRiseUs == 0 || back.master.sensorCollection.pulseWidthRiseToRiseUs == 0) {
+            fault(ClimberFaults.EncoderFault)
+        }
+
+        //Break state
+        if (isFaulted(ClimberFaults.EncoderFault)) {
+            climberMachine.setState(ClimberStates.Disabled)
+        }
+
         //Respond to faults
         if (isFaulted(ClimberFaults.MotorControllerReset)) {
             DriverStation.reportWarning("[Fault] A climber motor controller has reset!", false)
@@ -523,17 +533,17 @@ object ClimberSubsystem: Subsystem(100L) {
             println("[Fault Cleared] Climber is homing")
         }
 
-        // Driver Station Shutoff
-        /*
-        if(DriverStationDisplay.climbStopped.getBoolean(false)){
-            climberMachine.setState(ClimberStates.EStopped)
-        }else if (climberMachine.isInState(ClimberStates.EStopped) ||
-            climberMachine.isInState(ClimberStates.EStopped) && !DriverStationDisplay.climbStopped.getBoolean(false)
-        ){
-            climberMachine.setState(ClimberStates.Homing)
+        if (isFaulted(ClimberFaults.EncoderFault)) {
+            DriverStation.reportWarning("[Fault] A climber motor has lost an encoder!", false)
+            if (front.master.sensorCollection.pulseWidthRiseToRiseUs != 0 && back.master.sensorCollection.pulseWidthRiseToRiseUs != 0) {
+                clearFault(ClimberFaults.EncoderFault)
+                homed = false
+                if (DriverStation.getInstance().isEnabled) {
+                    climberMachine.setState(ClimberStates.Homing)
+                }
+                println("[Fault Cleared] Climber encoder restored, climber rehoming")
+            }
         }
-        */
-        //println(getChassisPitch())
 
         //debug
         //println("Back: ${back.getPosition().toLinearDistance(Geometry.ClimberGeometry.backPitchRadius).toInches()}\tFront: ${front.getPosition().toLinearDistance(Geometry.ClimberGeometry.frontPitchRadius).toInches()}")
