@@ -114,32 +114,52 @@ val RightStick = HumanControls.t16000m(1) {
         }
     }
 
+    // Phase 1:
+    // Drop the back legs and use the drive-train to get the back wheels on the platform - DownBackL2
+    // Drop the front legs and lift the back legs - GoOntoL2
+    // Phase 2:
+    // Drive onto the platform - ClimbAlign
+    // Lift the front legs - LondonBridgeIsMaybeFallingDown
+
     whenButton(Buttons.STICK_LEFT) {
         pressed {
             DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbReposition)
 
             if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Stowed)) {
                 //We want to start climbing
+                LEDManager.setTrussLedMode(LEDManager.TrussLedMode.Climb)
+                LEDManager.setArmLedMode(LEDManager.ArmLedMode.Climb)
                 SuperstructureRoutines.ccMaybe(true)
                 SuperstructureMotionPlanner.goToClimb()
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownL2)
-            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)) {
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.FallL2)
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownBackL2)
             }
-
         }
         released {
             //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
-            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.DownL2)) {
-                //We are in the process of climbing, slowly go down
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.SlowFall)
-            } else if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.FallL2)) {
-                //We have climbed up and pulled ourselves onto the platform, we now want to retract the front legs
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.RepositionL2)) {
+                // The back of the robot should be on the platform
+                // Need to lift the front to drive onto the platform
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownFrontL2)
+            }
+        }
+    }
+    whenButton(Buttons.STICK_BOTTOM){
+        pressed{
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbReposition)
+
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.RepositionL2)) {
+                // Start level 2 phase 2
+                // The robot now has the front on the platform and needs to drive forward
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.GoOntoL2)
+            }
+        }
+        released {
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.GoOntoL2)) {
+                // The robot should have driven up onto level 2
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)
             }
         }
     }
-
 
 }
 

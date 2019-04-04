@@ -53,9 +53,11 @@ object ClimberSubsystem: Subsystem(100L) {
         TestDown,
         Homing, //Home both sets of legs,  by driving them up at a fixed voltage until they stop moving
         Stowed, //Move both legs to their stowed position
-        DownL2, //Moves both legs down to the position required to fall on to level 2
+        DownBackL2,//Moves back legs down to the position required to fall on to level 2
+        DownFrontL2, //Moves front legs down to the position required to fall on to level 2
+        RepositionL2, // Waiting position
+        GoOntoL2, // Retract the back legs and lift the front to drive onto level 2
         DownL3, //Moves both legs down to the position required to fall on to level 3
-        FallL2, //Retracts the front legs fully to "fall" onto level 2
         FallL3, //Retracts the front legs  fully to "fall" onto level 3
         SlowFall, //Slowly retracts the legs. Used if we are aborting a climb
         LondonBridgeIsMaybeFallingDown // Stows both legs. To separate stowed from climbing
@@ -354,20 +356,21 @@ object ClimberSubsystem: Subsystem(100L) {
             }
         }
 
-        state (ClimberStates.DownL2) {
+        state (ClimberStates.DownFrontL2) {
             var started = false
+
+            // Drop the back legs and use the drive-train to get the back wheels on the platform
+            // Drop the front legs and lift the back legs
+            // Drive onto the platform
+            // Lift the front legs
 
             entry {
                 started = false
-                upwardsMoveFront(ControlParameters.ClimberPositions.stowed) //Move the climber to the stowed position
-                upwardsMoveBack(ControlParameters.ClimberPositions.stowed) //Upwards is fine since we just need to get there fast
             }
 
             rtAction {
                 //Check and see if we're at the stowed position
-                if (!started && backWithinTolerance(ControlParameters.ClimberPositions.stowed)
-                    && frontWithinTolerance(ControlParameters.ClimberPositions.stowed)) {
-                    back.master.config_kP(0, ControlParameters.ClimberParameters.BackDownPIDF.kP, 30)
+                if (!started && frontWithinTolerance(ControlParameters.ClimberPositions.stowed)) {
                     front.master.config_kP(0, ControlParameters.ClimberParameters.FrontDownPIDF.kP, 30)
                     //Start the profile
                     ClimbingController.setSetpoint(getCurrentClimberState(), ControlParameters.ClimberPositions.l2Climb)
@@ -378,24 +381,62 @@ object ClimberSubsystem: Subsystem(100L) {
                     //Update controller
                     val desiredState = ClimbingController.update(dt, getChassisPitch())
                     //Convert setpoints
-                    val backPosition = desiredState.backPosition.toAngularDistance(Geometry.ClimberGeometry.backPitchRadius).toMagEncoderTicks().value
                     val frontPosition = desiredState.frontPosition.toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius).toMagEncoderTicks().value
-                    //Set controllers
-                    back.set(ControlMode.Position, backPosition)
+                    //Set controller
                     front.set(ControlMode.Position, frontPosition)
                     if (ClimbingController.isDone()) {
                         println("Climb done.")
                     }
                     //Start checking our position.  If we're >= the setpoint - tolerance, move on.
-                    if (ClimbingController.isDone() || (frontWithinTolerance(ControlParameters.ClimberPositions.l2Climb)
-                                && backWithinTolerance(ControlParameters.ClimberPositions.l2Climb))) {
-                        setState(ClimberStates.FallL2)
+                    if (ClimbingController.isDone() || frontWithinTolerance(ControlParameters.ClimberPositions.l2Climb)) {
+                        setState(ClimberSubsystem.ClimberStates.RepositionL2)
                     }
                 }
             }
 
             exit {
                 front.stop()
+            }
+        }
+
+        state (ClimberStates.DownBackL2) {
+            var started = false
+
+
+
+            entry {
+                started = false
+                upwardsMoveFront(ControlParameters.ClimberPositions.stowed) //Move the climber to the stowed position
+                upwardsMoveBack(ControlParameters.ClimberPositions.stowed) //Upwards is fine since we just need to get there fast
+            }
+
+            rtAction {
+                //Check and see if we're at the stowed position
+                if (!started && backWithinTolerance(ControlParameters.ClimberPositions.stowed)) {
+                    back.master.config_kP(0, ControlParameters.ClimberParameters.BackDownPIDF.kP, 30)
+                    //Start the profile
+                    ClimbingController.setSetpoint(getCurrentClimberState(), ControlParameters.ClimberPositions.l2Climb)
+                    started = true
+                }
+
+                if (started) {
+                    //Update controller
+                    val desiredState = ClimbingController.update(dt, getChassisPitch())
+                    //Convert setpoints
+                    val backPosition = desiredState.backPosition.toAngularDistance(Geometry.ClimberGeometry.backPitchRadius).toMagEncoderTicks().value
+                    //Set controller
+                    back.set(ControlMode.Position, backPosition)
+                    if (ClimbingController.isDone()) {
+                        println("Back legs extended.")
+                    }
+                    //Start checking our position.  If we're >= the setpoint - tolerance, move on.
+                    if (ClimbingController.isDone() || backWithinTolerance(ControlParameters.ClimberPositions.l2Climb)) {
+                        setState(ClimberSubsystem.ClimberStates.RepositionL2)
+                    }
+                }
+            }
+
+            exit {
                 back.stop()
             }
         }
@@ -430,7 +471,7 @@ object ClimberSubsystem: Subsystem(100L) {
                     back.set(ControlMode.Position, backPosition)
                     front.set(ControlMode.Position, frontPosition)
                     if (ClimbingController.isDone()) {
-                        println("Climb done.")
+                        println("Front legs extended.")
                     }
                     //Start checking our position.  If we're >= the setpoint - tolerance, move on.
                     if (ClimbingController.isDone() || (frontWithinTolerance(ControlParameters.ClimberPositions.l3Climb)
@@ -446,9 +487,9 @@ object ClimberSubsystem: Subsystem(100L) {
             }
         }
         
-        state (ClimberStates.FallL2) {
+        state (ClimberStates.GoOntoL2) {
             rejectIf {
-                !isInState(ClimberStates.DownL2) && !isInState(ClimberStates.LondonBridgeIsMaybeFallingDown)//Don't allow us to fall unless we're already in the right up state
+                !isInState(ClimberStates.DownBackL2) && !isInState(ClimberStates.LondonBridgeIsMaybeFallingDown)//Don't allow us to fall unless we're already in the right up state
             }
 
             entry {
@@ -477,7 +518,7 @@ object ClimberSubsystem: Subsystem(100L) {
 
         state(ClimberStates.LondonBridgeIsMaybeFallingDown){
             rejectIf {
-                !isInState(ClimberStates.FallL3) && !isInState(ClimberStates.FallL2)
+                !isInState(ClimberStates.FallL3) && !isInState(ClimberStates.GoOntoL2)
             }
 
             entry {
