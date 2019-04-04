@@ -44,3 +44,7 @@ object ArmKinematics {
         )
     }
 }
+
+fun main(args: Array<String>) {
+    println(ArmKinematics.inverse(Point2d(27.0.Inches, (-4.0).Inches)))
+}
