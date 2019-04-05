@@ -181,6 +181,17 @@ val Gamepad = HumanControls.dualAction(2){
 
     //TODO floor pickup is button A
 
+    whenButton(Buttons.A){
+        pressed {
+            FloorPickupSubsystem.pickupMachine.setState(FloorPickupSubsystem.PickupStates.Deployed)
+            FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Intake)
+        }
+        released {
+            FloorPickupSubsystem.pickupMachine.setState(FloorPickupSubsystem.PickupStates.Stowed)
+            FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
+        }
+    }
+
     whenButton(Buttons.B) {
         pressed {
             SuperstructureRoutines.intake()
@@ -235,12 +246,20 @@ val Gamepad = HumanControls.dualAction(2){
         }
     }
 
-    /*
+
     whenButton(Buttons.START){
         pressed {
             SuperstructureRoutines.ccMaybe(true)
-            SuperstructureMotionPlanner.climbThrust()
+            SuperstructureMotionPlanner.goToFloorPickup()
         }
     }
-    */
+
+    whenButton(Buttons.BACK){
+        pressed {
+            SuperstructureRoutines.stopIntake()
+            Thread.sleep(250)
+            SuperstructureMotionPlanner.returnFromFloorPickup()
+        }
+    }
+
 }

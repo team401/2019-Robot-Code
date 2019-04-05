@@ -197,8 +197,8 @@ object ControlParameters{
     }
 
     object FloorPickupParameters {
-        const val intakeSpeed = 0.50
-        const val ejectSpeed = -0.50
+        const val intakeSpeed = 1.0
+        const val ejectSpeed = -1.0
     }
 
     object ClimberParameters {

@@ -8,8 +8,10 @@ import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureController
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.control.superstructure.planning.command.*
+import org.team401.robot2019.subsystems.FloorPickupSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.util.epsGt
 import org.team401.taxis.geometry.Pose2d
@@ -505,12 +507,28 @@ object SuperstructureMotionPlanner {
 
     @Synchronized fun goToFloorPickup(){ //TODO Make sure this won't extend into the floor
         reset()
-        val pickUpPoint = ArmKinematics.inverse(Point2d(18.8.Inches, (-16.0).Inches))
+        val pickUpPoint = ArmKinematics.inverse(Point2d(18.0.Inches, (-17.0).Inches))
+
+        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Intake)
+        Thread.sleep(250)
+        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
+
+        SuperstructureRoutines.score()
 
         commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))
-        commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, (-162.0).Degrees.toRadians()))
-        commandQueue.add(DelayCommand(2.0.Seconds))
+        commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, (60.0).Degrees.toRadians()))
+        commandQueue.add(DelayCommand(0.5.Seconds))
         commandQueue.add(ExtensionOnlyCommand(pickUpPoint.r, activeTool))
         commandQueue.add(RotationOnlyCommand(pickUpPoint.theta, activeTool))
+    }
+
+    @Synchronized fun returnFromFloorPickup(){
+        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Eject)
+
+        Thread.sleep(250)
+
+        goHome()
+
+        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
     }
 }

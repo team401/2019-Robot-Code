@@ -46,7 +46,7 @@ object HardwareMap {
 
     object FloorPickup {
         const val solenoidId = 3
-        const val intakeWheelsTalonId = 31
+        const val intakeWheelsTalonId = 1
     }
 
     object Climber {
