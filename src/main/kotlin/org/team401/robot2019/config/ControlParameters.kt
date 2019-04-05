@@ -7,10 +7,9 @@ import org.snakeskin.measure.*
 import org.snakeskin.template.PIDFTemplate
 import org.snakeskin.utility.CheesyDriveController
 import org.snakeskin.utility.Selectable
-import org.team401.robot2019.control.superstructure.geometry.SuperstructureSetpoint
 import org.team401.robot2019.control.superstructure.geometry.Point2d
+import org.team401.robot2019.control.superstructure.geometry.SuperstructureSetpoint
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
-import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 
 object ControlParameters{

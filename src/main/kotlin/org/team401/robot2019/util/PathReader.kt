@@ -5,12 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.team401.taxis.geometry.Pose2d
-import org.team401.taxis.geometry.Pose2dWithCurvature
 import org.team401.taxis.geometry.Rotation2d
-import org.team401.taxis.trajectory.TimedView
-import org.team401.taxis.trajectory.Trajectory
-import org.team401.taxis.trajectory.TrajectoryIterator
-import org.team401.taxis.trajectory.timing.TimedState
 import java.io.File
 import java.io.FileWriter
 

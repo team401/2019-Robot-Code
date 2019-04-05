@@ -2,8 +2,8 @@ package org.team401.robot2019.control.superstructure.planning.profile
 
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.control.superstructure.geometry.Point2d
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import kotlin.math.cos
 import kotlin.math.sin
 

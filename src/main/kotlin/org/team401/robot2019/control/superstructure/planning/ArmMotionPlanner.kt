@@ -7,16 +7,11 @@ import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
-import org.team401.robot2019.control.superstructure.geometry.Point2d
-import org.team401.robot2019.control.superstructure.planning.profile.TrapezoidalProfileGenerator
-import org.team401.robot2019.control.superstructure.planning.profile.ArmPath
-import org.team401.robot2019.control.superstructure.planning.profile.LinearProfileSegment
-import org.team401.robot2019.control.superstructure.planning.profile.Profile2d
-import org.team401.robot2019.control.superstructure.planning.profile.ProfileSegment
-import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.control.superstructure.geometry.ArmState
-import org.team401.robot2019.control.superstructure.planning.profile.TrapezoidalProfilePoint
+import org.team401.robot2019.control.superstructure.geometry.Point2d
+import org.team401.robot2019.control.superstructure.planning.profile.*
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+
 /**
  * @author Eli Jelesko
  * @version 1/19/2019

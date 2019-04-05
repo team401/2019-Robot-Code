@@ -1,17 +1,12 @@
 package org.team401.robot2019.auto
 
-import com.ctre.phoenix.motorcontrol.ControlMode
-import com.ctre.phoenix.motorcontrol.NeutralMode
 import org.snakeskin.auto.RobotAuto
 import org.snakeskin.auto.steps.AutoStep
 import org.snakeskin.auto.steps.SequentialSteps
 import org.snakeskin.component.ISmartGearbox
-import org.snakeskin.hardware.Hardware
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.team401.robot2019.config.Physics
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
-import org.team401.taxis.geometry.Rotation2d
-import org.team401.taxis.util.Util
 
 /**
  * @author Cameron Earle

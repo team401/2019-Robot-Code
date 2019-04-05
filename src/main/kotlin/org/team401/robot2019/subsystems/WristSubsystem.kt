@@ -1,12 +1,9 @@
 package org.team401.robot2019.subsystems
 
-import com.ctre.phoenix.ParamEnum
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.StatusFrame
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
-import edu.wpi.first.wpilibj.AnalogInput
-import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.ISmartGearbox
@@ -14,9 +11,9 @@ import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.logic.History
-import org.snakeskin.measure.*
+import org.snakeskin.measure.Degrees
+import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
-import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
@@ -32,9 +29,9 @@ import kotlin.math.roundToInt
  *
  */
 object WristSubsystem: Subsystem(100L) {
-    private val rotationTalon = TalonSRX(HardwareMap.Arm.wristTalonId)
-    val leftIntakeTalon = TalonSRX(HardwareMap.Arm.leftIntakeWheelTalonId)
-    val rightIntakeTalon = TalonSRX(HardwareMap.Arm.rightIntakeWheelTalonId)
+    private val rotationTalon = TalonSRX(HardwareMap.CAN.wristPivotTalonId)
+    val leftIntakeTalon = TalonSRX(HardwareMap.CAN.wristLeftIntakeWheelTalonId)
+    val rightIntakeTalon = TalonSRX(HardwareMap.CAN.wristRightIntakeWheelTalonId)
 
     val cargoIntake = CTRESmartGearbox(leftIntakeTalon, rightIntakeTalon)
 
@@ -42,17 +39,10 @@ object WristSubsystem: Subsystem(100L) {
     private val leftIntake = CTRESmartGearbox(leftIntakeTalon)
     private val rightIntake = CTRESmartGearbox(rightIntakeTalon)
 
-    private val cargoSensorNO = DigitalInput(HardwareMap.Wrist.ballSensorNOPort)
-    private val cargoSensorNC = DigitalInput(HardwareMap.Wrist.ballSensorNCPort)
-    private val leftHatchSensor = DigitalInput(4)
-    private val rightHatchSensor = DigitalInput(5)
-
-    private val pot = AnalogInput(HardwareMap.Wrist.potPort)
-
     private val cargoHistory = History<Boolean>()
 
-    private val hatchClawSolenoid = Solenoid(HardwareMap.Wrist.clawSolenoidID)
-    private val cargoGrabberSolenoid = Solenoid(HardwareMap.Wrist.cargoClawSolenoidID)
+    private val hatchClawSolenoid = Solenoid(HardwareMap.Pneumatics.hatchClawSolenoidId)
+    private val cargoGrabberSolenoid = Solenoid(HardwareMap.Pneumatics.cargoClawSolenoidId)
 
     enum class WristStates {
         EStopped,
@@ -83,18 +73,6 @@ object WristSubsystem: Subsystem(100L) {
     enum class WristFaults {
         WristEncoderFault,
         BannerSensorFault
-    }
-
-    /**
-     * Returns the current reading on the pot, scaled correctly, in degrees
-     */
-    private fun getPotAngleDegrees(): AngularDistanceMeasureDegrees {
-        val potMaybeInverted = if (ControlParameters.WristParameters.invertPot) {
-            4095 - pot.value
-        } else {
-            pot.value
-        }
-        return ((potMaybeInverted - ControlParameters.WristParameters.potOffset) * ControlParameters.WristParameters.degreesPerPotValue).Degrees
     }
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {

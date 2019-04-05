@@ -1,14 +1,13 @@
 package org.team401.robot2019.control.superstructure
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
+import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 object SuperstructureController {

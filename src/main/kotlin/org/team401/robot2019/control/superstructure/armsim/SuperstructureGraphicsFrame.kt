@@ -1,29 +1,19 @@
 package org.team401.robot2019.control.superstructure.armsim
 
-import org.snakeskin.logic.LowPass
-import org.snakeskin.measure.Inches
-import org.snakeskin.measure.Radians
-import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
-import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
-import java.awt.EventQueue
+import java.awt.KeyboardFocusManager
 import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
 import java.text.DecimalFormat
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.swing.*
-import javax.swing.border.BevelBorder
 import kotlin.math.roundToLong
-import java.awt.KeyEventDispatcher
-import java.awt.KeyboardFocusManager
-
 
 
 /**

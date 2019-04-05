@@ -10,18 +10,17 @@ import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.logic.LockingDelegate
-import org.snakeskin.measure.*
-import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
+import org.snakeskin.measure.Inches
+import org.snakeskin.measure.Milliseconds
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.utility.Ticker
-import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.climbing.ClimberState
 import org.team401.robot2019.control.climbing.ClimbingController
-import org.team401.robot2019.subsystems.ArmSubsystem.armExtensionMachine
-import org.team401.robot2019.subsystems.ArmSubsystem.armPivotMachine
 import kotlin.math.roundToInt
 
 /**
@@ -30,22 +29,11 @@ import kotlin.math.roundToInt
  *
  */
 object ClimberSubsystem: Subsystem(100L) {
-    private val backTalon = TalonSRX(HardwareMap.Climber.backTalonId)
-    private val frontTalon = TalonSRX(HardwareMap.Climber.frontTalonId)
+    private val backTalon = TalonSRX(HardwareMap.CAN.climbingBackTalonId)
+    private val frontTalon = TalonSRX(HardwareMap.CAN.climbingFrontTalonId)
 
     private val back = CTRESmartGearbox(backTalon)
     private val front = CTRESmartGearbox(frontTalon)
-
-    private val chassisYawPitchRoll = DoubleArray(3)
-
-    /**
-     * Returns the chassis pitch, correctly adjusted to the way the ClimbingController wants it.
-     * This includes possibly negating the angle, and using a different axis depending on the mounting of the IMU
-     */
-    private fun getChassisPitch(): AngularDistanceMeasureDegrees {
-        DrivetrainSubsystem.imu.getYawPitchRoll(chassisYawPitchRoll)
-        return (-1.0 * chassisYawPitchRoll[1]).Degrees
-    }
 
     enum class ClimberStates {
         EStopped,
@@ -271,7 +259,7 @@ object ClimberSubsystem: Subsystem(100L) {
 
                 if (started) {
                     //Update controller
-                    val desiredState = ClimbingController.update(dt, getChassisPitch())
+                    val desiredState = ClimbingController.update(dt)
                     //Convert setpoints
                     val backPosition = desiredState.backPosition.toAngularDistance(Geometry.ClimberGeometry.backPitchRadius).toMagEncoderTicks().value
                     val frontPosition = desiredState.frontPosition.toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius).toMagEncoderTicks().value
@@ -379,7 +367,7 @@ object ClimberSubsystem: Subsystem(100L) {
 
                 if (started) {
                     //Update controller
-                    val desiredState = ClimbingController.update(dt, getChassisPitch())
+                    val desiredState = ClimbingController.update(dt)
                     //Convert setpoints
                     val frontPosition = desiredState.frontPosition.toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius).toMagEncoderTicks().value
                     //Set controller
@@ -421,7 +409,7 @@ object ClimberSubsystem: Subsystem(100L) {
 
                 if (started) {
                     //Update controller
-                    val desiredState = ClimbingController.update(dt, getChassisPitch())
+                    val desiredState = ClimbingController.update(dt)
                     //Convert setpoints
                     val backPosition = desiredState.backPosition.toAngularDistance(Geometry.ClimberGeometry.backPitchRadius).toMagEncoderTicks().value
                     //Set controller
@@ -463,7 +451,7 @@ object ClimberSubsystem: Subsystem(100L) {
 
                 if (started) {
                     //Update controller
-                    val desiredState = ClimbingController.update(dt, getChassisPitch())
+                    val desiredState = ClimbingController.update(dt)
                     //Convert setpoints
                     val backPosition = desiredState.backPosition.toAngularDistance(Geometry.ClimberGeometry.backPitchRadius).toMagEncoderTicks().value
                     val frontPosition = desiredState.frontPosition.toAngularDistance(Geometry.ClimberGeometry.frontPitchRadius).toMagEncoderTicks().value

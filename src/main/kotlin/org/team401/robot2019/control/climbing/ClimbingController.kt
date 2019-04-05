@@ -1,10 +1,7 @@
 package org.team401.robot2019.control.climbing
 
-import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.InchesPerSecondPerSecond
-import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
-import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.config.ControlParameters
 
@@ -21,11 +18,10 @@ object ClimbingController {
      * Updates the climber controller.
      *
      * @param dt The delta time between calls
-     * @param chassisPitch The angle of the chassis to the floor.
      * This should be positive when the front of the robot is angled up when viewed from the right side.
      * @return The target state of the climber
      */
-    @Synchronized fun update(dt: Double, chassisPitch: AngularDistanceMeasureDegrees): ClimberState {
+    @Synchronized fun update(dt: Double): ClimberState {
         val referenceOutputBack = activeProfileBack.update(dt)
         val referenceOutputFront = activeProfileFront.update(dt)
 

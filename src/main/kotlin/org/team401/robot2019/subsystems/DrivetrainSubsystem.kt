@@ -13,8 +13,10 @@ import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
-import org.snakeskin.logic.LockingDelegate
-import org.snakeskin.measure.*
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.RadiansPerSecond
+import org.snakeskin.measure.RadiansPerSecondPerSecond
+import org.snakeskin.measure.Unitless
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.LeftStick
@@ -24,27 +26,19 @@ import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
-import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
-import org.team401.robot2019.control.superstructure.geometry.ArmState
-import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.vision.*
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
-import org.team401.robot2019.util.PathReader
-import org.team401.robot2019.util.TrajectoryPath
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
 import org.team401.taxis.diffdrive.odometry.OdometryTracker
 import org.team401.taxis.geometry.Pose2d
-import org.team401.taxis.geometry.Pose2dWithCurvature
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.trajectory.TimedView
 import org.team401.taxis.trajectory.TrajectoryIterator
 import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
-import org.team401.taxis.trajectory.timing.TimedState
 
 /**
  * @author Cameron Earle
@@ -55,24 +49,24 @@ import org.team401.taxis.trajectory.timing.TimedState
 object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox<TalonSRX>> by PigeonPathFollowingDiffDrive(
     SparkMaxCTRESensoredGearbox(
         WristSubsystem.leftIntakeTalon,
-        CANSparkMax(HardwareMap.Drivetrain.leftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
-        CANSparkMax(HardwareMap.Drivetrain.leftMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
-        CANSparkMax(HardwareMap.Drivetrain.leftRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
+        CANSparkMax(HardwareMap.CAN.drivetrainLeftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
+        CANSparkMax(HardwareMap.CAN.drivetrainLeftMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
+        CANSparkMax(HardwareMap.CAN.drivetrainLeftRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
     ),
     SparkMaxCTRESensoredGearbox(
         WristSubsystem.rightIntakeTalon,
-        CANSparkMax(HardwareMap.Drivetrain.rightFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
-        CANSparkMax(HardwareMap.Drivetrain.rightMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
-        CANSparkMax(HardwareMap.Drivetrain.rightRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
+        CANSparkMax(HardwareMap.CAN.drivetrainRightFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
+        CANSparkMax(HardwareMap.CAN.drivetrainRightMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
+        CANSparkMax(HardwareMap.CAN.drivetrainRightRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
     ),
-    PigeonIMU(HardwareMap.Drivetrain.pigeonImuId),
+    PigeonIMU(HardwareMap.CAN.drivetrainPigeonImuId),
     Geometry.DrivetrainGeometry,
     Physics.DrivetrainDynamics,
     NonlinearFeedbackPathController(2.0, 0.7)
 ) {
     object ShifterStates: ShifterState(false, false)
 
-    private val shifter = Solenoid(HardwareMap.Drivetrain.shifterSolenoid)
+    private val shifter = Solenoid(HardwareMap.Pneumatics.drivetrainShifterSolenoidId)
 
     /**
      * Shifts the drivetrain to the selected gear.  The available shifter states are available in ShifterStates.

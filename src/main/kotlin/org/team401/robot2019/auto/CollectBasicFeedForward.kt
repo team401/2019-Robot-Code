@@ -1,6 +1,5 @@
 package org.team401.robot2019.auto
 
-import com.ctre.phoenix.motorcontrol.ControlMode
 import org.snakeskin.auto.RobotAuto
 import org.snakeskin.auto.steps.AutoStep
 import org.snakeskin.auto.steps.SequentialSteps

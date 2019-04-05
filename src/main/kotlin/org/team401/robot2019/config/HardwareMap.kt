@@ -6,51 +6,53 @@ package org.team401.robot2019.config
  *
  */
 object HardwareMap {
-    object Drivetrain {
-        const val shifterSolenoid = 0
-
-        const val leftRearSparkMaxId = 1
-        const val leftMidSparkMaxId = 2
-        const val leftFrontSparkMaxId = 3
-        const val rightRearSparkMaxId = 4
-        const val rightMidSparkMaxId = 5
-        const val rightFrontSparkMaxId = 6
-
-
-        const val pigeonImuId = 1
+    /**
+     * Holds IDs for all pneumatic components connected to the PCM
+     */
+    object Pneumatics {
+        const val drivetrainShifterSolenoidId = 0
+        const val hatchClawSolenoidId = 2
+        const val cargoClawSolenoidId = 1
+        const val floorPickupSolenoid = 3
     }
 
-    object Arm {
-        const val brakeSolenoidId = 4
+    /**
+     * Holds IDs for all devices on CAN
+     */
+    object CAN {
+        const val drivetrainLeftRearSparkMaxId = 1
+        const val drivetrainLeftMidSparkMaxId = 2
+        const val drivetrainLeftFrontSparkMaxId = 3
+        const val drivetrainRightRearSparkMaxId = 4
+        const val drivetrainRightMidSparkMaxId = 5
+        const val drivetrainRightFrontSparkMaxId = 6
+        const val drivetrainPigeonImuId = 1
 
-        const val leftIntakeWheelTalonId = 30
-        const val rightIntakeWheelTalonId = 31
+        const val wristLeftIntakeWheelTalonId = 30
+        const val wristRightIntakeWheelTalonId = 31
+        const val wristPivotTalonId = 24
 
-        const val pivotLeftTalonId = 20
-        const val pivotRightTalonId = 21
+        const val armExtensionTalonId = 25
+        const val armPivotLeftTalonId = 20
+        const val armPivotRightTalonId = 21
 
-        const val wristTalonId = 24
-        const val extensionTalonId = 25
+        const val floorPickupWheelsVictorId = 1
+
+        const val climbingFrontTalonId = 60
+        const val climbingBackTalonId = 61
     }
 
-    object Wrist{
-        const val clawSolenoidID = 2
-        const val cargoClawSolenoidID = 1
-
-        const val ballSensorNCPort = 1
-        const val ballSensorNOPort = 0
-
-        const val potPort = 3 //analog
+    /**
+     * Holds IDs for all DIO sensors and components
+     */
+    object DIO {
 
     }
 
-    object FloorPickup {
-        const val solenoidId = 3
-        const val intakeWheelsTalonId = 1
-    }
+    /**
+     * Holds IDs for all analog sensors
+     */
+    object Analog {
 
-    object Climber {
-        const val frontTalonId = 60
-        const val backTalonId = 61
     }
 }

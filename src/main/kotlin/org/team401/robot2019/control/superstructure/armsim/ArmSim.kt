@@ -4,20 +4,16 @@ import org.knowm.xchart.QuickChart
 import org.knowm.xchart.SwingWrapper
 import org.snakeskin.hardware.Hardware
 import org.snakeskin.hardware.impl.SoftwareTimeSource
-import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
-import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureControlOutput
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.*
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
-import org.team401.robot2019.subsystems.WristSubsystem
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import javax.swing.SwingUtilities
 
 /**

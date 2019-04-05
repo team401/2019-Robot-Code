@@ -6,7 +6,6 @@ import org.snakeskin.rt.RealTimeTask
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.taxis.geometry.Pose2d
-import org.team401.taxis.geometry.Rotation2d
 
 /**
  * Watches our current odometry pose, as well as a "fed" pose that represents the desired pose from whatever

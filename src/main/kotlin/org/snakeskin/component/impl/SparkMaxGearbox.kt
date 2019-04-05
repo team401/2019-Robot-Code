@@ -3,7 +3,6 @@ package org.snakeskin.component.impl
 import com.revrobotics.CANError
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
-import org.snakeskin.component.ISensoredGearbox
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRevolutions

@@ -1,9 +1,7 @@
 package org.team401.robot2019.config
 
 import org.snakeskin.measure.Centimeters
-import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
-import org.snakeskin.measure.MagEncoderTicks
 import org.snakeskin.template.TankDrivetrainGeometryTemplate
 import org.snakeskin.utility.Selectable
 import org.team401.taxis.geometry.Pose2d

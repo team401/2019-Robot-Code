@@ -1,10 +1,10 @@
 package org.team401.robot2019.control.superstructure.planning
 
-import org.jetbrains.annotations.TestOnly
-import org.snakeskin.measure.*
+import org.snakeskin.measure.Inches
+import org.snakeskin.measure.Radians
+import org.snakeskin.measure.Unitless
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
-import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerMillisecond
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.Point2d

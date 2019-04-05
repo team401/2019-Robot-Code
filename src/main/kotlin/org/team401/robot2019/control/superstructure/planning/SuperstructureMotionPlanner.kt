@@ -2,10 +2,8 @@ package org.team401.robot2019.control.superstructure.planning
 
 import org.snakeskin.measure.*
 import org.snakeskin.measure.acceleration.angular.AngularAccelerationMeasureRadiansPerSecondPerSecond
-import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSecond
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
@@ -13,8 +11,7 @@ import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.control.superstructure.planning.command.*
 import org.team401.robot2019.subsystems.FloorPickupSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
-import org.team401.robot2019.util.epsGt
-import org.team401.taxis.geometry.Pose2d
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import java.util.*
 
 object SuperstructureMotionPlanner {

@@ -1,12 +1,8 @@
 package org.team401.robot2019.util
 
 import org.snakeskin.measure.InchesPerSecond
-import org.team401.robot2019.subsystems.DrivetrainSubsystem
-import org.team401.taxis.diffdrive.control.DrivetrainPathManager
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
-import org.team401.taxis.trajectory.TimedView
-import org.team401.taxis.trajectory.TrajectoryIterator
 
 fun main(args: Array<String>){
 

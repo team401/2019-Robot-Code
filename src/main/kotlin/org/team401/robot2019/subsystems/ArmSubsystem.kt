@@ -1,11 +1,15 @@
 package org.team401.robot2019.subsystems
 
-import com.ctre.phoenix.motorcontrol.*
+import com.ctre.phoenix.motorcontrol.ControlMode
+import com.ctre.phoenix.motorcontrol.FeedbackDevice
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
+import org.snakeskin.dsl.on
 import org.snakeskin.dsl.rtAction
 import org.snakeskin.dsl.stateMachine
 import org.snakeskin.event.Events
@@ -14,21 +18,19 @@ import org.snakeskin.measure.*
 import org.snakeskin.state.StateMachine
 import org.snakeskin.subsystem.Subsystem
 import org.snakeskin.utility.Ticker
+import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.superstructure.SuperstructureController
-import org.team401.robot2019.control.superstructure.geometry.*
+import org.team401.robot2019.control.superstructure.geometry.ArmState
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-import org.snakeskin.dsl.*
-import org.team401.robot2019.DriverStationDisplay
-
 object ArmSubsystem: Subsystem(100L) {
-    private val pivotLeftTalon = TalonSRX(HardwareMap.Arm.pivotLeftTalonId)
-    private val pivotRightTalon = TalonSRX(HardwareMap.Arm.pivotRightTalonId)
-    private val extensionTalon = TalonSRX(HardwareMap.Arm.extensionTalonId)
+    private val pivotLeftTalon = TalonSRX(HardwareMap.CAN.armPivotLeftTalonId)
+    private val pivotRightTalon = TalonSRX(HardwareMap.CAN.armPivotRightTalonId)
+    private val extensionTalon = TalonSRX(HardwareMap.CAN.armExtensionTalonId)
 
     private val pivot = CTRESmartGearbox(pivotRightTalon, pivotLeftTalon)
     private val extension = CTRESmartGearbox(extensionTalon)

@@ -1,44 +1,25 @@
 package org.team401.robot2019
 
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.auto.AutoManager
-import org.snakeskin.component.ISensoredGearbox
-import org.snakeskin.component.IYawSensoredDifferentialDrivetrain
 import org.snakeskin.controls.ControlPoller
-import org.snakeskin.dsl.*
+import org.snakeskin.dsl.Setup
+import org.snakeskin.dsl.Subsystems
+import org.snakeskin.dsl.on
 import org.snakeskin.event.Events
-import org.snakeskin.factory.ExecutorFactory
-import org.snakeskin.measure.Feet
-import org.snakeskin.measure.Seconds
 import org.snakeskin.registry.Controllers
 import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.utility.Selectable
-import org.team401.robot2019.auto.CollectAngularTorqueData
-import org.team401.robot2019.auto.CollectLinearTorqueData
 import org.team401.robot2019.auto.DeepSpaceAuto
-import org.team401.robot2019.config.HardwareMap
-import org.team401.robot2019.config.Physics
-import org.team401.robot2019.control.drivetrain.OdometryWatchdog
-import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureUpdater
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
-import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.vision.LimelightCamera
-import org.team401.robot2019.control.vision.VisionKinematics
 import org.team401.robot2019.control.vision.VisionManager
 import org.team401.robot2019.control.vision.VisionOdometryUpdater
-import org.team401.robot2019.subsystems.*
+import org.team401.robot2019.subsystems.ArmSubsystem
+import org.team401.robot2019.subsystems.ClimberSubsystem
+import org.team401.robot2019.subsystems.DrivetrainSubsystem
+import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.util.LEDManager
-import org.team401.taxis.diffdrive.autotune.autos.TuningAutoCollectDynamicsData
-import org.team401.taxis.diffdrive.autotune.autos.TuningAutoTuneTrackScrubFactor
-import org.team401.taxis.diffdrive.autotune.autos.TuningAutoTuneWheelRadius
-import org.team401.taxis.geometry.Pose2d
-import org.team401.taxis.geometry.Rotation2d
-import org.team401.taxis.trajectory.TimedView
-import org.team401.taxis.trajectory.TrajectoryIterator
-import org.team401.taxis.util.InterpolatingDouble
-import java.util.concurrent.TimeUnit
 
 /**
  * @author Cameron Earle

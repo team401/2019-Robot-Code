@@ -2,12 +2,10 @@ package org.team401.robot2019.subsystems
 
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.NeutralMode
-import com.ctre.phoenix.motorcontrol.can.TalonSRX
 import com.ctre.phoenix.motorcontrol.can.VictorSPX
 import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
-import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.HardwareMap
 
@@ -17,8 +15,8 @@ import org.team401.robot2019.config.HardwareMap
  *
  */
 object FloorPickupSubsystem: Subsystem(100L) {
-    private val piston = Solenoid(HardwareMap.FloorPickup.solenoidId)
-    private val wheels = VictorSPX(HardwareMap.FloorPickup.intakeWheelsTalonId)
+    private val piston = Solenoid(HardwareMap.Pneumatics.floorPickupSolenoid)
+    private val wheels = VictorSPX(HardwareMap.CAN.floorPickupWheelsVictorId)
 
     enum class PickupStates {
         EStopped,

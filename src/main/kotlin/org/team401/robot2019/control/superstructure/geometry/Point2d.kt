@@ -1,6 +1,5 @@
 package org.team401.robot2019.control.superstructure.geometry
 
-import org.snakeskin.measure.Inches
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.config.Geometry
 

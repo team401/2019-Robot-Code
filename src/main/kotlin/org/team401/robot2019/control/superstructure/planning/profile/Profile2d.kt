@@ -3,9 +3,9 @@ package org.team401.robot2019.control.superstructure.planning.profile
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.team401.robot2019.config.ControlParameters
-import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import kotlin.math.abs
 
 /**
