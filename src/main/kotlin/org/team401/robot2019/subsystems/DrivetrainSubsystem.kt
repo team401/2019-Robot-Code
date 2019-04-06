@@ -1,5 +1,6 @@
 package org.team401.robot2019.subsystems
 
+import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced
 import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod
@@ -8,8 +9,12 @@ import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.ControlType
+import edu.wpi.first.networktables.NetworkTable
+import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.networktables.NetworkTableValue
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
@@ -83,7 +88,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         ClimbPull,
         ClimbStop,
         ClimbReposition,
-        VisionAlign
+        VisionAlign,
+        PIDVisionAlign
     }
 
     enum class DriveFaults {
@@ -312,12 +318,56 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
+        state(DrivetrainSubsystem.DriveStates.PIDVisionAlign){
+            var tx = 0.0
+            var Kp = ControlParameters.DrivetrainParameters.visionKp
+            lateinit var activeCamera: LimelightCamera
+            entry {
+                activeCamera = when (SuperstructureRoutines.side) {
+                    SuperstructureRoutines.Side.FRONT -> {
+                        VisionManager.frontCamera
+                    }
+                    SuperstructureRoutines.Side.BACK -> {
+                        VisionManager.backCamera
+                    }
+                }
+
+                activeCamera.configForVision(3)
+                activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
+                activeCamera.resetFrame()
+            }
+            rtAction {
+                tx = NetworkTableInstance.getDefault().getTable(activeCamera.name).getEntry("tx").getDouble(0.0)
+                val adjustment = (Kp * tx) / 100.0 // 1 degree of error = 1%power
+
+                val output = cheesyController.update(
+                    LeftStick.readAxis { PITCH },
+                    RightStick.readAxis { ROLL },
+                    false,
+                    RightStick.readButton { TRIGGER }
+                )
+
+                val leftPower = output.left + adjustment
+                val rightPower = output.right - adjustment
+
+                //println("Left: $leftPower, Right : $rightPower, tx: $tx")
+
+                tank(leftPower, rightPower)
+            }
+
+            exit {
+                activeCamera.setLedMode(LimelightCamera.LedMode.Off)
+            }
+        }
+
+
         default {
             entry {
                 stop()
             }
         }
     }
+
 
     private fun configureDriveMotorControllers() {
         both {

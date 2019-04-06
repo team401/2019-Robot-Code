@@ -188,6 +188,8 @@ object ControlParameters{
         val climbWheelStopDelay = 0.5.Seconds
 
         val slowingFactor = 1 / 2.0
+
+        val visionKp = 0.9
     }
 
     object DrivetrainCheesyDriveParameters: CheesyDriveController.DefaultParameters() {
