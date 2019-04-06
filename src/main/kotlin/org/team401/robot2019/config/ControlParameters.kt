@@ -13,13 +13,15 @@ import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
-object ControlParameters{
-    object ArmParameters{
+object ControlParameters {
+    /**
+     * General control parameters for the extension and rotation of the arm
+     */
+    object ArmParameters {
         /**
          * The mechanical goons put the arm encoder on the incorrect side of the practice robot.
          * As a result, we have to do this now.  Thanks Patrick.
          */
-
         val armEncoderPhase by Selectable(false, true)
 
         /**
@@ -29,23 +31,19 @@ object ControlParameters{
         val armEncoderValueAtVertical by Selectable(1800, 2278)
 
         /**
-         * Max velocity and acceleration values to configure the extension motion magic controller
+         * Extension velocity and acceleration
          */
         val extensionVelocity = 36.0.InchesPerSecond
-
-
         val extensionAcceleration = (36.0 * 3.5).InchesPerSecond //PER SECOND
 
-
+        /**
+         * Rotation velocities and accelerations
+         */
         val rotationAcceleration = 0.7.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
         val rotationVelocity = 0.6.RevolutionsPerSecond.toRadiansPerSecond()
 
         val rotationSlowAcceleration = 0.6.RevolutionsPerSecondPerSecond.toRadiansPerSecondPerSecond()
         val rotationSlowVelocity = 0.2.RevolutionsPerSecond.toRadiansPerSecond()
-
-
-        val MIN_POS = 0.57.Radians.value
-        val MAX_POS = 3.5.Radians.value
 
         /**
          * Voltage required to hold the superstructure static, divided by the cosine of the angle times the radius the test was taken at
@@ -58,15 +56,18 @@ object ControlParameters{
         const val kV = 2.65
 
         /**
-         * Amount of time to home the arm
+         * Amount of time that the extension must be still to consider it homed
          */
         val extensionHomingTime = 0.25.Seconds
 
         /**
-         * Power to home the arm at.  This should be negative
+         * Power to home the extension at.  This should be negative
          */
         val extensionHomingPower = -0.1
 
+        /**
+         * PID for a move of the arm to a standard setpoint
+         */
         object ArmRotationMovePIDF: PIDFTemplate{
             override val kP = 3.0
             override val kI = 0.0
@@ -74,6 +75,11 @@ object ControlParameters{
             override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
         }
 
+        /**
+         * PID for a move of the arm to a vertical setpoint.
+         * This should be less than the standard gain set to keep
+         * the arm from "vibrating" in a vertical position (due to backlash)
+         */
         object ArmRotationVerticalPIDF: PIDFTemplate {
             override val kP = 2.5
             override val kI = 0.0
@@ -81,6 +87,9 @@ object ControlParameters{
             override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
         }
 
+        /**
+         * PIDF for the arm extension controller.
+         */
         object ArmExtensionPIDF: PIDFTemplate{
             override val kP = 0.5
             override val kI = 0.0
@@ -89,20 +98,26 @@ object ControlParameters{
         }
     }
 
-    object WristParameters{
+    /**
+     * General control parameters for the wrist, including the pivot and the wheels.
+     */
+    object WristParameters {
+        /**
+         * Wrist velocity and acceleration
+         */
+        val velocity = 2.0.RevolutionsPerSecond
         val acceleration = 2.0.RevolutionsPerSecondPerSecond
-        val cruiseVelocity = 2.0.RevolutionsPerSecond
 
-        val hasCargoTime = 0.25.Seconds
+        /**
+         * Intake/scoring powers.  Negative values will spin the wheels clockwise (intake)
+         */
+        const val intakePower = -1.0
+        const val holdingPower = -0.1
+        const val scoringPower = 1.0
 
-        val intakePower = -1.0
-        val holdingPower = -0.1
-        val scoringPower = 1.0
-
-        const val invertPot = true
-        const val degreesPerPotValue = (180.0 / 805.0)
-        const val potOffset = 1965
-
+        /**
+         * PIDF for the wrist rotation
+         */
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 1.6
             override val kI = 0.0
@@ -111,7 +126,10 @@ object ControlParameters{
         }
     }
 
-    object ArmPositions {
+    /**
+     * Setpoints for the superstructure
+     */
+    object SuperstructurePositions {
         //Distance to back setpoints up or down by to adjust them for the wrist being a different height on each side.
         val backHeightOffset = (1.5).Inches
 
@@ -163,7 +181,13 @@ object ControlParameters{
         val cargoShipCargoBack = cargoShipCargoFront.flipped()
     }
 
+    /**
+     * General control parameters for the drivetrain
+     */
     object DrivetrainParameters {
+        /**
+         * Velocity PID for the drive in high gear
+         */
         object VelocityPIDFHigh: PIDFTemplate {
             override val kP = 0.0
             override val kI = 0.0
@@ -171,6 +195,19 @@ object ControlParameters{
             override val kF = 0.0 //THIS SHOULD ALWAYS BE ZERO!
         }
 
+        /**
+         * Control parameters for the cheesy drive controller in teleop
+         */
+        object CheesyDriveParameters: CheesyDriveController.DefaultParameters() {
+            override val quickTurnScalar = ScalarGroup(SquareScalar, object : Scalar {
+                override fun scale(input: Double) = input / 3.33
+            })
+        }
+
+        /**
+         * Limits on odometry error.  If these limits are exceeded it is safe to assume there is an issue
+         * with one or more of the sensors
+         */
         val maxOdometryTranslationError = 24.0.Inches
         val maxOdometryRotationError = 45.0.Degrees.toRadians()
         val maxOdometryErrorCycles = 10
@@ -188,12 +225,6 @@ object ControlParameters{
         val climbWheelStopDelay = 0.5.Seconds
 
         val slowingFactor = 1 / 2.0
-    }
-
-    object DrivetrainCheesyDriveParameters: CheesyDriveController.DefaultParameters() {
-        override val quickTurnScalar = ScalarGroup(SquareScalar, object : Scalar {
-            override fun scale(input: Double) = input / 3.33
-        })
     }
 
     object FloorPickupParameters {

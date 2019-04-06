@@ -83,7 +83,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         ClimbPull,
         ClimbStop,
         ClimbReposition,
-        VisionAlign
+        VisionAlign,
+        VisionDumbAlign //smh stephen
     }
 
     enum class DriveFaults {
@@ -93,7 +94,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         IMUFailure
     }
 
-    private val cheesyController = CheesyDriveController(ControlParameters.DrivetrainCheesyDriveParameters)
+    private val cheesyController = CheesyDriveController(ControlParameters.DrivetrainParameters.CheesyDriveParameters)
 
     val stateEstimator = OdometryTracker(this)
 
@@ -178,14 +179,14 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
-        state(DriveStates.ClimbPull){
+        state(DriveStates.ClimbPull) {
             entry {
                 shift(ControlParameters.DrivetrainParameters.climbPullGear)
                 arcade(ControlParameters.DrivetrainParameters.climbPullPower, 0.0)
             }
         }
 
-        state(DriveStates.ClimbStop){
+        state(DriveStates.ClimbStop) {
             action {
                 if (ClimberSubsystem.backWithinTolerance(ControlParameters.ClimberPositions.stowed)){
                     Thread.sleep(ControlParameters.DrivetrainParameters.climbWheelStopDelay.toMilliseconds().value.toLong())

@@ -14,12 +14,23 @@ import kotlin.math.atan2
  *
  */
 object Geometry {
+    /**
+     * Geometry constants for the drivetrain
+     */
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
         override val wheelRadius by Selectable(3.062954.Inches, 3.0708584735251.Inches)
         override val wheelbase by Selectable(26.5.Inches, 26.25.Inches)
+
+        /**
+         * Gear ratio of the high gear, used to convert wheel speeds to motor speeds at the NEO for velocity PID control
+         */
+        const val gearRatioHigh = (50.0/28.0) * (64.0 / 15.0)
     }
 
-    object ArmGeometry{
+    /**
+     * Geometry constants for the arm
+     */
+    object ArmGeometry {
         //All values with the pivot as the origin, wrist pivot as the endpoint
         val maxX = 70.0.Inches
         val maxY = 70.0.Inches
@@ -106,6 +117,9 @@ object Geometry {
         val hatchClawOpenHeight = 5.0.Inches
     }
 
+    /**
+     * Geometry of the climber
+     */
     object ClimberGeometry {
         /**
          * Pitch radius of the front gear, used to convert from angular position to linear position
@@ -125,6 +139,9 @@ object Geometry {
         val backHomeOffset = (-1.25).Inches
     }
 
+    /**
+     * Geometry of the cameras with respect to the center of the drivetrain
+     */
     object VisionGeometry {
         val robotToFrontCamera = Pose2d(12.5.Centimeters.toInches().value, 20.5.Centimeters.toInches().value, Rotation2d.fromDegrees(0.0))
         val robotToBackCamera = Pose2d((-12.5).Centimeters.toInches().value, 20.5.Centimeters.toInches().value, Rotation2d.fromDegrees(180.0))

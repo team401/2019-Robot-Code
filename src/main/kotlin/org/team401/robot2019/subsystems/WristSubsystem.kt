@@ -350,7 +350,7 @@ object WristSubsystem: Subsystem(100L) {
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
 
         rotation.master.configMotionCruiseVelocity(
-            ControlParameters.WristParameters.cruiseVelocity
+            ControlParameters.WristParameters.velocity
                 .toMagEncoderTicksPerHundredMilliseconds()
                 .value.roundToInt()
         )

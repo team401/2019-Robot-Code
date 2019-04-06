@@ -53,9 +53,9 @@ object SuperstructureRoutines {
 
             WristMotionPlanner.Tool.CargoTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoShipCargoFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoShipCargoFront))
                 } else if (side == Side.BACK) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoShipCargoBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoShipCargoBack))
                 }
             }
         }
@@ -66,17 +66,17 @@ object SuperstructureRoutines {
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchBottomFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchBottomFront))
                 } else if (side == Side.BACK) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchBottomBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchBottomBack))
                 }
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoBottomFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketCargoBottomFront))
                 } else if (side == Side.BACK) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoBottomBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketCargoBottomBack))
                 }
             }
         }
@@ -87,17 +87,17 @@ object SuperstructureRoutines {
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchMidFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
                 } else if (side == Side.BACK) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchMidBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchMidBack))
                 }
             }
 
             WristMotionPlanner.Tool.CargoTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoMidFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketCargoMidFront))
                 } else if (side == Side.BACK) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoMidBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketCargoMidBack))
                 }        
             }
         }
@@ -108,16 +108,16 @@ object SuperstructureRoutines {
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchHighFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchHighFront))
                 } else if (side == Side.BACK) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketHatchHighBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchHighBack))
                 }            }
 
             WristMotionPlanner.Tool.CargoTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoHighFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketCargoHighFront))
                 } else if (side == Side.BACK) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.rocketCargoHighBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketCargoHighBack))
                 }
             }
         }
@@ -132,9 +132,9 @@ object SuperstructureRoutines {
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoFloorPickupFront))
                 } else if (side == Side.BACK){
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.cargoFloorPickupBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoFloorPickupBack))
                 }
                 WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped)
                 WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
@@ -142,9 +142,9 @@ object SuperstructureRoutines {
 
             WristMotionPlanner.Tool.HatchPanelTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.hatchIntakeFront))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.hatchIntakeFront))
                 } else if (side == Side.BACK){
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.ArmPositions.hatchIntakeBack))
+                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.hatchIntakeBack))
                 }
                 WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
             }
