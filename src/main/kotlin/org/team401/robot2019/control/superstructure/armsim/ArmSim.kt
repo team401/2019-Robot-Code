@@ -115,8 +115,8 @@ object ArmSim {
         Hardware.setTimeSource(SoftwareTimeSource())
 
         val output = runSimulation(
-            ControlParameters.ArmPositions.rocketHatchMidBack,
-            ControlParameters.ArmPositions.hatchIntakeFront
+            ControlParameters.SuperstructurePositions.rocketHatchMidBack,
+            ControlParameters.SuperstructurePositions.hatchIntakeFront
             )
 
 

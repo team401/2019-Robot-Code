@@ -1,6 +1,5 @@
 package org.team401.robot2019.subsystems
 
-import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced
 import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod
@@ -14,7 +13,6 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.networktables.NetworkTableValue
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
@@ -99,7 +97,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         IMUFailure
     }
 
-    private val cheesyController = CheesyDriveController(ControlParameters.DrivetrainCheesyDriveParameters)
+    private val cheesyController = CheesyDriveController(ControlParameters.DrivetrainParameters.CheesyDriveParameters)
 
     val stateEstimator = OdometryTracker(this)
 
@@ -184,14 +182,14 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
-        state(DriveStates.ClimbPull){
+        state(DriveStates.ClimbPull) {
             entry {
                 shift(ControlParameters.DrivetrainParameters.climbPullGear)
                 arcade(ControlParameters.DrivetrainParameters.climbPullPower, 0.0)
             }
         }
 
-        state(DriveStates.ClimbStop){
+        state(DriveStates.ClimbStop) {
             action {
                 if (ClimberSubsystem.backWithinTolerance(ControlParameters.ClimberPositions.stowed)){
                     Thread.sleep(ControlParameters.DrivetrainParameters.climbWheelStopDelay.toMilliseconds().value.toLong())
@@ -367,7 +365,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
     }
-
 
     private fun configureDriveMotorControllers() {
         both {
