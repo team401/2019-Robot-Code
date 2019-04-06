@@ -135,7 +135,7 @@ val RightStick = HumanControls.t16000m(1) {
         pressed{
             if (DrivetrainSubsystem.driveMachine.isInState(DrivetrainSubsystem.DriveStates.ClimbReposition)) {
                 // Start level 2 phase 2
-                // The robot now has the front on the platform and needs to drive forward
+                // The robot now has the back on the platform and needs to drive on up
                 SuperstructureMotionPlanner.climbThrust()
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownFrontL2)
             }
@@ -165,8 +165,6 @@ val Gamepad = HumanControls.dualAction(2){
             SuperstructureRoutines.switchTool()
         }
     }
-
-    //TODO floor pickup is button A
 
     whenButton(Buttons.A){
         pressed {

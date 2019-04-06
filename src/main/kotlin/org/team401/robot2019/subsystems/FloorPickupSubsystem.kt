@@ -49,15 +49,15 @@ object FloorPickupSubsystem: Subsystem(100L) {
         stateMap(
             WheelsStates.EStopped to 0.0,
             WheelsStates.Idle to 0.0,
-            //WheelsStates.Intake to ControlParameters.FloorPickupParameters.intakeSpeed,
             WheelsStates.Eject to ControlParameters.FloorPickupParameters.ejectSpeed
         ),
         { wheels.set(ControlMode.PercentOutput, value) },
         {
             state(FloorPickupSubsystem.WheelsStates.Intake){
                 val currentTimeout = Ticker(
-                    { PowerDistributionPanel().getCurrent(10) > 4.0},
-                    0.2.Seconds,
+                    { PowerDistributionPanel().getCurrent(HardwareMap.PDP.floorPickupWheelsVictorChannel) >
+                            ControlParameters.FloorPickupParameters.floorPickupCurrentLimit},
+                    ControlParameters.FloorPickupParameters.floorPickupCurrentTimeout,
                     20.0.Milliseconds.toSeconds()
                 )
                 entry {
@@ -66,7 +66,7 @@ object FloorPickupSubsystem: Subsystem(100L) {
                     wheels.set(ControlMode.PercentOutput, ControlParameters.FloorPickupParameters.intakeSpeed)
                 }
                 action {
-                    println("Current : ${PowerDistributionPanel().getCurrent(10)}")
+                    //println("Current : ${PowerDistributionPanel().getCurrent(HardwareMap.PDP.floorPickupWheelsVictorChannel)}")
                     currentTimeout.check{
                         setState(FloorPickupSubsystem.WheelsStates.Idle)
                         pickupMachine.setState(FloorPickupSubsystem.PickupStates.Stowed)

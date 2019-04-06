@@ -203,6 +203,9 @@ object ControlParameters{
         val floorPickupAngle = 60.0.Degrees.toRadians()
 
         val floorPickupPoint = ArmKinematics.inverse(Point2d(18.0.Inches, (-17.0).Inches))
+
+        const val floorPickupCurrentLimit = 4.0
+        val floorPickupCurrentTimeout = 0.2.Seconds
     }
 
     object ClimberParameters {

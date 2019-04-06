@@ -55,4 +55,11 @@ object HardwareMap {
     object Analog {
 
     }
+
+    /**
+     * Holds PDP channel ID's
+     */
+    object PDP {
+        const val floorPickupWheelsVictorChannel = 10
+    }
 }
