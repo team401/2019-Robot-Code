@@ -11,6 +11,7 @@ import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.SuperstructureSetpoint
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
 object ControlParameters{
     object ArmParameters{
@@ -198,6 +199,10 @@ object ControlParameters{
     object FloorPickupParameters {
         const val intakeSpeed = 1.0
         const val ejectSpeed = -1.0
+
+        val floorPickupAngle = 60.0.Degrees.toRadians()
+
+        val floorPickupPoint = ArmKinematics.inverse(Point2d(18.0.Inches, (-17.0).Inches))
     }
 
     object ClimberParameters {
@@ -262,7 +267,7 @@ object ControlParameters{
 
     object ClimberPositions {
         val stowed = (-.4).Inches
-        val l2Climb = (16.0).Inches
+        val l2Climb = (9.0).Inches
         val l3Climb = (22.0).Inches
     }
 }

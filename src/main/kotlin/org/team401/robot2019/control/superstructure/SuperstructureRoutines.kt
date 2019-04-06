@@ -4,6 +4,7 @@ import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.ArmSubsystem
+import org.team401.robot2019.subsystems.FloorPickupSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.util.LEDManager
 
@@ -182,7 +183,24 @@ object SuperstructureRoutines {
         WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
     }
 
+    fun goToFloorPickup() {
+        score()
+        SuperstructureMotionPlanner.goToFloorPickup()
 
+        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Intake)
+        Thread.sleep(250)
+        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
+    }
 
+    fun returnFromFloorPickup() {
+        stopIntake()
+        Thread.sleep(250)
 
+        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Eject)
+        Thread.sleep(250)
+
+        SuperstructureMotionPlanner.returnFromFloorPickup()
+
+        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
+    }
 }

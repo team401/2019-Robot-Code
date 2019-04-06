@@ -3,9 +3,13 @@ package org.team401.robot2019.subsystems
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.VictorSPX
+import edu.wpi.first.wpilibj.PowerDistributionPanel
 import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
+import org.snakeskin.measure.Milliseconds
+import org.snakeskin.measure.Seconds
+import org.snakeskin.utility.Ticker
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.HardwareMap
 
@@ -45,12 +49,32 @@ object FloorPickupSubsystem: Subsystem(100L) {
         stateMap(
             WheelsStates.EStopped to 0.0,
             WheelsStates.Idle to 0.0,
-            WheelsStates.Intake to ControlParameters.FloorPickupParameters.intakeSpeed,
+            //WheelsStates.Intake to ControlParameters.FloorPickupParameters.intakeSpeed,
             WheelsStates.Eject to ControlParameters.FloorPickupParameters.ejectSpeed
-        )
-    ) {
-        wheels.set(ControlMode.PercentOutput, value)
-    }
+        ),
+        { wheels.set(ControlMode.PercentOutput, value) },
+        {
+            state(FloorPickupSubsystem.WheelsStates.Intake){
+                val currentTimeout = Ticker(
+                    { PowerDistributionPanel().getCurrent(10) > 4.0},
+                    0.2.Seconds,
+                    20.0.Milliseconds.toSeconds()
+                )
+                entry {
+
+                    currentTimeout.reset()
+                    wheels.set(ControlMode.PercentOutput, ControlParameters.FloorPickupParameters.intakeSpeed)
+                }
+                action {
+                    println("Current : ${PowerDistributionPanel().getCurrent(10)}")
+                    currentTimeout.check{
+                        setState(FloorPickupSubsystem.WheelsStates.Idle)
+                        pickupMachine.setState(FloorPickupSubsystem.PickupStates.Stowed)
+                    }
+                }
+            }
+        }
+    )
 
     override fun action() {
         /*

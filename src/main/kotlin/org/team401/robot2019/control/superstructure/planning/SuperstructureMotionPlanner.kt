@@ -504,28 +504,17 @@ object SuperstructureMotionPlanner {
 
     @Synchronized fun goToFloorPickup(){ //TODO Make sure this won't extend into the floor
         reset()
-        val pickUpPoint = ArmKinematics.inverse(Point2d(18.0.Inches, (-17.0).Inches))
-
-        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Intake)
-        Thread.sleep(250)
-        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
-
-        SuperstructureRoutines.score()
 
         commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))
-        commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, (60.0).Degrees.toRadians()))
+        commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, ControlParameters.FloorPickupParameters.floorPickupAngle))
         commandQueue.add(DelayCommand(0.5.Seconds))
-        commandQueue.add(ExtensionOnlyCommand(pickUpPoint.r, activeTool))
-        commandQueue.add(RotationOnlyCommand(pickUpPoint.theta, activeTool))
+        commandQueue.add(ExtensionOnlyCommand(ControlParameters.FloorPickupParameters.floorPickupPoint.r, activeTool))
+        commandQueue.add(RotationOnlyCommand(ControlParameters.FloorPickupParameters.floorPickupPoint.theta, activeTool))
     }
 
-    @Synchronized fun returnFromFloorPickup(){
-        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Eject)
-
-        Thread.sleep(250)
-
-        goHome()
-
-        FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
+    @Synchronized fun returnFromFloorPickup() {
+        commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, ControlParameters.FloorPickupParameters.floorPickupAngle + 10.0.Degrees.toRadians()))
+        commandQueue.add(ExtensionOnlyCommand(ControlParameters.FloorPickupParameters.floorPickupPoint.r + 3.0.Inches, activeTool))
+        commandQueue.add(RotationOnlyCommand(90.0.Degrees.toRadians(), activeTool))
     }
 }

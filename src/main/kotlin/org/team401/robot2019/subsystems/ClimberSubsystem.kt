@@ -477,7 +477,7 @@ object ClimberSubsystem: Subsystem(100L) {
         
         state (ClimberStates.GoOntoL2) {
             rejectIf {
-                !isInState(ClimberStates.DownBackL2) && !isInState(ClimberStates.LondonBridgeIsMaybeFallingDown)//Don't allow us to fall unless we're already in the right up state
+                !isInState(ClimberSubsystem.ClimberStates.RepositionL2) && !isInState(ClimberStates.DownBackL2) && !isInState(ClimberStates.LondonBridgeIsMaybeFallingDown)//Don't allow us to fall unless we're already in the right up state
             }
 
             entry {
@@ -506,7 +506,7 @@ object ClimberSubsystem: Subsystem(100L) {
 
         state(ClimberStates.LondonBridgeIsMaybeFallingDown){
             rejectIf {
-                !isInState(ClimberStates.FallL3) && !isInState(ClimberStates.GoOntoL2)
+                !isInState(ClimberSubsystem.ClimberStates.RepositionL2) && !isInState(ClimberStates.FallL3) && !isInState(ClimberStates.GoOntoL2)
             }
 
             entry {

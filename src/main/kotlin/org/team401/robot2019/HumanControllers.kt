@@ -126,26 +126,22 @@ val RightStick = HumanControls.t16000m(1) {
             }
         }
         released {
-            //DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbStop)
-            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.RepositionL2)) {
-                // The back of the robot should be on the platform
-                // Need to lift the front to drive onto the platform
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownFrontL2)
-            }
+            // The back of the robot should be on the platform
+            // Need to lift the front to drive onto the platform
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Stowed)
         }
     }
     whenButton(Buttons.STICK_BOTTOM){
         pressed{
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.ClimbReposition)
-
-            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.RepositionL2)) {
+            if (DrivetrainSubsystem.driveMachine.isInState(DrivetrainSubsystem.DriveStates.ClimbReposition)) {
                 // Start level 2 phase 2
                 // The robot now has the front on the platform and needs to drive forward
-                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.GoOntoL2)
+                SuperstructureMotionPlanner.climbThrust()
+                ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.DownFrontL2)
             }
         }
         released {
-            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.GoOntoL2)) {
+            if (ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.RepositionL2)) {
                 // The robot should have driven up onto level 2
                 ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.LondonBridgeIsMaybeFallingDown)
             }
@@ -241,15 +237,24 @@ val Gamepad = HumanControls.dualAction(2){
     whenButton(Buttons.START){
         pressed {
             SuperstructureRoutines.ccMaybe(true)
-            SuperstructureMotionPlanner.goToFloorPickup()
+            SuperstructureRoutines.goToFloorPickup()
         }
     }
 
     whenButton(Buttons.BACK){
         pressed {
-            SuperstructureRoutines.stopIntake()
-            Thread.sleep(250)
-            SuperstructureMotionPlanner.returnFromFloorPickup()
+            SuperstructureRoutines.returnFromFloorPickup()
+        }
+    }
+
+    whenButton(Buttons.RIGHT_TRIGGER){
+        pressed {
+            FloorPickupSubsystem.pickupMachine.setState(FloorPickupSubsystem.PickupStates.Deployed)
+            FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Eject)
+        }
+        released {
+            FloorPickupSubsystem.pickupMachine.setState(FloorPickupSubsystem.PickupStates.Stowed)
+            FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
         }
     }
 

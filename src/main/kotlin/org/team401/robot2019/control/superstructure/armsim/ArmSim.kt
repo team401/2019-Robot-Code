@@ -116,7 +116,7 @@ object ArmSim {
 
         val output = runSimulation(
             ControlParameters.ArmPositions.rocketHatchMidBack,
-            ControlParameters.ArmPositions.hatchIntakeBack
+            ControlParameters.ArmPositions.hatchIntakeFront
             )
 
 
