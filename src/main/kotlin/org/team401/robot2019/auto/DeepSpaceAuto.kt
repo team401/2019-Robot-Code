@@ -4,6 +4,7 @@ import org.snakeskin.auto.RobotAuto
 import org.snakeskin.auto.steps.SequentialSteps
 import org.snakeskin.dsl.auto
 import org.snakeskin.measure.Inches
+import org.team401.robot2019.auto.steps.climber.HomeClimberStep
 import org.team401.robot2019.auto.steps.drivetrain.DriveTrajectoryStep
 import org.team401.robot2019.auto.steps.drivetrain.EnableVisionStateEstimator
 import org.team401.robot2019.auto.steps.drivetrain.OperatorDriveStep
@@ -26,6 +27,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
                 }
 
                 sequential {
+                    step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
                     //Drive and prepare to score
                     parallel {
                         step(DriveTrajectoryStep(Trajectories.level1HabToFarRocketLeft, true))
