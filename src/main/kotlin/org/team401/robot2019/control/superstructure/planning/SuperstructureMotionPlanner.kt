@@ -6,10 +6,8 @@ import org.snakeskin.measure.velocity.angular.AngularVelocityMeasureRadiansPerSe
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.control.superstructure.SuperstructureController
-import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.control.superstructure.planning.command.*
-import org.team401.robot2019.subsystems.FloorPickupSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import java.util.*
@@ -17,7 +15,8 @@ import java.util.*
 object SuperstructureMotionPlanner {
     enum class ControlMode {
         Planning, //Coordinated, motion planned control
-        Jog //Manual jogging
+        ArmJog, //Manual jogging
+        WristJog // Manual wrist jogging
     }
 
     enum class SpeedMode(
@@ -43,6 +42,7 @@ object SuperstructureMotionPlanner {
     private var jogWristState = WristState(0.0.Radians, false, false)
     private var jogXRate = 0.0
     private var jogYRate = 0.0
+    private var jogWristRate = 0.0
 
     @Synchronized fun setToSlowSpeedMode() {
         reset()
@@ -61,19 +61,30 @@ object SuperstructureMotionPlanner {
         activeControlMode = ControlMode.Planning
     }
 
-    @Synchronized fun setToJogMode() {
+    @Synchronized fun setToArmJogMode() {
         reset()
         jogArmPose = ArmKinematics.forward(lastObservedArmState)
         jogWristState = lastObservedWristState
-        activeControlMode = ControlMode.Jog
+        activeControlMode = ControlMode.ArmJog
+    }
+
+    @Synchronized fun setToWristJogMode() {
+        reset()
+        jogArmPose = ArmKinematics.forward(lastObservedArmState)
+        jogWristState = lastObservedWristState
+        activeControlMode = ControlMode.WristJog
     }
 
     /**
      * Updates the jog values
      */
-    @Synchronized fun updateJog(x: Double, y: Double) {
+    @Synchronized fun updateArmJog(x: Double, y: Double) {
         jogXRate = x
         jogYRate = y
+    }
+
+    @Synchronized fun updateWristJog(angle: Double) {
+        jogWristRate = angle
     }
 
     val commandQueue = LinkedList<SuperstructureCommand>()
@@ -140,7 +151,7 @@ object SuperstructureMotionPlanner {
                 }
             }
 
-            ControlMode.Jog -> {
+            ControlMode.ArmJog -> {
                 var newX = jogArmPose.x.value + (jogXRate * 0.1)
                 var newY = jogArmPose.y.value + (jogYRate * 0.1)
 
@@ -176,6 +187,32 @@ object SuperstructureMotionPlanner {
                 SuperstructureController.update(
                     ArmState(newState.r, newState.theta, 0.0.RadiansPerSecond),
                     jogWristState,
+                    activeTool,
+                    VisionHeightMode.NONE
+                )
+            }
+            ControlMode.WristJog -> {
+
+                var newWristAngle = jogWristState.wristPosition.value + (jogWristRate * 0.025)
+
+                if (newWristAngle > 3.0) {
+                    newWristAngle = 3.0
+                }
+                if (newWristAngle < -3.0) {
+                    newWristAngle = -3.0
+                }
+
+                //println("Wrist jog. Angle: $newWristAngle")
+
+                val newWristState = WristState(newWristAngle.Radians, jogWristState.hasCargo, jogWristState.hasHatchPanel)
+
+                jogWristState = newWristState
+
+                val armState = ArmKinematics.inverse(jogArmPose)
+
+                SuperstructureController.update(
+                    ArmState(armState.r, armState.theta, 0.0.RadiansPerSecond),
+                    newWristState,
                     activeTool,
                     VisionHeightMode.NONE
                 )

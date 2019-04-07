@@ -23,7 +23,8 @@ object SuperstructureUpdater: RealTimeTask {
 
     override fun action(ctx: RealTimeExecutor.RealTimeContext) {
         if (ds.isEnabled) {
-            SuperstructureMotionPlanner.updateJog(Gamepad.readAxis { LEFT_X }, Gamepad.readAxis { LEFT_Y })
+            SuperstructureMotionPlanner.updateArmJog(Gamepad.readAxis { LEFT_X }, Gamepad.readAxis { LEFT_Y })
+            SuperstructureMotionPlanner.updateWristJog(Gamepad.readAxis { RIGHT_X })
         }
 
         SuperstructureMotionPlanner.update(

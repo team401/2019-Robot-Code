@@ -224,7 +224,17 @@ val Gamepad = HumanControls.dualAction(2){
     whenButton(Buttons.LEFT_STICK) {
         pressed {
             SuperstructureRoutines.ccMaybe(true)
-            SuperstructureMotionPlanner.setToJogMode()
+            SuperstructureMotionPlanner.setToArmJogMode()
+        }
+        released {
+            SuperstructureMotionPlanner.setToPlanningMode()
+        }
+    }
+
+    whenButton(Buttons.RIGHT_STICK) {
+        pressed {
+            SuperstructureRoutines.ccMaybe(true)
+            SuperstructureMotionPlanner.setToWristJogMode()
         }
         released {
             SuperstructureMotionPlanner.setToPlanningMode()
