@@ -35,6 +35,7 @@ object SuperstructureUpdater: RealTimeTask {
         )
 
         //debug
+        /*
         val targetPose = ArmKinematics.forward(PointPolar(SuperstructureController.output.armRadius, SuperstructureController.output.armAngle))
         val actualState = ArmSubsystem.getCurrentArmState()
         val actualPose = ArmKinematics.forward(actualState)
@@ -42,5 +43,6 @@ object SuperstructureUpdater: RealTimeTask {
         SmartDashboard.putNumber("superstructure_y_error_inches", (targetPose.y - actualPose.y).value)
         SmartDashboard.putNumber("superstructure_theta_error_degrees", (SuperstructureController.output.armAngle - actualState.armAngle).toDegrees().value)
         SmartDashboard.putNumber("superstructure_radius_error_inches", (SuperstructureController.output.armRadius - actualState.armRadius).toInches().value)
+        */
     }
 }

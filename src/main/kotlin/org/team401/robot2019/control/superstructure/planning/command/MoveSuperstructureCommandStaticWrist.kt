@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure.planning.command
 
+import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches
 import org.team401.robot2019.control.superstructure.SuperstructureController
@@ -9,6 +10,7 @@ import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.ArmMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
 /**
  * @author Cameron Earle
@@ -20,13 +22,18 @@ class MoveSuperstructureCommandStaticWrist(val start: Point2d, val end: Point2d,
         //Set the waypoints for the arm motion planner.  This should also reset it
         ArmMotionPlanner.setDesiredTrajectory(start, end, minimumRadius)
         WristMotionPlanner.setToAngleMode(tool, wristAngle, end)
-        //WristMotionPlanner.setToMaintainAngleMode(90.0.Degrees.toRadians(), tool, end)
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState) {
         val armCommand = ArmMotionPlanner.update(dt) //Update the arm motion planner
         val wristCommand = WristMotionPlanner.update(armState, wristState) //Update the wrist motion planner
         SuperstructureController.update(armCommand, wristCommand, tool, heightMode)
+        if (ArmMotionPlanner.isDone()) {
+            //Push a last command through with the final state
+            val finalArmPolar = ArmKinematics.inverse(end)
+            val finalArmState = ArmState(finalArmPolar.r, finalArmPolar.theta, 0.0.RadiansPerSecond)
+            SuperstructureController.update(finalArmState, wristCommand, tool, heightMode)
+        }
     }
 
     override fun isDone(): Boolean {
