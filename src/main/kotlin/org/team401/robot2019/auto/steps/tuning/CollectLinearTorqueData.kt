@@ -1,4 +1,4 @@
-package org.team401.robot2019.auto
+package org.team401.robot2019.auto.steps.tuning
 
 import org.snakeskin.auto.RobotAuto
 import org.snakeskin.auto.steps.AutoStep
@@ -42,7 +42,15 @@ class CollectLinearTorqueData(val drive: IPathFollowingDiffDrive<ISmartGearbox<*
         fun createAuto(drive: IPathFollowingDiffDrive<ISmartGearbox<*>>, power: Double = 1.0, runtime: TimeMeasureSeconds, axis: Int = 0, polarity: Double = 1.0): RobotAuto {
             return object : RobotAuto(10L) {
                 override fun assembleAuto(): SequentialSteps {
-                    return SequentialSteps(CollectLinearTorqueData(drive, power, runtime, axis, polarity))
+                    return SequentialSteps(
+                        CollectLinearTorqueData(
+                            drive,
+                            power,
+                            runtime,
+                            axis,
+                            polarity
+                        )
+                    )
                 }
             }
         }

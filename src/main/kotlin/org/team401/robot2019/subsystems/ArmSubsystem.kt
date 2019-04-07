@@ -85,14 +85,11 @@ object ArmSubsystem: Subsystem(100L) {
     enum class ArmExtensionStates {
         EStopped, //System is stopped.  No commands sent to motors
         Homing, //System is homing.  This means that it is slowly retracted to locate its home position
+        SetHome, //Sets the home of the extension, and then goes to the safe position
         Holding, //System is holding its current position
         GoToSafe, //System moves to and holds the safe position.  In this case, it is the minimum radius
         CoordinatedControl, //System is being controlled by the motion planner.,
-        TuneFf,
-        GoTo1Foot,
-        GoTo1Point5Foot,
-        GoTo2Foot,
-        GoTo1Inch,
+        TuneFf
     }
 
     private fun withinTolerance(target: Double, pos: Double, tolerance: Double): Boolean{
@@ -190,16 +187,22 @@ object ArmSubsystem: Subsystem(100L) {
             action {
                 extension.set(ControlParameters.ArmParameters.extensionHomingPower)
                 ticker.check {
-                    extension.master.selectedSensorPosition = (Geometry.ArmGeometry.armBaseLength + Geometry.ArmGeometry.armExtensionStickout)
-                        .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
-                        .toMagEncoderTicks().value.roundToInt()
-                    extensionHomed = true
-                    setState(ArmExtensionStates.GoToSafe)
+                    setState(ArmExtensionStates.SetHome)
                 }
             }
 
             exit {
                 extension.stop()
+            }
+        }
+
+        state (ArmExtensionStates.SetHome) {
+            entry {
+                extension.master.selectedSensorPosition = (Geometry.ArmGeometry.armBaseLength + Geometry.ArmGeometry.armExtensionStickout)
+                    .toAngularDistance(Geometry.ArmGeometry.extensionPitchRadius)
+                    .toMagEncoderTicks().value.roundToInt()
+                extensionHomed = true
+                setState(ArmExtensionStates.GoToSafe)
             }
         }
 
@@ -258,42 +261,6 @@ object ArmSubsystem: Subsystem(100L) {
             exit {
                 extension.stop()
                 println("Extension FF: ${.5 * 1023.0 / lastVel}")
-            }
-        }
-
-        state (ArmExtensionStates.GoTo1Foot) {
-            entry {
-                val target = (Geometry.ArmGeometry.armBaseLength + 1.0.Feet).toAngularDistance(
-                    Geometry.ArmGeometry.extensionPitchRadius
-                ).toMagEncoderTicks().value
-                extension.set(ControlMode.MotionMagic, target)
-            }
-        }
-
-        state (ArmExtensionStates.GoTo1Point5Foot) {
-            entry {
-                val target = (Geometry.ArmGeometry.armBaseLength + 1.5.Feet).toAngularDistance(
-                    Geometry.ArmGeometry.extensionPitchRadius
-                ).toMagEncoderTicks().value
-                extension.set(ControlMode.MotionMagic, target)
-            }
-        }
-
-        state (ArmExtensionStates.GoTo2Foot) {
-            entry {
-                val target = (Geometry.ArmGeometry.armBaseLength + 2.0.Feet).toAngularDistance(
-                    Geometry.ArmGeometry.extensionPitchRadius
-                ).toMagEncoderTicks().value
-                extension.set(ControlMode.MotionMagic, target)
-            }
-        }
-
-        state (ArmExtensionStates.GoTo1Inch) {
-            entry {
-                val target = (Geometry.ArmGeometry.armBaseLength + 1.0.Inches).toAngularDistance(
-                    Geometry.ArmGeometry.extensionPitchRadius
-                ).toMagEncoderTicks().value
-                extension.set(ControlMode.MotionMagic, target)
             }
         }
 

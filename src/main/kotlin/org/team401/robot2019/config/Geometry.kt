@@ -22,6 +22,16 @@ object Geometry {
         override val wheelbase by Selectable(26.5.Inches, 26.25.Inches)
 
         /**
+         * Distance in inches from the center of the robot to the frontmost edge, including bumpers
+         */
+        val robotHalfLength = 18.0.Inches
+
+        /**
+         * Distance in inches from the center of the robot to the leftmost edge, including bumpers
+         */
+        val robotHalfWidth = 18.0.Inches
+
+        /**
          * Gear ratio of the high gear, used to convert wheel speeds to motor speeds at the NEO for velocity PID control
          */
         const val gearRatioHigh = (50.0/28.0) * (64.0 / 15.0)

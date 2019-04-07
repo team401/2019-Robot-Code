@@ -1,4 +1,4 @@
-package org.team401.robot2019.auto.steps
+package org.team401.robot2019.auto.steps.drivetrain
 
 import org.snakeskin.auto.steps.AutoStep
 import org.snakeskin.measure.distance.linear.LinearDistanceMeasureInches

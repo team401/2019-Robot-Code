@@ -25,6 +25,7 @@ object SuperstructureUpdater: RealTimeTask {
         if (ds.isEnabled) {
             SuperstructureMotionPlanner.updateJog(Gamepad.readAxis { LEFT_X }, Gamepad.readAxis { LEFT_Y })
         }
+
         SuperstructureMotionPlanner.update(
             ctx.time,
             ctx.dt,
@@ -34,8 +35,11 @@ object SuperstructureUpdater: RealTimeTask {
 
         //debug
         val targetPose = ArmKinematics.forward(PointPolar(SuperstructureController.output.armRadius, SuperstructureController.output.armAngle))
-        val actualPose = ArmKinematics.forward(ArmSubsystem.getCurrentArmState())
+        val actualState = ArmSubsystem.getCurrentArmState()
+        val actualPose = ArmKinematics.forward(actualState)
         SmartDashboard.putNumber("superstructure_x_error_inches", (targetPose.x - actualPose.x).value)
         SmartDashboard.putNumber("superstructure_y_error_inches", (targetPose.y - actualPose.y).value)
+        SmartDashboard.putNumber("superstructure_theta_error_degrees", (SuperstructureController.output.armAngle - actualState.armAngle).toDegrees().value)
+        SmartDashboard.putNumber("superstructure_radius_error_inches", (SuperstructureController.output.armRadius - actualState.armRadius).toInches().value)
     }
 }

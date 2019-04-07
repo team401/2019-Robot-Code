@@ -1,4 +1,4 @@
-package org.team401.robot2019.auto
+package org.team401.robot2019.auto.steps.tuning
 
 import org.snakeskin.auto.RobotAuto
 import org.snakeskin.auto.steps.AutoStep
@@ -39,7 +39,14 @@ class CollectBasicFeedForward(val drive: IPathFollowingDiffDrive<ISmartGearbox<*
         fun createAuto(drive: IPathFollowingDiffDrive<ISmartGearbox<*>>, accelTime: TimeMeasureSeconds, power: Double = 1.0, samples: Int = 100): RobotAuto {
             return object : RobotAuto(10L) {
                 override fun assembleAuto(): SequentialSteps {
-                    return SequentialSteps(CollectBasicFeedForward(drive, accelTime, power, samples))
+                    return SequentialSteps(
+                        CollectBasicFeedForward(
+                            drive,
+                            accelTime,
+                            power,
+                            samples
+                        )
+                    )
                 }
             }
         }
@@ -63,6 +70,10 @@ class CollectBasicFeedForward(val drive: IPathFollowingDiffDrive<ISmartGearbox<*
 
     override fun exit(currentTime: Double) {
         drive.stop()
-        analyzeData(dataLeft, dataRight, power)
+        analyzeData(
+            dataLeft,
+            dataRight,
+            power
+        )
     }
 }

@@ -5,6 +5,7 @@ import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Pose2dWithCurvature
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.trajectory.Trajectory
+import org.team401.taxis.trajectory.TrajectoryUtil
 import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
 import org.team401.taxis.trajectory.timing.TimedState
 
@@ -31,35 +32,15 @@ object Trajectories {
         )
     }
 
-    /*
-    val habLeftToRocketFarHigh = generateTrajectory(
+    val level1HabToFarRocketRight = generateTrajectory(
         listOf(
-            Pose2d(66.0, 204.0, Rotation2d.fromDegrees(0.0)),
-            Pose2d(261.0, 216.0, Rotation2d.fromDegrees(0.0)),
-            Pose
-        )
-    )
-    */
-
-    val habLeftLowToFarRocketHighLeft = generateTrajectory(
-        listOf(
-            CriticalPoses.robotStartLeft,
-            CriticalPoses.robotStartLeft.transformBy(Pose2d(18.0 * 12, 3.0 * 12, Rotation2d.identity())),
-            CriticalPoses.leftRocketFarAlign,
-            CriticalPoses.leftRocketFarScoring
+            CriticalPoses.fieldToLevel1RightStart,
+            CriticalPoses.fieldToFarRocketRightMidpoint,
+            CriticalPoses.fieldToFarRocketRightAlign,
+            CriticalPoses.fieldToFarRocketRightEnd
         ),
         false
     )
 
-    /*
-    val farRocketHighLeftToFeederStationLeft = generateTrajectory(
-        listOf(),
-        true
-    )
-
-    val feederStationLeftToNearRocketLeft = generateTrajectory(
-        listOf(),
-        false
-    )
-    */
+    val level1HabToFarRocketLeft = TrajectoryUtil.mirrorTimed(level1HabToFarRocketRight)
 }
