@@ -28,8 +28,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
                 sequential {
                     //Drive and prepare to score
                     parallel {
-                        step(DriveTrajectoryStep(Trajectories.level1HabToFarRocketLeft)) //Drive to far rocket
-
+                        step(DriveTrajectoryStep(Trajectories.level1HabToFarRocketLeft, true))
                         /*
                         //Wait for drive to pass an x value, move to scoring position, enable vision
                         sequential {

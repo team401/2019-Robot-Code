@@ -495,6 +495,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
         */
         //Insert debug println statements below:
+        //println("left: ${left.getPosition()}  right: ${right.getPosition()}")
     }
 
     override fun setup() {
