@@ -203,4 +203,14 @@ object SuperstructureRoutines {
 
         FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
     }
+
+    fun intakeCargoFromLoadingStation() {
+        if (SuperstructureMotionPlanner.activeTool == WristMotionPlanner.Tool.CargoTool) {
+            when (side){
+                Side.FRONT -> ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoIntakeLoadingStationFront))
+                Side.BACK -> ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoIntakeLoadingStationBack))
+            }
+            WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
+        }
+    }
 }

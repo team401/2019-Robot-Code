@@ -179,6 +179,13 @@ object ControlParameters {
 
         val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(28.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians(), VisionHeightMode.NONE).fromFloor()
         val cargoShipCargoBack = cargoShipCargoFront.flipped()
+
+        val cargoIntakeLoadingStationFront = SuperstructureSetpoint.intakingCargo(
+            Point2d(19.0.Inches, 23.5.Inches),
+            0.0.Radians,
+            VisionHeightMode.NONE
+        )
+        val cargoIntakeLoadingStationBack = cargoIntakeLoadingStationFront.flipped()
     }
 
     /**

@@ -266,4 +266,13 @@ val Gamepad = HumanControls.dualAction(2){
         }
     }
 
+    whenButton(Buttons.LEFT_TRIGGER){
+        pressed {
+            SuperstructureRoutines.intakeCargoFromLoadingStation()
+        }
+        released {
+            SuperstructureRoutines.stopIntake()
+        }
+    }
+
 }
