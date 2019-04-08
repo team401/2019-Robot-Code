@@ -8,9 +8,6 @@ import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.ControlType
-import edu.wpi.first.networktables.NetworkTable
-import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.networktables.NetworkTableValue
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
@@ -19,29 +16,21 @@ import org.snakeskin.event.Events
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
-import org.snakeskin.measure.Unitless
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.LeftStick
 import org.team401.robot2019.RightStick
-import org.team401.robot2019.RobotEvents
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
-import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
-import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.vision.*
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
 import org.team401.taxis.diffdrive.odometry.OdometryTracker
 import org.team401.taxis.geometry.Pose2d
-import org.team401.taxis.geometry.Rotation2d
-import org.team401.taxis.trajectory.TimedView
-import org.team401.taxis.trajectory.TrajectoryIterator
-import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
 
 /**
  * @author Cameron Earle
@@ -83,11 +72,9 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         Disabled,
         OpenLoopOperatorControl,
         PathFollowing(true),
-        ClimbPull,
         ClimbStop,
         ClimbReposition,
-        VisionAlign,
-        PIDVisionAlign
+        VisionAlign //THANK YOU ELI (smh stephen 0/10)
     }
 
     enum class DriveFaults {
@@ -156,7 +143,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
 
             rtAction {
-                //TODO return this to the pose from the regular driveState
                 val output = pathManager.update(time, VisionState.getFieldToRobot(time))
 
                 val leftVelocityRpm = output.left_velocity.RadiansPerSecond.toRevolutionsPerMinute().value * gearRatioHigh
@@ -179,13 +165,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
             exit {
                 stop()
-            }
-        }
-
-        state(DriveStates.ClimbPull) {
-            entry {
-                shift(ControlParameters.DrivetrainParameters.climbPullGear)
-                arcade(ControlParameters.DrivetrainParameters.climbPullPower, 0.0)
             }
         }
 
@@ -212,114 +191,9 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
-        state(DriveStates.VisionAlign) {
-            val trajectoryEndpointLow = Pose2d((-34.0), 0.0, Rotation2d.identity())
-            val trajectoryEndpointMid = Pose2d(-23.0, 0.0, Rotation2d.identity())
-            val trajectoryEndpointHigh = Pose2d(-17.0, 0.0, Rotation2d.identity())
+        state(DrivetrainSubsystem.DriveStates.VisionAlign){
             lateinit var activeCamera: LimelightCamera
-            var reversed = false
 
-            entry {
-                when (SuperstructureRoutines.side) {
-                    SuperstructureRoutines.Side.FRONT -> {
-                        activeCamera = VisionManager.frontCamera
-                        reversed = false
-                    }
-                    SuperstructureRoutines.Side.BACK -> {
-                        activeCamera = VisionManager.backCamera
-                        reversed = true
-                    }
-                }
-                activeCamera.configForVision(1)
-                activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
-                activeCamera.resetFrame()
-                Thread.sleep(100) //Give the camera some time to enter the state
-            }
-
-            rtAction {
-                //In this case, we'll make the field frame equal to the field to goal frame.
-                //This allows us to use a single kinematics routine to do all of our math
-                //Look for target
-                val frame = activeCamera.frame
-                if (frame.hasTarget) {
-                    val trajectoryEndpoint = when (SuperstructureController.output.visionHeightMode) {
-                        VisionHeightMode.LOW -> trajectoryEndpointLow
-                        VisionHeightMode.MID -> trajectoryEndpointMid
-                        VisionHeightMode.HIGH -> trajectoryEndpointHigh
-                        VisionHeightMode.NONE -> trajectoryEndpointLow //Pick the safest option
-                    }
-                    val trajectoryEndpointRotated = trajectoryEndpoint.transformBy(Pose2d.fromRotation(activeCamera.robotToCamera.rotation))
-
-                    val goalToCamera = frame.toPose2d()
-                    val fieldToRobotMeasured = VisionKinematics.solveFieldToRobot(
-                        Pose2d.identity(), //Say that the goal is at (0, 0) @ 0 degrees
-                        activeCamera.robotToCamera,
-                        goalToCamera
-                    )
-                    val odometryPoseAtCapture = driveState.getFieldToVehicle(frame.timeCaptured.value)
-                    val currentOdometryPose = driveState.getFieldToVehicle(time)
-                    val startPose = VisionKinematics.solveLatencyCorrection(
-                        odometryPoseAtCapture,
-                        currentOdometryPose,
-                        fieldToRobotMeasured
-                    )
-                    val distFromGoal = trajectoryEndpoint.distance(startPose)
-                    val startPoseFaked = trajectoryEndpoint.transformBy(Pose2d(-distFromGoal, 0.0, startPose.rotation))
-                    setPose(startPose, time)
-
-                    val startVelocity = (left.getVelocity().toLinearVelocity(Geometry.DrivetrainGeometry.wheelRadius) +
-                            right.getVelocity().toLinearVelocity(Geometry.DrivetrainGeometry.wheelRadius)) / 2.0.Unitless
-
-                    println("Start pose: $startPose")
-                    println("Start pose faked: $startPoseFaked")
-                    println("Start velocity: $startVelocity")
-                    send(RobotEvents.VLoc)
-                    //Generate the parameters of the trajectory
-                    val maxVelocity = Math.max(startVelocity.toInchesPerSecond().value, 10.0 * 12)
-                    val maxAcceleration = 6.0 * 12.0
-                    val maxVoltage = 9.0
-                    val maxCentrip = 110.0
-
-                    val trajectory = TrajectoryIterator(
-                        TimedView(
-                            pathManager.generateTrajectory(
-                                reversed,
-                                listOf(startPoseFaked, trajectoryEndpointRotated),
-                                listOf(CentripetalAccelerationConstraint(maxCentrip)),
-                                startVelocity.toInchesPerSecond().value,
-                                0.0,
-                                maxVelocity,
-                                maxAcceleration,
-                                maxVoltage
-                            )
-                        )
-                    )
-
-                    println("Driving: ${listOf(startPoseFaked, trajectoryEndpointRotated)}")
-
-                    //Run the trajectory
-                    pathManager.reset()
-                    pathManager.setTrajectory(
-                        trajectory
-                    )
-
-                    //Turn on vision path manager
-                    VisionState.reset()
-                    VisionOdometryUpdater.disable()
-
-                    setState(DrivetrainSubsystem.DriveStates.PathFollowing)
-                }
-            }
-
-            exit {
-                activeCamera.setLedMode(LimelightCamera.LedMode.Off)
-            }
-        }
-
-        state(DrivetrainSubsystem.DriveStates.PIDVisionAlign){
-            var tx = 0.0
-            var Kp = ControlParameters.DrivetrainParameters.visionKp
-            lateinit var activeCamera: LimelightCamera
             entry {
                 activeCamera = when (SuperstructureRoutines.side) {
                     SuperstructureRoutines.Side.FRONT -> {
@@ -334,9 +208,10 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
                 activeCamera.resetFrame()
             }
+
             rtAction {
-                tx = NetworkTableInstance.getDefault().getTable(activeCamera.name).getEntry("tx").getDouble(0.0)
-                val adjustment = (Kp * tx) / 100.0 // 1 degree of error = 1%power
+                val tx = activeCamera.entries.tx.getDouble(0.0)
+                val adjustment = (ControlParameters.DrivetrainParameters.visionKp * tx) / 100.0 // 1 degree of error = 1%power
 
                 val output = cheesyController.update(
                     LeftStick.readAxis { PITCH },
@@ -347,8 +222,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
                 val leftPower = output.left + adjustment
                 val rightPower = output.right - adjustment
-
-                //println("Left: $leftPower, Right : $rightPower, tx: $tx")
 
                 tank(leftPower, rightPower)
             }

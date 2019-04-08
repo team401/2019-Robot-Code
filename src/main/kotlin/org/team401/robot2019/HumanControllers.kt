@@ -31,7 +31,7 @@ val LeftStick = HumanControls.t16000m(0) {
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
             //Vision aligner
-            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PIDVisionAlign)
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.VisionAlign)
         }
 
         released {

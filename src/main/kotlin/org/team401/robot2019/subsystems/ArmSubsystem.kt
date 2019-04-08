@@ -351,7 +351,7 @@ object ArmSubsystem: Subsystem(100L) {
 
         extension.setPIDF(ControlParameters.ArmParameters.ArmExtensionPIDF)
 
-        on (Events.ENABLED) {
+        on (Events.TELEOP_ENABLED) {
             if (!extensionHomed) {
                 armExtensionMachine.setState(ArmExtensionStates.Homing)
             } else {

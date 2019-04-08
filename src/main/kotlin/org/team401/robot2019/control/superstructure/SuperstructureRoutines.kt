@@ -180,7 +180,15 @@ object SuperstructureRoutines {
     }
 
     fun stopScoring() {
-        WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
+        val currentTool = SuperstructureMotionPlanner.activeTool
+        when (currentTool) {
+            WristMotionPlanner.Tool.CargoTool -> {
+                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
+            }
+            WristMotionPlanner.Tool.HatchPanelTool -> {
+                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Clamped)
+            }
+        }
     }
 
     fun goToFloorPickup() {

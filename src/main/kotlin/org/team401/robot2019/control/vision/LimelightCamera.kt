@@ -55,7 +55,7 @@ class LimelightCamera(val name: String, val robotToCamera: Pose2d, val constantL
     /**
      * Inner class for holding the TableEntry objects that are used for the limelight
      */
-    private inner class TableEntries {
+    inner class TableEntries {
         val camtran = table.getEntry("camtran")
         val tv = table.getEntry("tv")
         val tx = table.getEntry("tx")
@@ -71,7 +71,7 @@ class LimelightCamera(val name: String, val robotToCamera: Pose2d, val constantL
     /**
      * Singleton instance of TableEntries
      */
-    private val entries = TableEntries()
+    val entries = TableEntries()
 
     /**
      * Inner class responsible for listening for camera data and storing it in the outer field

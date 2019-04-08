@@ -10,4 +10,9 @@ object VisionManager {
         frontCamera.startListening()
         backCamera.startListening()
     }
+
+    fun stop() {
+        frontCamera.stopListening()
+        backCamera.stopListening()
+    }
 }

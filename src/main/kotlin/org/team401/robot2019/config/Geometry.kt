@@ -153,7 +153,8 @@ object Geometry {
      * Geometry of the cameras with respect to the center of the drivetrain
      */
     object VisionGeometry {
-        val robotToFrontCamera = Pose2d(12.5.Centimeters.toInches().value, 20.5.Centimeters.toInches().value, Rotation2d.fromDegrees(0.0))
-        val robotToBackCamera = Pose2d((-12.5).Centimeters.toInches().value, 20.5.Centimeters.toInches().value, Rotation2d.fromDegrees(180.0))
+        //Cameras are 8 inches up from the pivot
+        val robotToFrontCamera = Pose2d(1.75, 6.0, Rotation2d.fromDegrees(0.0))
+        val robotToBackCamera = Pose2d(-0.5, 6.0, Rotation2d.fromDegrees(180.0))
     }
 }

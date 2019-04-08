@@ -5,7 +5,8 @@ package org.team401.robot2019.config
  * @version 1/5/2019
  *
  */
-object HardwareMap {
+object
+HardwareMap {
     /**
      * Holds IDs for all pneumatic components connected to the PCM
      */

@@ -10,6 +10,8 @@ import org.snakeskin.registry.Controllers
 import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.utility.Selectable
 import org.team401.robot2019.auto.DeepSpaceAuto
+import org.team401.robot2019.control.drivetrain.CriticalPoses
+import org.team401.robot2019.control.drivetrain.Trajectories
 import org.team401.robot2019.control.superstructure.SuperstructureUpdater
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.vision.LimelightCamera
@@ -20,6 +22,9 @@ import org.team401.robot2019.subsystems.ClimberSubsystem
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.util.LEDManager
+import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.trajectory.TimedView
+import org.team401.taxis.trajectory.TrajectoryIterator
 
 /**
  * @author Cameron Earle
@@ -49,7 +54,7 @@ fun setup() {
 
     //Miscellaneous initialization
     LEDManager.init()
-    VisionManager.start()
+    VisionManager.stop()
     DriverStationDisplay.init()
     SuperstructureMotionPlanner.preCompile()
 
@@ -59,17 +64,17 @@ fun setup() {
     RealTimeExecutor.addTask(SuperstructureUpdater)              //Superstrcture motion planning / control
     //RealTimeExecutor.addTask(OdometryWatchdog)                   //Drivetrain odometry error checking
 
-    on (Events.AUTO_ENABLED) {
-        VisionManager.frontCamera.configForVision(0)
-        VisionManager.frontCamera.configForVision(0)
-        //VisionManager.frontCamera.setStreamingMode(LimelightCamera.StreamingMode.PipMain)
-    }
-
     on (Events.TELEOP_ENABLED) {
-        VisionManager.frontCamera.configForVision(1)
-        VisionManager.backCamera.configForVision(1)
+        VisionManager.frontCamera.configForVision(3)
+        VisionManager.backCamera.configForVision(3)
         VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
-        //VisionManager.frontCamera.setStreamingMode(LimelightCamera.StreamingMode.PipSecondary)
+        VisionManager.stop()
     }
+
+    val trajectory = Trajectories.level1HabToFarRocketLeft
+    val endPose = trajectory.lastState.state().pose
+    val endPoseReal = CriticalPoses.fieldToFarRocketLeft.transformBy(CriticalPoses.robotFrontCenterToOriginTransform)
+    println("Trajectory end pose: $endPose")
+    println("Real end pose: $endPoseReal")
 }
