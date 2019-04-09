@@ -21,6 +21,7 @@ import org.team401.robot2019.config.HardwareMap
 object FloorPickupSubsystem: Subsystem(100L) {
     private val piston = Solenoid(HardwareMap.Pneumatics.floorPickupSolenoid)
     private val wheels = VictorSPX(HardwareMap.CAN.floorPickupWheelsVictorId)
+    private val pdp = PowerDistributionPanel()
 
     enum class PickupStates {
         EStopped,
@@ -55,7 +56,7 @@ object FloorPickupSubsystem: Subsystem(100L) {
         {
             state(FloorPickupSubsystem.WheelsStates.Intake){
                 val currentTimeout = Ticker(
-                    { PowerDistributionPanel().getCurrent(HardwareMap.PDP.floorPickupWheelsVictorChannel) >
+                    { pdp.getCurrent(HardwareMap.PDP.floorPickupWheelsVictorChannel) >
                             ControlParameters.FloorPickupParameters.floorPickupCurrentLimit},
                     ControlParameters.FloorPickupParameters.floorPickupCurrentTimeout,
                     20.0.Milliseconds.toSeconds()

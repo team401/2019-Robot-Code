@@ -160,7 +160,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 left.master.pidController.setReference(leftVelocityRpm, ControlType.kVelocity, 0, totalFfLeft)
                 right.master.pidController.setReference(rightVelocityRpm, ControlType.kVelocity, 0, totalFfRight)
 
-                //println("error: ${pathManager.error}")
+                println("vision: ${VisionState.getFieldToRobot(time)}  odo: ${driveState.getFieldToVehicle(time)}")
             }
 
             exit {

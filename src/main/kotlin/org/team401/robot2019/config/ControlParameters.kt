@@ -121,7 +121,7 @@ object ControlParameters {
         object WristRotationPIDF: PIDFTemplate {
             override val kP = 1.6
             override val kI = 0.0
-            override val kD = 200.0
+            override val kD by Selectable(200.0, 400.0)
             override val kF = 0.84
         }
     }
@@ -171,7 +171,7 @@ object ControlParameters {
             VisionHeightMode.LOW
         ).fromFloor()
         val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(20.0.Inches).withHeightMode(VisionHeightMode.MID)
-        val rocketHatchHighFront = rocketHatchMidFront.upBy(24.5.Inches).atX((16.5).Inches).withAngle(0.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
+        val rocketHatchHighFront = rocketHatchMidFront.upBy(24.0.Inches).atX((16.5).Inches).withAngle(0.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
 
         val rocketHatchBottomBack = rocketHatchBottomFront.flipped().upBy(3.0.Inches)
         val rocketHatchMidBack = rocketHatchMidFront.flipped()

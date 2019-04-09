@@ -3,6 +3,7 @@ package org.team401.robot2019.control.drivetrain
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.Physics
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
+import org.team401.robot2019.util.fieldMirror
 import org.team401.taxis.diffdrive.control.DrivetrainPathManager
 import org.team401.taxis.diffdrive.control.FeedforwardOnlyPathController
 import org.team401.taxis.diffdrive.control.FullStateDiffDriveModel
@@ -22,14 +23,14 @@ import org.team401.taxis.trajectory.timing.TimedState
 object Trajectories {
     private val pm = DrivetrainSubsystem.pathManager
     private val maxCentrip = 110.0
-    private val maxVel = 8.0 * 12
-    private val maxAccel = 8.0 * 12
+    private val maxVel = 2.0 * 12
+    private val maxAccel = 2.0 * 12
     private val maxVoltage = 9.0
 
     private fun flipWaypoints(waypointsIn: List<Pose2d>): List<Pose2d> {
         val waypoints = ArrayList<Pose2d>(waypointsIn.size)
         waypointsIn.forEach {
-            val poseMirrored = Pose2d(it.translation.x(), 324.0 - it.translation.y(), Rotation2d(it.rotation.inverse()))
+            val poseMirrored = it.fieldMirror()
             waypoints.add(poseMirrored)
         }
 
@@ -54,15 +55,32 @@ object Trajectories {
         CriticalPoses.fieldToFarRocketRightEnd
     )
 
+    private val level1HabToNearRocketRightWaypoints = listOf(
+        CriticalPoses.fieldToLevel1RightStart,
+        CriticalPoses.fieldToNearRocketRightAlign,
+        CriticalPoses.fieldToNearRocketRight
+    )
+
     private val level1HabToFarRocketLeftWaypoints = flipWaypoints(level1HabToFarRocketRightWaypoints)
+    private val level1HabToNearRocketLeftWaypoints = flipWaypoints(level1HabToNearRocketRightWaypoints)
 
     val level1HabToFarRocketRight = generateTrajectory(
         level1HabToFarRocketRightWaypoints,
         false
     )
 
+    val level1HabToNearRocketRight = generateTrajectory(
+        level1HabToNearRocketRightWaypoints,
+        false
+    )
+
     val level1HabToFarRocketLeft = generateTrajectory(
         level1HabToFarRocketLeftWaypoints,
+        false
+    )
+
+    val level1HabToNearRocketLeft = generateTrajectory(
+        level1HabToNearRocketLeftWaypoints,
         false
     )
 }

@@ -72,9 +72,9 @@ fun setup() {
         VisionManager.stop()
     }
 
-    val trajectory = Trajectories.level1HabToFarRocketLeft
+    val trajectory = Trajectories.level1HabToNearRocketLeft
     val endPose = trajectory.lastState.state().pose
-    val endPoseReal = CriticalPoses.fieldToFarRocketLeft.transformBy(CriticalPoses.robotFrontCenterToOriginTransform)
+    val endPoseReal = CriticalPoses.fieldToNearRocketLeft//.transformBy(CriticalPoses.robotFrontCenterToOriginTransform)
     println("Trajectory end pose: $endPose")
     println("Real end pose: $endPoseReal")
 }
