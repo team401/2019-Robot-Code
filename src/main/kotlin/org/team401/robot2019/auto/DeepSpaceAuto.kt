@@ -11,6 +11,7 @@ import org.team401.robot2019.auto.steps.superstructure.*
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.control.drivetrain.CriticalPoses
 import org.team401.robot2019.control.drivetrain.Trajectories
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 object DeepSpaceAuto: RobotAuto(20L) {
@@ -29,22 +30,70 @@ object DeepSpaceAuto: RobotAuto(20L) {
                 }
 
                 sequential {
+                    //TODO PLEASE DO NOT FORGET TO PUT THIS BACK
+                    //TODO I WILL LITERALLY CRY IF WE DON'T PUT THIS BACK
                     //step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
-                    //Drive and prepare to score
+                    //Drive to the near rocket
                     parallel {
                         step(DriveTrajectoryStep(Trajectories.level1HabToNearRocketLeft, true))
 
                         //Wait for drive to pass an x value, move to scoring position, enable vision
                         sequential {
-                            delay(1.0.Seconds)
-                            //step(WaitForOdometry(WaitForOdometry.Axis.THETA, WaitForOdometry.Direction.POSITIVE, 60.0))
-                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchHighFront)) //Move to scoring position
+                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 150.0))
                             step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true)) //Enable vision pose updater
+                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchHighFront)) //Move to scoring position
                         }
 
                     }
 
+                    //Turn off vision
+                    step(DisableVisionStateEstimator())
+
+                    //Score the hatch
                     step(SuperstructureScoreStep())
+
+                    //Wait a bit for the claws to retract
+                    delay(0.5.Seconds)
+
+                    //Drive from the near rocket to the inbounding station, move to the intake position, enable vision
+                    parallel {
+                        step(DriveTrajectoryStep(Trajectories.nearRocketLeftToInboundingStationLeft))
+
+                        sequential {
+                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.NEGATIVE, 160.0))
+                            step(EnableVisionStateEstimator(CriticalPoses.fieldToInboundingStationLeft, false))
+                            step(SuperstructureIntakeStep(SuperstructureRoutines.Side.BACK))
+                        }
+                    }
+
+                    //Turn off vision
+                    step(DisableVisionStateEstimator())
+
+                    //Grab the hatch
+                    step(SuperstructureStopIntakingStep())
+
+                    //Wait a bit for the claws to close
+                    delay(0.5.Seconds)
+
+                    //Drive from the inbounding station to the rocket, move to scoring position, enable vision
+                    parallel {
+                        step(DriveTrajectoryStep(Trajectories.inboundingStationLeftToNearRocketLeft))
+
+                        sequential {
+                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 110.0))
+                            step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true))
+                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
+                        }
+                    }
+
+                    //Turn off vision
+                    step(DisableVisionStateEstimator())
+
+                    //Score the hatch
+                    step(SuperstructureScoreStep())
+
+                    //Wait a bit for the claws to release
+                    delay(0.5.Seconds)
                 }
             }
             step(OperatorDriveStep())

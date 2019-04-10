@@ -20,7 +20,7 @@ object SuperstructureRoutines {
 
     var side = Side.FRONT
     @Synchronized get
-    @Synchronized private set
+    @Synchronized set
 
     @Synchronized fun switchSides() {
         if (side == Side.FRONT){

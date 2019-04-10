@@ -14,6 +14,7 @@ import org.team401.taxis.trajectory.Trajectory
 import org.team401.taxis.trajectory.TrajectoryUtil
 import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
 import org.team401.taxis.trajectory.timing.TimedState
+import org.team401.taxis.trajectory.timing.TimingConstraint
 
 /**
  * @author Cameron Earle
@@ -37,11 +38,14 @@ object Trajectories {
         return waypoints
     }
 
-    private fun generateTrajectory(points: List<Pose2d>, reversed: Boolean = false): Trajectory<TimedState<Pose2dWithCurvature>> {
+    private fun generateTrajectory(points: List<Pose2d>, reversed: Boolean = false, constraints: List<TimingConstraint<Pose2dWithCurvature>> = listOf()): Trajectory<TimedState<Pose2dWithCurvature>> {
+        val allConstraints = arrayListOf<TimingConstraint<Pose2dWithCurvature>>(CentripetalAccelerationConstraint(maxCentrip))
+        allConstraints.addAll(constraints)
+
         return pm.generateTrajectory(
             reversed,
             points,
-            listOf(CentripetalAccelerationConstraint(110.0)),
+            allConstraints,
             maxVel,
             maxAccel,
             maxVoltage
@@ -61,8 +65,22 @@ object Trajectories {
         CriticalPoses.fieldToNearRocketRight.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity()))
     )
 
+    private val nearRocketRightToInboundingStationRightWaypoints = listOf(
+        CriticalPoses.fieldToNearRocketRight.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity())),
+        CriticalPoses.fieldToNearRocketRightAlign.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity())),
+        CriticalPoses.fieldToInboundingStationRight
+    )
+
+    private val inboundingStationRightToNearRocketRightWaypoints = listOf(
+        CriticalPoses.fieldToInboundingStationRight,
+        CriticalPoses.fieldToNearRocketRightAlign.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity())),
+        CriticalPoses.fieldToNearRocketRight.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity()))
+    )
+
     private val level1HabToFarRocketLeftWaypoints = flipWaypoints(level1HabToFarRocketRightWaypoints)
     private val level1HabToNearRocketLeftWaypoints = flipWaypoints(level1HabToNearRocketRightWaypoints)
+    private val nearRocketLeftToInboundingStationLeftWaypoints = flipWaypoints(nearRocketRightToInboundingStationRightWaypoints)
+    private val inboundingStationLeftToNearRocketLeftWaypoints = flipWaypoints(inboundingStationRightToNearRocketRightWaypoints)
 
     val level1HabToFarRocketRight = generateTrajectory(
         level1HabToFarRocketRightWaypoints,
@@ -81,6 +99,26 @@ object Trajectories {
 
     val level1HabToNearRocketLeft = generateTrajectory(
         level1HabToNearRocketLeftWaypoints,
+        false
+    )
+
+    val nearRocketRightToInboundingStationRight = generateTrajectory(
+        nearRocketRightToInboundingStationRightWaypoints,
+        true
+    )
+
+    val nearRocketLeftToInboundingStationLeft = generateTrajectory(
+        nearRocketLeftToInboundingStationLeftWaypoints,
+        true
+    )
+
+    val inboundingStationRightToNearRocketRight = generateTrajectory(
+        inboundingStationRightToNearRocketRightWaypoints,
+        false
+    )
+
+    val inboundingStationLeftToNearRocketLeft = generateTrajectory(
+        inboundingStationLeftToNearRocketLeftWaypoints,
         false
     )
 }
