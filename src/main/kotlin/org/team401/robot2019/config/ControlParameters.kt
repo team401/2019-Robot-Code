@@ -140,7 +140,7 @@ object ControlParameters {
             VisionHeightMode.NONE
         ).withAngle((0.0).Degrees.toRadians()).fromFloor()
 
-        val cargoFloorPickupBack = cargoFloorPickupFront.flipped()
+        val cargoFloorPickupBack = cargoFloorPickupFront.flipped().upBy((-1.0).Inches)
 
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(

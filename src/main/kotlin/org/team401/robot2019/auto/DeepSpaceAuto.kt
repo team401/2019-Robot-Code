@@ -29,14 +29,14 @@ object DeepSpaceAuto: RobotAuto(20L) {
                 }
 
                 sequential {
-                    step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
+                    //step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
                     //Drive and prepare to score
                     parallel {
                         step(DriveTrajectoryStep(Trajectories.level1HabToNearRocketLeft, true))
 
                         //Wait for drive to pass an x value, move to scoring position, enable vision
                         sequential {
-                            delay(0.5.Seconds)
+                            delay(1.0.Seconds)
                             //step(WaitForOdometry(WaitForOdometry.Axis.THETA, WaitForOdometry.Direction.POSITIVE, 60.0))
                             step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchHighFront)) //Move to scoring position
                             step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true)) //Enable vision pose updater
@@ -44,11 +44,10 @@ object DeepSpaceAuto: RobotAuto(20L) {
 
                     }
 
-                    //step(SuperstructureScoreStep())
+                    step(SuperstructureScoreStep())
                 }
             }
-
-
+            step(OperatorDriveStep())
         }
     }
 }

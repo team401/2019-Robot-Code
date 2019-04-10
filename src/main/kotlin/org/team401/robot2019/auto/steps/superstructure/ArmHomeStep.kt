@@ -11,7 +11,7 @@ import org.team401.robot2019.subsystems.ArmSubsystem
 class ArmHomeStep: AutoStep() {
     override fun entry(currentTime: Double) {
         if (!ArmSubsystem.extensionHomed) {
-            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.SetHome)
+            ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.SetHome).waitFor()
         }
     }
 

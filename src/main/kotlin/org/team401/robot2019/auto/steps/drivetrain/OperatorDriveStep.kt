@@ -8,6 +8,6 @@ import org.team401.robot2019.subsystems.DrivetrainSubsystem
  */
 class OperatorDriveStep: SingleStep() {
     override fun entry(currentTime: Double) {
-        DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
+        DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl).waitFor()
     }
 }

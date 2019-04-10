@@ -27,7 +27,7 @@ class DriveTrajectoryStep(referenceTrajectory: Trajectory<TimedState<Pose2dWithC
         DrivetrainSubsystem.pathManager.reset() //Reset the path manager
         VisionState.reset()
         DrivetrainSubsystem.pathManager.setTrajectory(trajectory) //Load in the path
-        DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing) //Begin following
+        DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing).waitFor() //Begin following
     }
 
     override fun action(currentTime: Double, lastTime: Double): Boolean {

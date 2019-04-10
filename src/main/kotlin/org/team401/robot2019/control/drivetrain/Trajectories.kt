@@ -57,8 +57,8 @@ object Trajectories {
 
     private val level1HabToNearRocketRightWaypoints = listOf(
         CriticalPoses.fieldToLevel1RightStart,
-        CriticalPoses.fieldToNearRocketRightAlign,
-        CriticalPoses.fieldToNearRocketRight
+        CriticalPoses.fieldToNearRocketRightAlign.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity())),
+        CriticalPoses.fieldToNearRocketRight.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity()))
     )
 
     private val level1HabToFarRocketLeftWaypoints = flipWaypoints(level1HabToFarRocketRightWaypoints)

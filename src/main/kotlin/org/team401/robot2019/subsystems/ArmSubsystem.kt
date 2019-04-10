@@ -112,9 +112,14 @@ object ArmSubsystem: Subsystem(100L) {
         }
 
         state (ArmPivotStates.Holding) {
+            var currentPosition = 0.0
             entry {
+                pivot.set(0.0)
                 configureForMoveToVertical(true) //Use the less aggressive gains for holding mode
-                val currentPosition = pivot.getPosition().toMagEncoderTicks().value
+                currentPosition = pivot.getPosition().toMagEncoderTicks().value
+            }
+
+            action {
                 pivot.set(ControlMode.Position, currentPosition)
             }
         }
@@ -153,6 +158,12 @@ object ArmSubsystem: Subsystem(100L) {
 
             exit {
                 pivot.stop()
+            }
+        }
+
+        disabled {
+            action {
+                pivot.set(0.0)
             }
         }
     }
