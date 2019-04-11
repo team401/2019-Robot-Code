@@ -52,50 +52,58 @@ object Trajectories {
         )
     }
 
+    /*
     private val level1HabToFarRocketRightWaypoints = listOf(
         CriticalPoses.fieldToLevel1RightStart,
         CriticalPoses.fieldToFarRocketRightMidpoint,
         CriticalPoses.fieldToFarRocketRightAlign,
         CriticalPoses.fieldToFarRocketRightEnd
     )
+    */
 
     private val level1HabToNearRocketRightWaypoints = listOf(
         CriticalPoses.fieldToLevel1RightStart,
-        CriticalPoses.fieldToNearRocketRightAlign.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity())),
-        CriticalPoses.fieldToNearRocketRight.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity()))
+        CriticalPoses.fieldToNearRocketRightAlign,
+        CriticalPoses.fieldToNearRocketRightEnd
     )
 
     private val nearRocketRightToInboundingStationRightWaypoints = listOf(
-        CriticalPoses.fieldToNearRocketRight.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity())),
-        CriticalPoses.fieldToNearRocketRightAlign.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity())),
-        CriticalPoses.fieldToInboundingStationRight
+        CriticalPoses.fieldToNearRocketRightEnd,
+        CriticalPoses.fieldToNearRocketRightAlign,
+        CriticalPoses.fieldToInboundingStationRightAlign,
+        CriticalPoses.fieldToInboundingStationRightEnd
     )
 
     private val inboundingStationRightToNearRocketRightWaypoints = listOf(
-        CriticalPoses.fieldToInboundingStationRight,
-        CriticalPoses.fieldToNearRocketRightAlign.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity())),
-        CriticalPoses.fieldToNearRocketRight.transformBy(Pose2d(0.0, 2.0, Rotation2d.identity()))
+        CriticalPoses.fieldToInboundingStationRightEnd,
+        CriticalPoses.fieldToInboundingStationRightAlign,
+        CriticalPoses.fieldToNearRocketRightAlign,
+        CriticalPoses.fieldToNearRocketRightEnd
     )
 
-    private val level1HabToFarRocketLeftWaypoints = flipWaypoints(level1HabToFarRocketRightWaypoints)
+    //private val level1HabToFarRocketLeftWaypoints = flipWaypoints(level1HabToFarRocketRightWaypoints)
     private val level1HabToNearRocketLeftWaypoints = flipWaypoints(level1HabToNearRocketRightWaypoints)
     private val nearRocketLeftToInboundingStationLeftWaypoints = flipWaypoints(nearRocketRightToInboundingStationRightWaypoints)
     private val inboundingStationLeftToNearRocketLeftWaypoints = flipWaypoints(inboundingStationRightToNearRocketRightWaypoints)
 
+    /*
     val level1HabToFarRocketRight = generateTrajectory(
         level1HabToFarRocketRightWaypoints,
         false
     )
+    */
 
     val level1HabToNearRocketRight = generateTrajectory(
         level1HabToNearRocketRightWaypoints,
         false
     )
 
+    /*
     val level1HabToFarRocketLeft = generateTrajectory(
         level1HabToFarRocketLeftWaypoints,
         false
     )
+    */
 
     val level1HabToNearRocketLeft = generateTrajectory(
         level1HabToNearRocketLeftWaypoints,

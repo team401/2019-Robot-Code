@@ -366,7 +366,12 @@ object ArmSubsystem: Subsystem(100L) {
             if (!extensionHomed) {
                 armExtensionMachine.setState(ArmExtensionStates.Homing)
             } else {
-                armExtensionMachine.setState(ArmExtensionStates.GoToSafe)
+                val currentRadius = getCurrentArmState().armRadius
+                if (currentRadius <= Geometry.ArmGeometry.minSafeArmLength) {
+                    armExtensionMachine.setState(ArmExtensionStates.GoToSafe)
+                } else {
+                    armExtensionMachine.setState(ArmExtensionStates.Holding)
+                }
             }
             armPivotMachine.setState(ArmPivotStates.Holding)
         }

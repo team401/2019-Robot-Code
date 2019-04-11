@@ -15,7 +15,25 @@ import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 object DeepSpaceAuto: RobotAuto(20L) {
+    const val doesAutoWork = false //oops
+
     override fun assembleAuto(): SequentialSteps {
+        if (!doesAutoWork) {
+            return auto {
+                parallel {
+                    step(OperatorDriveStep())
+                    sequential {
+                        step(ArmHomeStep()) //The first step in any auto routine is to home the arm.  This can't be interrupted
+                        step(SuperstructureGoHomeStep()) //Next, move to the home position
+                        step(SuperstructureSwitchToolStep(WristMotionPlanner.Tool.HatchPanelTool)) //Configure for hatch tool
+                    }
+                    step(HomeClimberStep()) //Homes the climber.
+                }
+            }
+        }
+
+        //val startToRocketTrajectory =
+
         return auto {
             //Step 1: Arm homing and initial trajectory
             parallel {
@@ -30,9 +48,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
                 }
 
                 sequential {
-                    //TODO PLEASE DO NOT FORGET TO PUT THIS BACK
-                    //TODO I WILL LITERALLY CRY IF WE DON'T PUT THIS BACK
-                    //step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
+                    step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
                     //Drive to the near rocket
                     parallel {
                         step(DriveTrajectoryStep(Trajectories.level1HabToNearRocketLeft, true))
