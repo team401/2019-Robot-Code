@@ -1,6 +1,7 @@
 package org.team401.robot2019.control.superstructure.planning.command
 
 import org.snakeskin.measure.Inches
+import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureRadians
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.ArmState
@@ -50,6 +51,11 @@ class RotationOnlyCommand(val angle: AngularDistanceMeasureRadians, val tool: Wr
         )
 
         done = ArmMotionPlanner.isDone()
+        if (done) {
+            //Push a last command through with the final state
+            val finalArmState = ArmState(armInitial!!.armRadius, angle, 0.0.RadiansPerSecond)
+            SuperstructureController.update(finalArmState, wristInitial!!, tool, VisionHeightMode.NONE)
+        }
     }
 
     override fun isDone(): Boolean {

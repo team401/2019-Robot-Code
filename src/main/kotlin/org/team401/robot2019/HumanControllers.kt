@@ -49,10 +49,7 @@ val LeftStick = HumanControls.t16000m(0) {
 
     whenButton(Buttons.STICK_RIGHT) {
         pressed {
-            VisionManager.frontCamera.configForVision(0)
-            VisionManager.backCamera.configForVision(0)
-            VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
-            VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Homing)
         }
     }
 }

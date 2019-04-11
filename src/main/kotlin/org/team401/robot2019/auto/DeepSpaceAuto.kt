@@ -21,6 +21,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
         if (!doesAutoWork) {
             return auto {
                 parallel {
+                    step(PrepareDriverVisionStep())
                     step(OperatorDriveStep())
                     sequential {
                         step(ArmHomeStep()) //The first step in any auto routine is to home the arm.  This can't be interrupted

@@ -119,9 +119,9 @@ object ControlParameters {
          * PIDF for the wrist rotation
          */
         object WristRotationPIDF: PIDFTemplate {
-            override val kP = 1.6
+            override val kP by Selectable(1.7, 1.6) //comp, practice
             override val kI = 0.0
-            override val kD by Selectable(200.0, 400.0)
+            override val kD by Selectable(20.0, 400.0) //comp wrist has friction brake, practice does not
             override val kF = 0.84
         }
     }
@@ -135,12 +135,12 @@ object ControlParameters {
 
         //Floor pickup positions
         val cargoFloorPickupFront = SuperstructureSetpoint.intakingCargo(
-            Point2d(26.0.Inches, 10.0.Inches),
+            Point2d(26.5.Inches, 9.0.Inches),
             0.0.Radians,
             VisionHeightMode.NONE
         ).withAngle((0.0).Degrees.toRadians()).fromFloor()
 
-        val cargoFloorPickupBack = cargoFloorPickupFront.flipped().upBy((-1.0).Inches)
+        val cargoFloorPickupBack = cargoFloorPickupFront.flipped().upBy((1.5).Inches)
 
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
@@ -151,18 +151,18 @@ object ControlParameters {
         val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.75.Inches).atX(12.0.Inches).withHeightMode(VisionHeightMode.MID)
         val rocketCargoHighFront = rocketCargoMidFront.upBy(17.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
 
-        val rocketCargoBottomBack = rocketCargoBottomFront.flipped().upBy(1.5.Inches)
-        val rocketCargoMidBack = rocketCargoMidFront.flipped()
+        val rocketCargoBottomBack = rocketCargoBottomFront.flipped().upBy(3.5.Inches)
+        val rocketCargoMidBack = rocketCargoMidFront.flipped().upBy(2.0.Inches)
         val rocketCargoHighBack = rocketCargoHighFront.flipped()
 
         //Intake hatch positions
         val hatchIntakeFront = SuperstructureSetpoint.intakingHatch(
-            Point2d(28.5.Inches, 19.0.Inches),
+            Point2d(28.5.Inches, 18.0.Inches),
             0.0.Radians,
             VisionHeightMode.LOW
         ).fromFloor()
 
-        val hatchIntakeBack = hatchIntakeFront.flipped()
+        val hatchIntakeBack = hatchIntakeFront.flipped().upBy(1.5.Inches)
 
         //Rocket hatch positions
         val rocketHatchBottomFront = SuperstructureSetpoint.holdingHatch(

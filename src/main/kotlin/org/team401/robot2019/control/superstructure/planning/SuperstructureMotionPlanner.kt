@@ -539,7 +539,7 @@ object SuperstructureMotionPlanner {
         return true
     }
 
-    @Synchronized fun goToFloorPickup(){ //TODO Make sure this won't extend into the floor
+    @Synchronized fun goToFloorPickup(){
         reset()
 
         commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))

@@ -184,16 +184,24 @@ object WristSubsystem: Subsystem(100L) {
                 hatchClawSolenoid.set(true)
             }
 
+            /*
             action {
                 if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
-                    setState(HatchClawStates.Clamped) //Open (clamp) the claw if we're in the cargo tool
+                    setState(HatchClawStates.Unclamped) //Open (clamp) the claw if we're in the cargo tool
                 }
             }
+            */
         }
 
         state (HatchClawStates.Clamped) {
             entry {
                 hatchClawSolenoid.set(false)
+            }
+
+            action {
+                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
+                    setState(HatchClawStates.Unclamped) //Close (unclamp) the claw if we're in the cargo tool
+                }
             }
         }
     }
@@ -375,7 +383,7 @@ object WristSubsystem: Subsystem(100L) {
             SuperstructureMotionPlanner.activeTool = currentTool
             */
 
-            wristMachine.setState(WristStates.GoTo0)
+            wristMachine.setState(WristStates.Holding)
         }
     }
 }
