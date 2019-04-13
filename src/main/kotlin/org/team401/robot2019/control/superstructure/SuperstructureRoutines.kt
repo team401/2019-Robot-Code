@@ -149,6 +149,7 @@ object SuperstructureRoutines {
                 WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
             }
         }
+        LEDManager.setArmLedMode(LEDManager.ArmLedMode.Intaking)
     }
 
     fun stopIntake() {
@@ -163,6 +164,7 @@ object SuperstructureRoutines {
                 WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Clamped)
             }
         }
+        LEDManager.setArmLedMode(LEDManager.ArmLedMode.Off)
     }
 
     fun score() {
@@ -177,6 +179,7 @@ object SuperstructureRoutines {
                 WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Scoring)
             }
         }
+        LEDManager.setArmLedMode(LEDManager.ArmLedMode.Scoring)
     }
 
     fun stopScoring() {
@@ -189,6 +192,7 @@ object SuperstructureRoutines {
                 WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Clamped)
             }
         }
+        LEDManager.setArmLedMode(LEDManager.ArmLedMode.Off)
     }
 
     fun goToFloorPickup() {

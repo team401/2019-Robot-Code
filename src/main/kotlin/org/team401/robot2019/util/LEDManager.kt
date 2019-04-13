@@ -57,6 +57,8 @@ object LEDManager {
         Rainbow, //Arm LEDs are in rainbow pattern
         HasCargo, //Arm LEDs are orange
         HasHatch, //Arn LEDs are yellow
+        Intaking,
+        Scoring,
         Climb,
     }
 
@@ -183,6 +185,14 @@ object LEDManager {
 
             ArmLedMode.Climb -> {
                 ll.blink(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.ArmStrip)
+            }
+
+            ArmLedMode.Intaking -> {
+                ll.solid(LightLink.Color.GREEN, Indices.ArmStrip)
+            }
+
+            ArmLedMode.Scoring -> {
+                ll.solid(LightLink.Color.BLUE, Indices.ArmStrip)
             }
         }
         armModeHistory.update(mode)
