@@ -39,14 +39,14 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Selectable.selected = RobotIndex.COMP //CHANGE THIS depending on what robot you're using.
+    Selectable.selected = RobotIndex.PRACTICE //CHANGE THIS depending on what robot you're using.
 
     AutoManager.setAutoLoop(DeepSpaceAuto)
 
     //AutoManager.setAutoLoop(TuningAutoCollectDynamicsData(DrivetrainSubsystem))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, ClimberSubsystem, FloorPickupSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization

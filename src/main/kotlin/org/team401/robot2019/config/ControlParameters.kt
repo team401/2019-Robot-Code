@@ -28,7 +28,8 @@ object ControlParameters {
          * Raw, native reading of the pulse width sensor on the arm pivot when the arm is at 90 degrees (vertical)
          * This is used to set the offset correctly between the different robots.
          */
-        val armEncoderValueAtVertical by Selectable(1800, 2278)
+        // practice used to be 2278
+        val armEncoderValueAtVertical by Selectable(1800, 923)
 
         /**
          * Extension velocity and acceleration

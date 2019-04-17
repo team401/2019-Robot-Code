@@ -315,7 +315,7 @@ object ArmSubsystem: Subsystem(100L) {
         //println("Arm radius: ${armState.armRadius}")
         //println("ArmState: ${armState.armAngle.toDegrees()} Raw Pos: ${pivot.getPosition().toDegrees()}")
         //println(SuperstructureController.output.armFeedForwardVoltage)
-        //println(pivot.getPosition().toDegrees())
+        println(pivot.getPosition().toDegrees())
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
         //println("Arm Position : ${ArmKinematics.forward(getCurrentArmState())}")
         //println(SuperstructureController.output.visionHeightMode)
