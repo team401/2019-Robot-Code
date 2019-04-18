@@ -29,7 +29,7 @@ object ControlParameters {
          * This is used to set the offset correctly between the different robots.
          */
         // practice used to be 2278
-        val armEncoderValueAtVertical by Selectable(1800, 923)
+        val armEncoderValueAtVertical by Selectable(1800, 2278)
 
         /**
          * Extension velocity and acceleration
@@ -120,9 +120,9 @@ object ControlParameters {
          * PIDF for the wrist rotation
          */
         object WristRotationPIDF: PIDFTemplate {
-            override val kP by Selectable(1.7, 1.6) //comp, practice
+            override val kP by Selectable(1.7, 1.7) //comp, practice
             override val kI = 0.0
-            override val kD by Selectable(20.0, 400.0) //comp wrist has friction brake, practice does not
+            override val kD by Selectable(20.0, 20.0) //comp wrist has friction brake, practice does not
             override val kF = 0.84
         }
     }
@@ -152,8 +152,11 @@ object ControlParameters {
         val rocketCargoMidFront = rocketCargoBottomFront.upBy(28.75.Inches).atX(12.0.Inches).withHeightMode(VisionHeightMode.MID)
         val rocketCargoHighFront = rocketCargoMidFront.upBy(17.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
 
-        val rocketCargoBottomBack = rocketCargoBottomFront.flipped().upBy(3.5.Inches)
-        val rocketCargoMidBack = rocketCargoMidFront.flipped().upBy(2.0.Inches)
+        val backCargoBottomOffset by Selectable(3.5.Inches, 1.5.Inches)
+        val backCargoMidOffset by Selectable(2.0.Inches, 0.0.Inches)
+
+        val rocketCargoBottomBack = rocketCargoBottomFront.flipped().upBy(backCargoBottomOffset)
+        val rocketCargoMidBack = rocketCargoMidFront.flipped().upBy(backCargoMidOffset)
         val rocketCargoHighBack = rocketCargoHighFront.flipped()
 
         //Intake hatch positions
