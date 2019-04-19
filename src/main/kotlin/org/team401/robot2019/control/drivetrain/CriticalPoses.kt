@@ -93,5 +93,5 @@ fun genJson(poses: List<Pose2d>): String {
 }
 
 fun main(args: Array<String>) {
-    println(Trajectories.level1HabToNearRocketLeft)
+    println(Trajectories.nearRocketLeftToInboundingStationLeftWaypoints)
 }

@@ -141,7 +141,7 @@ object ControlParameters {
             VisionHeightMode.NONE
         ).withAngle((0.0).Degrees.toRadians()).fromFloor()
 
-        val cargoFloorPickupBack = cargoFloorPickupFront.flipped().upBy((1.5).Inches)
+        val cargoFloorPickupBack = cargoFloorPickupFront.flipped()//.upBy(.Inches)
 
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
@@ -159,14 +159,17 @@ object ControlParameters {
         val rocketCargoMidBack = rocketCargoMidFront.flipped().upBy(backCargoMidOffset)
         val rocketCargoHighBack = rocketCargoHighFront.flipped()
 
+        val hatchOffsetFront by Selectable(0.0.Inches, 1.0.Inches)
+        val hatchOffsetBack by Selectable(1.5.Inches, 0.5.Inches)
+
         //Intake hatch positions
         val hatchIntakeFront = SuperstructureSetpoint.intakingHatch(
             Point2d(28.5.Inches, 18.0.Inches),
             0.0.Radians,
             VisionHeightMode.LOW
-        ).fromFloor()
+        ).fromFloor().upBy(hatchOffsetFront)
 
-        val hatchIntakeBack = hatchIntakeFront.flipped().upBy(1.5.Inches)
+        val hatchIntakeBack = hatchIntakeFront.flipped().upBy(hatchOffsetBack)
 
         //Rocket hatch positions
         val rocketHatchBottomFront = SuperstructureSetpoint.holdingHatch(

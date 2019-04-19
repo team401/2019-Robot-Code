@@ -15,7 +15,7 @@ import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 
 object DeepSpaceAuto: RobotAuto(20L) {
-    const val doesAutoWork = false //oops
+    const val doesAutoWork = true //oops
 
     override fun assembleAuto(): SequentialSteps {
         if (!doesAutoWork) {
@@ -78,7 +78,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
 
                         sequential {
                             step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.NEGATIVE, 160.0))
-                            step(EnableVisionStateEstimator(CriticalPoses.fieldToInboundingStationLeft, false))
+                            //step(EnableVisionStateEstimator(CriticalPoses.fieldToInboundingStationLeft, false))
                             step(SuperstructureIntakeStep(SuperstructureRoutines.Side.BACK))
                         }
                     }
@@ -98,7 +98,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
 
                         sequential {
                             step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 110.0))
-                            step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true))
+                            //step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true))
                             step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
                         }
                     }
