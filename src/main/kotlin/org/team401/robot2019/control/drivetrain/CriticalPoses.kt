@@ -2,6 +2,7 @@ package org.team401.robot2019.control.drivetrain
 
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.util.fieldMirror
+import org.team401.robot2019.util.withHeading
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.trajectory.TrajectoryUtil
@@ -46,22 +47,30 @@ object CriticalPoses {
 
     //Arm transforms
     val intakingHatchTransform = Pose2d(
-        -48.0, //Back up all setpoints to avoid putting the arm through the wall
+        -15.0, //Back up all setpoints to avoid putting the arm through the wall
+        0.0,
+        Rotation2d.identity()
+    )
+
+    val backFromScoringTransform = Pose2d(
+        -12.0,
         0.0,
         Rotation2d.identity()
     )
 
     //Robot trajectory poses
-    val fieldToLevel1RightStart = fieldToLevel1HabCornerRight.transformBy(robotBackLeftToOriginTransform)!!
+    val fieldToLevel1RightStart = fieldToLevel1HabCornerRight.transformBy(robotBackLeftToOriginTransform).withHeading(Rotation2d.fromDegrees(-45.0))
     val fieldToLevel2RightStart = fieldToLevel2HabCornerRight.transformBy(robotBackLeftToOriginTransform)!!
 
     //val fieldToFarRocketRightEnd = fieldToFarRocketRight.transformBy(robotFrontCenterToOriginTransform)!!
     val fieldToNearRocketRightEnd = fieldToNearRocketRight.transformBy(robotFrontCenterToOriginTransform).transformBy(Pose2d(0.0, 2.0, Rotation2d.identity()))!!
-    val fieldToInboundingStationRightEnd = fieldToInboundingStationRight.transformBy(robotFrontCenterToOriginTransform).transformBy(intakingHatchTransform)!!
+    val fieldToInboundingStationRightEnd = fieldToInboundingStationRight.transformBy(robotFrontCenterToOriginTransform).transformBy(intakingHatchTransform).transformBy(Pose2d(0.0, -8.5, Rotation2d.identity())).withHeading(Rotation2d.fromDegrees(0.0))
 
     //val fieldToFarRocketRightAlign = fieldToFarRocketRightEnd.transformBy(targetAlignmentTransform)!!
     val fieldToNearRocketRightAlign = fieldToNearRocketRightEnd.transformBy(targetAlignmentTransform)!!
-    val fieldToInboundingStationRightAlign = fieldToInboundingStationRightEnd.transformBy(targetAlignmentTransform)!!
+    val fieldToNearRocketRightBackUp = fieldToNearRocketRightEnd.transformBy(backFromScoringTransform)!!
+    val fieldToInboundingStationRightAlign = fieldToInboundingStationRightEnd.transformBy(targetAlignmentTransform.inverse())!!
+    val fieldToInboundingStationRightBackUp = fieldToInboundingStationRightEnd.transformBy(backFromScoringTransform.inverse())!!
 
     val fieldToFarRocketRightMidpoint = fieldToRocketCargoStraightRight.transformBy(Pose2d(0.0, 6.0 * 12, Rotation2d.identity()))!!
 }
@@ -93,5 +102,11 @@ fun genJson(poses: List<Pose2d>): String {
 }
 
 fun main(args: Array<String>) {
-    println(Trajectories.nearRocketLeftToInboundingStationLeftWaypoints)
+    val level1HabToNearRocketRightWaypoints = listOf(
+        CriticalPoses.fieldToLevel1RightStart,
+        CriticalPoses.fieldToNearRocketRightAlign,
+        CriticalPoses.fieldToNearRocketRightEnd
+    )
+
+    println(genJson(level1HabToNearRocketRightWaypoints))
 }

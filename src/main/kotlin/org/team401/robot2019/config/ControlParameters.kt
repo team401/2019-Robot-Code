@@ -4,12 +4,15 @@ import org.snakeskin.logic.scalars.Scalar
 import org.snakeskin.logic.scalars.ScalarGroup
 import org.snakeskin.logic.scalars.SquareScalar
 import org.snakeskin.measure.*
+import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.snakeskin.template.PIDFTemplate
 import org.snakeskin.utility.CheesyDriveController
 import org.snakeskin.utility.Selectable
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.Point2d
 import org.team401.robot2019.control.superstructure.geometry.SuperstructureSetpoint
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 
@@ -122,7 +125,7 @@ object ControlParameters {
         object WristRotationPIDF: PIDFTemplate {
             override val kP by Selectable(1.7, 1.7) //comp, practice
             override val kI = 0.0
-            override val kD by Selectable(20.0, 20.0) //comp wrist has friction brake, practice does not
+            override val kD by Selectable(20.0, 200.0) //comp wrist has friction brake, practice does not
             override val kF = 0.84
         }
     }
@@ -319,5 +322,89 @@ object ControlParameters {
         val stowed = (-.4).Inches
         val l2Climb = (9.0).Inches
         val l3Climb = (22.0).Inches
+    }
+
+    /**
+     * Contains the angular offests, in degrees, for vision tracking.
+     */
+    object VisionOffsets {
+        val lowHatchAngularOffsetFront = 0.0.Degrees//12.16.Degrees
+        val midHatchAngularOffsetFront = 0.0.Degrees//10.0.Degrees
+        val highHatchAngularOffsetFront = 0.0.Degrees//14.18.Degrees
+
+        val lowCargoAngularOffsetFront = 0.0.Degrees
+        val midCargoAngularOffsetFront = 0.0.Degrees
+        val highCargoAngularOffsetFront = 0.0.Degrees
+
+        val lowHatchAngularOffsetBack = lowHatchAngularOffsetFront
+        val midHatchAngularOffsetBack = midHatchAngularOffsetFront
+        val highHatchAngularOffsetBack = highHatchAngularOffsetFront
+
+        val lowCargoAngularOffsetBack = lowCargoAngularOffsetFront
+        val midCargoAngularOffsetBack = midCargoAngularOffsetFront
+        val highCargoAngularOffsetBack = highCargoAngularOffsetFront
+
+        /**
+         * Selects the appropriate offset given the side, height, and tool
+         */
+        fun select(side: SuperstructureRoutines.Side, heightMode: VisionHeightMode, tool: WristMotionPlanner.Tool): AngularDistanceMeasureDegrees {
+            return when (heightMode) {
+                VisionHeightMode.NONE -> 0.0.Degrees
+
+                VisionHeightMode.LOW -> {
+                    when (side) {
+                        SuperstructureRoutines.Side.FRONT -> {
+                            when (tool) {
+                                WristMotionPlanner.Tool.HatchPanelTool -> lowHatchAngularOffsetFront
+                                WristMotionPlanner.Tool.CargoTool -> lowCargoAngularOffsetFront
+                            }
+                        }
+
+                        SuperstructureRoutines.Side.BACK -> {
+                            when (tool) {
+                                WristMotionPlanner.Tool.HatchPanelTool -> lowHatchAngularOffsetBack
+                                WristMotionPlanner.Tool.CargoTool -> lowCargoAngularOffsetBack
+                            }
+                        }
+                    }
+                }
+
+                VisionHeightMode.MID -> {
+                    when (side) {
+                        SuperstructureRoutines.Side.FRONT -> {
+                            when (tool) {
+                                WristMotionPlanner.Tool.HatchPanelTool -> midHatchAngularOffsetFront
+                                WristMotionPlanner.Tool.CargoTool -> midCargoAngularOffsetFront
+                            }
+                        }
+
+                        SuperstructureRoutines.Side.BACK -> {
+                            when (tool) {
+                                WristMotionPlanner.Tool.HatchPanelTool -> midHatchAngularOffsetBack
+                                WristMotionPlanner.Tool.CargoTool -> midCargoAngularOffsetBack
+                            }
+                        }
+                    }
+                }
+
+                VisionHeightMode.HIGH -> {
+                    when (side) {
+                        SuperstructureRoutines.Side.FRONT -> {
+                            when (tool) {
+                                WristMotionPlanner.Tool.HatchPanelTool -> highHatchAngularOffsetFront
+                                WristMotionPlanner.Tool.CargoTool -> highCargoAngularOffsetFront
+                            }
+                        }
+
+                        SuperstructureRoutines.Side.BACK -> {
+                            when (tool) {
+                                WristMotionPlanner.Tool.HatchPanelTool -> highHatchAngularOffsetBack
+                                WristMotionPlanner.Tool.CargoTool -> highCargoAngularOffsetBack
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -56,7 +56,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
 
                         //Wait for drive to pass an x value, move to scoring position, enable vision
                         sequential {
-                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 150.0))
+                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 100.0))
                             step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true)) //Enable vision pose updater
                             step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchHighFront)) //Move to scoring position
                         }
@@ -98,7 +98,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
 
                         sequential {
                             step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 110.0))
-                            //step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true))
+                            step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true))
                             step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
                         }
                     }

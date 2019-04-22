@@ -120,8 +120,6 @@ object SuperstructureMotionPlanner {
 
     // Each system has three states: e stopped, coordinated control and holding
     // The buttons set desired position and switch into coordinated control
-    // Maybe this should check the motors are listening beforehand
-    //TODO make this class manage timestamp vs dt to detect long pauses in execution (i.e. robot disabled)
     @Synchronized
     fun update(time: Double, dt: Double, armState: ArmState, wristState: WristState) {
         lastObservedArmState = armState     //Update state variables
@@ -387,32 +385,6 @@ object SuperstructureMotionPlanner {
     @Synchronized fun goHome() {
         reset()
 
-        //Determine the active tool from the current angle of the system.  This acts as a tool "reset" if something goes wrong
-        val currentPose = ArmKinematics.forward(lastObservedArmState)
-        //TODO fix this logic
-
-        /*
-        activeTool = if (currentPose.x >= 0.0.Inches) {
-            //We're on the right, so 0 to 180 is the hatch tool
-            if (lastObservedWristState.wristPosition.value in (-Math.PI / 2.0)..(Math.PI / 2.0)) {
-                //Active tool is hatch tool
-                WristMotionPlanner.Tool.HatchPanelTool
-            } else {
-                //Active tool is cargo tool
-                WristMotionPlanner.Tool.CargoTool
-            }
-        } else {
-            //We're on the left
-            if (lastObservedWristState.wristPosition.value in (-Math.PI / 2.0)..(Math.PI / 2.0)) {
-                //Active tool is cargo tool
-                WristMotionPlanner.Tool.CargoTool
-            } else {
-                //Active tool is hatch tool
-                WristMotionPlanner.Tool.HatchPanelTool
-            }
-        }
-        */
-
         if (lastObservedArmState.armRadius < Geometry.ArmGeometry.minSafeArmLength) {
             //We need to extend out to the minimum radius first
             commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))
@@ -425,6 +397,11 @@ object SuperstructureMotionPlanner {
         commandQueue.add(MoveSuperstructureCommandStaticWrist(safePoint, Point2d(0.0.Inches, Geometry.ArmGeometry.minSafeArmLength + 0.1.Inches), activeTool, 0.0.Radians, Geometry.ArmGeometry.minSafeArmLength, VisionHeightMode.NONE))
     }
 
+    /**
+     * Stows the system to prepare to climb.  This shortens the system below the minimum length
+     * in order to keep us from going over the driver station wall.  Thus, to ensure the safety
+     * of the mechanism, the movement is done sequentially rather than in parallel
+     */
     @Synchronized fun goToClimb() {
         reset()
 
@@ -434,6 +411,10 @@ object SuperstructureMotionPlanner {
         commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.armBaseLength + Geometry.ArmGeometry.armExtensionStickout + 2.0.Inches, WristMotionPlanner.Tool.HatchPanelTool))
     }
 
+    /**
+     * "Thrusts" the arm backwards (climbing forwards) to shift our CG over the platform as the front (climbing backwards)
+     * legs are being retracted.  This helps to keep us from falling backwards off of the platform when we climb.
+     */
     @Synchronized fun climbThrust() {
         reset()
 

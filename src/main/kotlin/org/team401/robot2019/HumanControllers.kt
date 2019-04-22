@@ -39,6 +39,14 @@ val LeftStick = HumanControls.t16000m(0) {
         }
     }
 
+    //TODO remove this when we're not using it
+    whenHatChanged(Hats.STICK_HAT) {
+        when (it) {
+            Direction.SOUTH -> DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.VisionTuning)
+            else -> DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
+        }
+    }
+
     whenButton(Buttons.STICK_LEFT) {
         pressed {
             WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.ForceTo0)

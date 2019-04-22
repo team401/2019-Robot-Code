@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
+import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
@@ -24,7 +25,9 @@ import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
+import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.vision.*
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
@@ -74,7 +77,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         PathFollowing(true),
         ClimbStop,
         ClimbReposition,
-        VisionAlign //THANK YOU ELI (smh stephen 0/10)
+        VisionAlign,
+        VisionTuning
     }
 
     enum class DriveFaults {
@@ -192,10 +196,67 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
 
         state(DrivetrainSubsystem.DriveStates.VisionAlign){
+            lateinit var activeSide: SuperstructureRoutines.Side
             lateinit var activeCamera: LimelightCamera
 
             entry {
-                activeCamera = when (SuperstructureRoutines.side) {
+                activeSide = SuperstructureRoutines.side
+                activeCamera = when (activeSide) {
+                    SuperstructureRoutines.Side.FRONT -> {
+                        VisionManager.frontCamera
+                    }
+                    SuperstructureRoutines.Side.BACK -> {
+                        VisionManager.backCamera
+                    }
+                }
+
+                activeCamera.configForVision(3)
+                activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
+                activeCamera.resetFrame()
+            }
+
+            rtAction {
+                val activeOffset = ControlParameters.VisionOffsets.select(
+                    activeSide,
+                    SuperstructureController.output.visionHeightMode,
+                    SuperstructureController.output.wristTool
+                )
+                val tx = activeCamera.entries.tx.getDouble(0.0)
+                val hasTarget = activeCamera.entries.tv.getDouble(0.0) == 1.0
+                val txOffset = tx - activeOffset.value
+                //println("Active offset: $activeOffset\tHas target: $hasTarget")
+
+                val adjustment = if (hasTarget) {
+                    (ControlParameters.DrivetrainParameters.visionKp * txOffset) / 100.0 // 1 degree of error = 1%power
+                } else {
+                    0.0
+                }
+
+                val output = cheesyController.update(
+                    LeftStick.readAxis { PITCH },
+                    RightStick.readAxis { ROLL },
+                    false,
+                    RightStick.readButton { TRIGGER }
+                )
+
+                val leftPower = output.left + adjustment
+                val rightPower = output.right - adjustment
+
+                tank(leftPower, rightPower)
+            }
+
+            exit {
+                activeCamera.setLedMode(LimelightCamera.LedMode.Off)
+            }
+        }
+
+        state (DriveStates.VisionTuning) {
+            lateinit var activeSide: SuperstructureRoutines.Side
+            lateinit var activeCamera: LimelightCamera
+
+            entry {
+                activeSide = SuperstructureRoutines.side
+                activeCamera = when (activeSide) {
                     SuperstructureRoutines.Side.FRONT -> {
                         VisionManager.frontCamera
                     }
@@ -211,7 +272,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
             rtAction {
                 val tx = activeCamera.entries.tx.getDouble(0.0)
-                val adjustment = (ControlParameters.DrivetrainParameters.visionKp * tx) / 100.0 // 1 degree of error = 1%power
 
                 val output = cheesyController.update(
                     LeftStick.readAxis { PITCH },
@@ -220,10 +280,9 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                     RightStick.readButton { TRIGGER }
                 )
 
-                val leftPower = output.left + adjustment
-                val rightPower = output.right - adjustment
+                tank(output.left, output.right)
 
-                tank(leftPower, rightPower)
+                println("Camera tx: $tx")
             }
 
             exit {

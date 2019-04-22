@@ -10,11 +10,13 @@ import org.team401.taxis.diffdrive.control.FullStateDiffDriveModel
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Pose2dWithCurvature
 import org.team401.taxis.geometry.Rotation2d
+import org.team401.taxis.geometry.Translation2d
 import org.team401.taxis.trajectory.Trajectory
 import org.team401.taxis.trajectory.TrajectoryUtil
 import org.team401.taxis.trajectory.timing.CentripetalAccelerationConstraint
 import org.team401.taxis.trajectory.timing.TimedState
 import org.team401.taxis.trajectory.timing.TimingConstraint
+import org.team401.taxis.trajectory.timing.VelocityLimitRegionConstraint
 
 /**
  * @author Cameron Earle
@@ -24,7 +26,7 @@ import org.team401.taxis.trajectory.timing.TimingConstraint
 object Trajectories {
     private val pm = DrivetrainSubsystem.pathManager
     private val maxCentrip = 110.0
-    private val maxVel = 2.0 * 12
+    private val maxVel = 6.0 * 12
     private val maxAccel = 2.0 * 12
     private val maxVoltage = 9.0
 
@@ -69,14 +71,14 @@ object Trajectories {
 
     val nearRocketRightToInboundingStationRightWaypoints = listOf(
         CriticalPoses.fieldToNearRocketRightEnd,
-        CriticalPoses.fieldToNearRocketRightAlign,
+        CriticalPoses.fieldToNearRocketRightBackUp,
         CriticalPoses.fieldToInboundingStationRightAlign,
         CriticalPoses.fieldToInboundingStationRightEnd
     )
 
     val inboundingStationRightToNearRocketRightWaypoints = listOf(
         CriticalPoses.fieldToInboundingStationRightEnd,
-        CriticalPoses.fieldToInboundingStationRightAlign,
+        CriticalPoses.fieldToInboundingStationRightBackUp,
         CriticalPoses.fieldToNearRocketRightAlign,
         CriticalPoses.fieldToNearRocketRightEnd
     )
@@ -107,7 +109,12 @@ object Trajectories {
 
     val level1HabToNearRocketLeft = generateTrajectory(
         level1HabToNearRocketLeftWaypoints,
-        false
+        false/*,
+        listOf(VelocityLimitRegionConstraint(
+            Translation2d(0.0, Double.NEGATIVE_INFINITY),
+            Translation2d(120.0, Double.POSITIVE_INFINITY),
+            2.0 * 12
+        ))*/
     )
 
     val nearRocketRightToInboundingStationRight = generateTrajectory(
