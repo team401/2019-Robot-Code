@@ -24,6 +24,7 @@ import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.ArmState
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import kotlin.math.abs
 import kotlin.math.roundToInt
 

@@ -531,8 +531,9 @@ object SuperstructureMotionPlanner {
     }
 
     @Synchronized fun returnFromFloorPickup() {
+        reset()
+
         commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, ControlParameters.FloorPickupParameters.floorPickupAngle + 20.0.Degrees.toRadians()))
-        commandQueue.add(DelayCommand(1.0.Seconds))
         commandQueue.add(ExtensionOnlyCommand(ControlParameters.FloorPickupParameters.floorPickupPoint.r + 3.0.Inches, activeTool))
         commandQueue.add(RotationOnlyCommand(90.0.Degrees.toRadians(), activeTool))
     }

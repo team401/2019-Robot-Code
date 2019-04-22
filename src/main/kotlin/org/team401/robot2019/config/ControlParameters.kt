@@ -34,6 +34,7 @@ object ControlParameters {
         // practice used to be 2278
         val armEncoderValueAtVertical by Selectable(1800, 2278)
 
+
         /**
          * Extension velocity and acceleration
          */
@@ -187,7 +188,7 @@ object ControlParameters {
         val rocketHatchMidBack = rocketHatchMidFront.flipped()
         val rocketHatchHighBack = rocketHatchHighFront.flipped()
 
-        val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(28.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians(), VisionHeightMode.NONE).fromFloor()
+        val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(16.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians(), VisionHeightMode.NONE).fromFloor()
         val cargoShipCargoBack = cargoShipCargoFront.flipped()
 
         val cargoIntakeLoadingStationFront = SuperstructureSetpoint.intakingCargo(

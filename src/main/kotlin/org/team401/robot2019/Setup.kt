@@ -46,7 +46,7 @@ fun setup() {
     //AutoManager.setAutoLoop(TuningAutoCollectDynamicsData(DrivetrainSubsystem))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization

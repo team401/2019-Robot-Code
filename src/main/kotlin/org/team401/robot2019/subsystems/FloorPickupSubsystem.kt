@@ -68,10 +68,10 @@ object FloorPickupSubsystem: Subsystem(100L) {
                 }
                 action {
                     //println("Current : ${PowerDistributionPanel().getCurrent(HardwareMap.PDP.floorPickupWheelsVictorChannel)}")
-                    //currentTimeout.check{
-                    //    setState(FloorPickupSubsystem.WheelsStates.Idle)
-                    //    pickupMachine.setState(FloorPickupSubsystem.PickupStates.Stowed)
-                   // }
+                    currentTimeout.check{
+                        setState(FloorPickupSubsystem.WheelsStates.Idle)
+                        pickupMachine.setState(FloorPickupSubsystem.PickupStates.Stowed)
+                    }
                 }
             }
         }
