@@ -59,7 +59,7 @@ object CriticalPoses {
     )
 
     //Robot trajectory poses
-    val fieldToLevel1RightStart = fieldToLevel1HabCornerRight.transformBy(robotBackLeftToOriginTransform).withHeading(Rotation2d.fromDegrees(-45.0))
+    val fieldToLevel1RightStart = fieldToLevel1HabCornerRight.transformBy(robotBackLeftToOriginTransform)//.withHeading(Rotation2d.fromDegrees(-45.0))
     val fieldToLevel2RightStart = fieldToLevel2HabCornerRight.transformBy(robotBackLeftToOriginTransform)!!
 
     //val fieldToFarRocketRightEnd = fieldToFarRocketRight.transformBy(robotFrontCenterToOriginTransform)!!

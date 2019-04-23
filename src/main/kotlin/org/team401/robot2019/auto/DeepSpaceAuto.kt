@@ -13,6 +13,7 @@ import org.team401.robot2019.control.drivetrain.CriticalPoses
 import org.team401.robot2019.control.drivetrain.Trajectories
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.taxis.trajectory.Trajectory
 
 object DeepSpaceAuto: RobotAuto(20L) {
     const val doesAutoWork = true //oops
@@ -39,7 +40,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
             //Step 1: Arm homing and initial trajectory
             parallel {
                 //Prepare cameras
-                step(PrepareVisionStep())
+                //step(PrepareVisionStep())
 
                 //Arm configuration sequence
                 sequential {
@@ -51,10 +52,12 @@ object DeepSpaceAuto: RobotAuto(20L) {
                 sequential {
                     step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
                     //Drive to the near rocket
+                    /*
                     parallel {
                         step(DriveTrajectoryStep(Trajectories.level1HabToNearRocketLeft, true))
 
                         //Wait for drive to pass an x value, move to scoring position, enable vision
+
                         sequential {
                             step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 100.0))
                             step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true)) //Enable vision pose updater
@@ -62,15 +65,39 @@ object DeepSpaceAuto: RobotAuto(20L) {
                         }
 
                     }
+                     */
+
+
+
+                    parallel {
+                        // Drive to in front of the rocket
+                        step(DriveTrajectoryStep(Trajectories.level1HabToLineUpWithRocketLeft, true))
+
+                        sequential {
+                            // wait to move the arm until crosses a threshold
+                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 100.0))
+                            // Move the arm to mid
+                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
+
+                        }
+                    }
+
+                    // Vision moves to the rocket to score
+                    step(VisionAlignStep())
 
                     //Turn off vision
-                    step(DisableVisionStateEstimator())
+                    //step(DisableVisionStateEstimator())
 
                     //Score the hatch
                     step(SuperstructureScoreStep())
 
                     //Wait a bit for the claws to retract
                     delay(0.5.Seconds)
+
+                    // Testing
+                    step(SuperstructureGoHomeStep())
+
+                    /* //Temporary adjustment for testing
 
                     //Drive from the near rocket to the inbounding station, move to the intake position, enable vision
                     parallel {
@@ -111,6 +138,8 @@ object DeepSpaceAuto: RobotAuto(20L) {
 
                     //Wait a bit for the claws to release
                     delay(0.5.Seconds)
+
+                     */
                 }
             }
             step(OperatorDriveStep())
