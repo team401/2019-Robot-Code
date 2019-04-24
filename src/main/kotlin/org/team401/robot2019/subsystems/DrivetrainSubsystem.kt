@@ -73,6 +73,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
     enum class DriveStates(val requiresSensors: Boolean = false) {
         EStopped,
         Disabled,
+        ExternalControl,
         OpenLoopOperatorControl,
         PathFollowing(true),
         ClimbStop,
@@ -96,6 +97,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
     val driveMachine: StateMachine<DriveStates> = stateMachine {
         rejectAllIf(*DriveStates.values()){isInState(DriveStates.EStopped)}
+
+        state(DriveStates.ExternalControl) {}
 
         state(DriveStates.EStopped){
             entry {
@@ -164,11 +167,11 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 left.master.pidController.setReference(leftVelocityRpm, ControlType.kVelocity, 0, totalFfLeft)
                 right.master.pidController.setReference(rightVelocityRpm, ControlType.kVelocity, 0, totalFfRight)
 
-                println("vision: ${VisionState.getFieldToRobot(time)}  odo: ${driveState.getFieldToVehicle(time)}")
+                //println("vision: ${VisionState.getFieldToRobot(time)}  odo: ${driveState.getFieldToVehicle(time)}")
             }
 
             exit {
-                stop()
+                //stop()
             }
         }
 

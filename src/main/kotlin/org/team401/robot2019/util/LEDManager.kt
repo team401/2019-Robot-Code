@@ -7,7 +7,10 @@ import org.snakeskin.dsl.on
 import org.snakeskin.event.Events
 import org.snakeskin.logic.History
 import org.team401.robot2019.RobotEvents
+import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import javax.tools.Tool
 
 object LEDManager {
     /**
@@ -24,6 +27,7 @@ object LEDManager {
         const val TrussFrontLeftStrip = 1
         const val TrussBackRightStrip = 2
         const val TrussFrontRightStrip = 3
+        const val ToolIndicatorStrip = 5
     }
 
     /**
@@ -62,8 +66,15 @@ object LEDManager {
         Climb,
     }
 
+    enum class ToolIndicatorMode {
+        Off,
+        Cargo,
+        Hatch
+    }
+
     private var trussModeHistory = History<TrussLedMode>()
     private var armModeHistory = History<ArmLedMode>()
+    private var toolIndicatorModeHistory = History<ToolIndicatorMode>()
 
     /**
      * Sets the truss LEDs to the specified mode
@@ -205,6 +216,36 @@ object LEDManager {
         setArmLedMode(armModeHistory.last!!)
     }
 
+    @Synchronized fun setToolIndicatorLedMode(mode: ToolIndicatorMode) {
+        when (mode) {
+            ToolIndicatorMode.Off -> {
+                ll.off(Indices.ToolIndicatorStrip)
+            }
+
+            ToolIndicatorMode.Cargo -> {
+                ll.solid(LightLink.Color.GREEN, Indices.ToolIndicatorStrip)
+            }
+
+            ToolIndicatorMode.Hatch -> {
+                ll.solid(LightLink.Color.YELLOW, Indices.ToolIndicatorStrip)
+            }
+        }
+
+        toolIndicatorModeHistory.update(mode)
+    }
+
+    private var toolHistory = History<WristMotionPlanner.Tool>()
+
+    fun updateToolStatus(tool: WristMotionPlanner.Tool, force: Boolean = false) {
+        if (force || toolHistory.current != tool) {
+            when (tool) {
+                WristMotionPlanner.Tool.HatchPanelTool -> setToolIndicatorLedMode(ToolIndicatorMode.Hatch)
+                WristMotionPlanner.Tool.CargoTool -> setToolIndicatorLedMode(ToolIndicatorMode.Cargo)
+            }
+        }
+        toolHistory.update(tool)
+    }
+
     private var hatchHistory = History<Boolean>()
     private var cargoHistory = History<Boolean>()
 
@@ -250,6 +291,7 @@ object LEDManager {
         on (Events.DISABLED) {
             setTrussLedMode(TrussLedMode.Rainbow)
             setArmLedMode(ArmLedMode.Rainbow)
+            setToolIndicatorLedMode(ToolIndicatorMode.Off)
         }
 
         on (Events.AUTO_ENABLED) {
@@ -264,6 +306,7 @@ object LEDManager {
                 setTrussLedMode(TrussLedMode.ModifierBlue)
             }
             setArmLedMode(ArmLedMode.Off)
+            updateToolStatus(SuperstructureController.output.wristTool, true)
         }
 
         on (RobotEvents.VLoc) {

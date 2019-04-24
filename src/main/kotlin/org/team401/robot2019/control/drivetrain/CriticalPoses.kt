@@ -40,7 +40,7 @@ object CriticalPoses {
 
     //Path transforms
     val targetAlignmentTransform = Pose2d(
-        -36.0, //Allow 3 feet to align with any target
+        -42.0, //Allow 4 feet to align with any target
         0.0,
         Rotation2d.identity()
     )
@@ -62,12 +62,14 @@ object CriticalPoses {
     val fieldToLevel1RightStart = fieldToLevel1HabCornerRight.transformBy(robotBackLeftToOriginTransform)//.withHeading(Rotation2d.fromDegrees(-45.0))
     val fieldToLevel2RightStart = fieldToLevel2HabCornerRight.transformBy(robotBackLeftToOriginTransform)!!
 
+    val fieldToOffOfHabRight = fieldToLevel1RightStart.transformBy(Pose2d(24.0, 0.0, Rotation2d.identity()))
+
     //val fieldToFarRocketRightEnd = fieldToFarRocketRight.transformBy(robotFrontCenterToOriginTransform)!!
     val fieldToNearRocketRightEnd = fieldToNearRocketRight.transformBy(robotFrontCenterToOriginTransform).transformBy(Pose2d(0.0, 2.0, Rotation2d.identity()))!!
-    val fieldToInboundingStationRightEnd = fieldToInboundingStationRight.transformBy(robotFrontCenterToOriginTransform).transformBy(intakingHatchTransform).transformBy(Pose2d(0.0, -8.5, Rotation2d.identity())).withHeading(Rotation2d.fromDegrees(0.0))
+    val fieldToInboundingStationRightEnd = fieldToInboundingStationRight.transformBy(robotFrontCenterToOriginTransform).transformBy(intakingHatchTransform).transformBy(Pose2d(0.0, -16.0, Rotation2d.identity())).withHeading(Rotation2d.fromDegrees(0.0))
 
     //val fieldToFarRocketRightAlign = fieldToFarRocketRightEnd.transformBy(targetAlignmentTransform)!!
-    val fieldToNearRocketRightAlign = fieldToNearRocketRightEnd.transformBy(targetAlignmentTransform)!!
+    val fieldToNearRocketRightAlign = fieldToNearRocketRightEnd.transformBy(targetAlignmentTransform).transformBy(Pose2d(0.0, 6.0, Rotation2d.identity()))!!
     val fieldToNearRocketRightBackUp = fieldToNearRocketRightEnd.transformBy(backFromScoringTransform)!!
     val fieldToInboundingStationRightAlign = fieldToInboundingStationRightEnd.transformBy(targetAlignmentTransform.inverse())!!
     val fieldToInboundingStationRightBackUp = fieldToInboundingStationRightEnd.transformBy(backFromScoringTransform.inverse())!!

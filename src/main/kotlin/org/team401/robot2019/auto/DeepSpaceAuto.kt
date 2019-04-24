@@ -52,23 +52,6 @@ object DeepSpaceAuto: RobotAuto(20L) {
                 sequential {
                     step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
                     //Drive to the near rocket
-                    /*
-                    parallel {
-                        step(DriveTrajectoryStep(Trajectories.level1HabToNearRocketLeft, true))
-
-                        //Wait for drive to pass an x value, move to scoring position, enable vision
-
-                        sequential {
-                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 100.0))
-                            step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true)) //Enable vision pose updater
-                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchHighFront)) //Move to scoring position
-                        }
-
-                    }
-                     */
-
-
-
                     parallel {
                         // Drive to in front of the rocket
                         step(DriveTrajectoryStep(Trajectories.level1HabToLineUpWithRocketLeft, true))
@@ -76,70 +59,53 @@ object DeepSpaceAuto: RobotAuto(20L) {
                         sequential {
                             // wait to move the arm until crosses a threshold
                             step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 100.0))
-                            // Move the arm to mid
-                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
+                            // Move the arm to high
+                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchHighFront))
 
                         }
                     }
 
                     // Vision moves to the rocket to score
-                    step(VisionAlignStep())
-
-                    //Turn off vision
-                    //step(DisableVisionStateEstimator())
+                    step(VisionAlignStep(SuperstructureRoutines.Side.FRONT, 1.25.Seconds))
 
                     //Score the hatch
                     step(SuperstructureScoreStep())
 
-                    //Wait a bit for the claws to retract
-                    delay(0.5.Seconds)
-
-                    // Testing
-                    step(SuperstructureGoHomeStep())
-
-                    /* //Temporary adjustment for testing
-
                     //Drive from the near rocket to the inbounding station, move to the intake position, enable vision
                     parallel {
-                        step(DriveTrajectoryStep(Trajectories.nearRocketLeftToInboundingStationLeft))
+                        step(DriveTrajectoryStep(Trajectories.nearRocketLeftToInboundingStationLineUpLeft))
 
                         sequential {
+                            //Wait to move to intake until we cross the x threshold
                             step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.NEGATIVE, 160.0))
-                            //step(EnableVisionStateEstimator(CriticalPoses.fieldToInboundingStationLeft, false))
+                            //Move the arm to the intake position
                             step(SuperstructureIntakeStep(SuperstructureRoutines.Side.BACK))
                         }
                     }
 
-                    //Turn off vision
-                    step(DisableVisionStateEstimator())
+                    //Vision align to the inbounding station
+                    step(VisionAlignStep(SuperstructureRoutines.Side.BACK, 1.25.Seconds, .15, 0.9))
 
                     //Grab the hatch
                     step(SuperstructureStopIntakingStep())
 
-                    //Wait a bit for the claws to close
-                    delay(0.5.Seconds)
-
                     //Drive from the inbounding station to the rocket, move to scoring position, enable vision
                     parallel {
-                        step(DriveTrajectoryStep(Trajectories.inboundingStationLeftToNearRocketLeft))
+                        step(DriveTrajectoryStep(Trajectories.inboundingStationLeftToNearRocketLineUpLeft))
 
                         sequential {
                             step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 110.0))
-                            step(EnableVisionStateEstimator(CriticalPoses.fieldToNearRocketLeft, true))
                             step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
                         }
                     }
 
-                    //Turn off vision
-                    step(DisableVisionStateEstimator())
+                    //Vision align to the inbounding station
+                    step(VisionAlignStep(SuperstructureRoutines.Side.FRONT, 1.5.Seconds, .2, .9))
 
                     //Score the hatch
                     step(SuperstructureScoreStep())
 
-                    //Wait a bit for the claws to release
-                    delay(0.5.Seconds)
-
-                     */
+                    step(OpenLoopReverseStep(0.25, 1.0.Seconds))
                 }
             }
             step(OperatorDriveStep())

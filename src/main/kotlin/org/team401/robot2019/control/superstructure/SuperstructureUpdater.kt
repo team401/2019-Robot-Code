@@ -10,6 +10,7 @@ import org.team401.robot2019.control.superstructure.planning.SuperstructureMotio
 import org.team401.robot2019.subsystems.ArmSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.util.LEDManager
 
 /**
  * @author Cameron Earle
@@ -33,6 +34,10 @@ object SuperstructureUpdater: RealTimeTask {
             ArmSubsystem.getCurrentArmState(),
             WristSubsystem.getCurrentWristState()
         )
+
+        if (ds.isEnabled) {
+            LEDManager.updateToolStatus(SuperstructureController.output.wristTool)
+        }
 
         //debug
         /*
