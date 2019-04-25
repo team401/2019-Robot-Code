@@ -332,8 +332,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         rightTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100)
 
         //Set sensor phase
-        leftTalon.setSensorPhase(false) //TODO PLEASE PLEASE PLEASE CHECK THIS ON COMP BOT!!!!!
-        rightTalon.setSensorPhase(false)
+        leftTalon.setSensorPhase(true)
+        rightTalon.setSensorPhase(true)
 
         //Configure status frame rate
         leftTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100)

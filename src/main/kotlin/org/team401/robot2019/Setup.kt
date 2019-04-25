@@ -39,14 +39,15 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Selectable.selected = RobotIndex.PRACTICE //CHANGE THIS depending on what robot you're using.
+    Selectable.selected = RobotIndex.COMP //CHANGE THIS depending on what robot you're using.
 
     AutoManager.setAutoLoop(DeepSpaceAuto)
+    DeepSpaceAuto.publish()
 
     //AutoManager.setAutoLoop(TuningAutoCollectDynamicsData(DrivetrainSubsystem))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem, ClimberSubsystem)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
@@ -69,9 +70,5 @@ fun setup() {
         VisionManager.stop()
     }
 
-    val trajectory = Trajectories.level1HabToNearRocketLeft
-    val endPose = trajectory.lastState.state().pose
-    val endPoseReal = CriticalPoses.fieldToNearRocketLeft//.transformBy(CriticalPoses.robotFrontCenterToOriginTransform)
-    println("Trajectory end pose: $endPose")
-    println("Real end pose: $endPoseReal")
+    Trajectories //Load this class so the trajectories get pregenerated
 }

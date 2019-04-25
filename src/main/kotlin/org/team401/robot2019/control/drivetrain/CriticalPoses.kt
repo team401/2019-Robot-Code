@@ -66,7 +66,7 @@ object CriticalPoses {
 
     //val fieldToFarRocketRightEnd = fieldToFarRocketRight.transformBy(robotFrontCenterToOriginTransform)!!
     val fieldToNearRocketRightEnd = fieldToNearRocketRight.transformBy(robotFrontCenterToOriginTransform).transformBy(Pose2d(0.0, 2.0, Rotation2d.identity()))!!
-    val fieldToInboundingStationRightEnd = fieldToInboundingStationRight.transformBy(robotFrontCenterToOriginTransform).transformBy(intakingHatchTransform).transformBy(Pose2d(0.0, -16.0, Rotation2d.identity())).withHeading(Rotation2d.fromDegrees(0.0))
+    val fieldToInboundingStationRightEnd = fieldToInboundingStationRight.transformBy(robotFrontCenterToOriginTransform).transformBy(intakingHatchTransform).transformBy(Pose2d(0.0, -7.0, Rotation2d.identity())).withHeading(Rotation2d.fromDegrees(0.0))
 
     //val fieldToFarRocketRightAlign = fieldToFarRocketRightEnd.transformBy(targetAlignmentTransform)!!
     val fieldToNearRocketRightAlign = fieldToNearRocketRightEnd.transformBy(targetAlignmentTransform).transformBy(Pose2d(0.0, 6.0, Rotation2d.identity()))!!

@@ -207,12 +207,15 @@ object SuperstructureRoutines {
     fun returnFromFloorPickup() {
         stopIntake()
         Thread.sleep(250)
-
+        FloorPickupSubsystem.pickupMachine.setState(FloorPickupSubsystem.PickupStates.Deployed)
         FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Eject)
         Thread.sleep(250)
 
         SuperstructureMotionPlanner.returnFromFloorPickup()
 
+        Thread.sleep(500)
+
+        FloorPickupSubsystem.pickupMachine.setState(FloorPickupSubsystem.PickupStates.Stowed)
         FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Idle)
     }
 

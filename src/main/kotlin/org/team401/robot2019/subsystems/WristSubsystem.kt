@@ -313,8 +313,8 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     override fun setup() {
-        leftIntakeTalon.inverted = true
-        rightIntakeTalon.inverted = false
+        leftIntakeTalon.inverted = false
+        rightIntakeTalon.inverted = true
 
         println("PWP: ${rotation.master.sensorCollection.pulseWidthPosition} set : ${rotation.master.selectedSensorPosition}")
 

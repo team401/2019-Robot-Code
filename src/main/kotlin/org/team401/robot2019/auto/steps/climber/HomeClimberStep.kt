@@ -8,7 +8,9 @@ import org.team401.robot2019.subsystems.ClimberSubsystem
  */
 class HomeClimberStep: AutoStep() {
     override fun entry(currentTime: Double) {
-        ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Homing)
+        if (!ClimberSubsystem.climberMachine.isInState(ClimberSubsystem.ClimberStates.Homing)) {
+            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Homing).waitFor()
+        }
     }
 
     override fun action(currentTime: Double, lastTime: Double): Boolean {

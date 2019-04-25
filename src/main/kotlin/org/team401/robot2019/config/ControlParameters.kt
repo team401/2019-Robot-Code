@@ -124,9 +124,9 @@ object ControlParameters {
          * PIDF for the wrist rotation
          */
         object WristRotationPIDF: PIDFTemplate {
-            override val kP by Selectable(1.7, 1.7) //comp, practice
+            override val kP by Selectable(10.0, 1.7) //comp, practice
             override val kI = 0.0
-            override val kD by Selectable(20.0, 200.0) //comp wrist has friction brake, practice does not
+            override val kD by Selectable(100.0, 200.0) //comp wrist has friction brake, practice does not
             override val kF = 0.84
         }
     }
@@ -140,12 +140,12 @@ object ControlParameters {
 
         //Floor pickup positions
         val cargoFloorPickupFront = SuperstructureSetpoint.intakingCargo(
-            Point2d(26.5.Inches, 9.0.Inches),
+            Point2d(26.5.Inches, 7.0.Inches),
             0.0.Radians,
             VisionHeightMode.NONE
-        ).withAngle((0.0).Degrees.toRadians()).fromFloor()
+        ).withAngle((-10.0).Degrees.toRadians()).fromFloor()
 
-        val cargoFloorPickupBack = cargoFloorPickupFront.flipped()//.upBy(.Inches)
+        val cargoFloorPickupBack = cargoFloorPickupFront.flipped().upBy(3.0.Inches).withAngle(0.0.Radians)
 
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
@@ -163,7 +163,7 @@ object ControlParameters {
         val rocketCargoMidBack = rocketCargoMidFront.flipped().upBy(backCargoMidOffset)
         val rocketCargoHighBack = rocketCargoHighFront.flipped()
 
-        val hatchOffsetFront by Selectable(0.0.Inches, 1.0.Inches)
+        val hatchOffsetFront by Selectable((-1.0).Inches, 1.0.Inches)
         val hatchOffsetBack by Selectable(1.5.Inches, 0.5.Inches)
 
         //Intake hatch positions
@@ -251,7 +251,7 @@ object ControlParameters {
         const val intakeSpeed = 1.0
         const val ejectSpeed = -1.0
 
-        val floorPickupAngle = 60.0.Degrees.toRadians()
+        val floorPickupAngle = 50.0.Degrees.toRadians()
 
         val floorPickupPoint = ArmKinematics.inverse(Point2d(18.0.Inches, (-17.0).Inches))
 
@@ -306,12 +306,12 @@ object ControlParameters {
         /**
          * Power to apply to the legs to home them.  This should be negative
          */
-        val homingPower = -0.15
+        val homingPower = -0.25
 
         /**
          * Number of seconds the legs must be at zero velocity until the system is considered homed
          */
-        val homingTime = 0.25.Seconds
+        val homingTime = 0.15.Seconds
 
         /**
          * Tolerance for checking whether or not the climber is at the desired height

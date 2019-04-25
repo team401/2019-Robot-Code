@@ -20,6 +20,7 @@ class DriveTrajectoryStep(referenceTrajectory: Trajectory<TimedState<Pose2dWithC
     private val trajectory = TrajectoryIterator(TimedView(referenceTrajectory))
 
     override fun entry(currentTime: Double) {
+        println("drive init")
         if (reconfigurePose) { //If we're supposed to reconfigure the pose
             val startPose = trajectory.state.state().pose //Grab the initial pose
             DrivetrainSubsystem.setPose(startPose, currentTime) //Reconfigure the drive
@@ -28,6 +29,7 @@ class DriveTrajectoryStep(referenceTrajectory: Trajectory<TimedState<Pose2dWithC
         VisionState.reset()
         DrivetrainSubsystem.pathManager.setTrajectory(trajectory) //Load in the path
         DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing).waitFor() //Begin following
+        println("drive start")
     }
 
     override fun action(currentTime: Double, lastTime: Double): Boolean {

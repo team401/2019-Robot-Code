@@ -1,6 +1,7 @@
 package org.team401.robot2019
 
 //import org.team401.robot2019.subsystems.DrivetrainSubsystem
+import org.snakeskin.auto.AutoManager
 import org.snakeskin.dsl.HumanControls
 import org.snakeskin.logic.Direction
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
@@ -39,11 +40,29 @@ val LeftStick = HumanControls.t16000m(0) {
         }
     }
 
+    /*
     //TODO remove this when we're not using it
     whenHatChanged(Hats.STICK_HAT) {
         when (it) {
             Direction.SOUTH -> DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.VisionTuning)
             else -> DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
+        }
+    }
+    */
+
+    whenHatChanged(Hats.STICK_HAT) {
+        when (it) {
+            Direction.SOUTH -> {
+                //A-Stop
+                AutoManager.stop()
+                DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
+            }
+
+            Direction.NORTH -> {
+                //Move the arm home
+                SuperstructureRoutines.ccMaybe(true)
+                SuperstructureMotionPlanner.goHome()
+            }
         }
     }
 

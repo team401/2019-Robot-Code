@@ -2,6 +2,7 @@ package org.team401.robot2019
 
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
+import org.team401.robot2019.auto.AutoMode
 
 /**
  * @author Eli Jelesko
@@ -97,6 +98,14 @@ object DriverStationDisplay {
         .withPosition(3,0)
         .entry
 
+    /**
+     *  Chooser for the auto mode
+     */
+    val autoSelctor = mainTab.add("Auto", false)
+        .withWidget(BuiltInWidgets.kComboBoxChooser)
+        .withPosition(1, 2)
+        .withSize(2,1)
+        .entry
 
     fun init(){
         pivotStopped.setBoolean(false)
@@ -110,5 +119,8 @@ object DriverStationDisplay {
         climbRepositionModeEnabled.setBoolean(false)
 
         extensionHomed.setBoolean(false)
+
+        //autoSelctor.setValue(AutoMode.toSendableChooser())
+
     }
 }

@@ -68,6 +68,7 @@ object LEDManager {
 
     enum class ToolIndicatorMode {
         Off,
+        Rainbow,
         Cargo,
         Hatch
     }
@@ -222,6 +223,10 @@ object LEDManager {
                 ll.off(Indices.ToolIndicatorStrip)
             }
 
+            ToolIndicatorMode.Rainbow -> {
+                ll.rainbow(LightLink.Speed.SLOW, Indices.ToolIndicatorStrip)
+            }
+
             ToolIndicatorMode.Cargo -> {
                 ll.solid(LightLink.Color.GREEN, Indices.ToolIndicatorStrip)
             }
@@ -234,9 +239,9 @@ object LEDManager {
         toolIndicatorModeHistory.update(mode)
     }
 
-    private var toolHistory = History<WristMotionPlanner.Tool>()
+    private val toolHistory = History<WristMotionPlanner.Tool>()
 
-    fun updateToolStatus(tool: WristMotionPlanner.Tool, force: Boolean = false) {
+    @Synchronized fun updateToolStatus(tool: WristMotionPlanner.Tool, force: Boolean = false) {
         if (force || toolHistory.current != tool) {
             when (tool) {
                 WristMotionPlanner.Tool.HatchPanelTool -> setToolIndicatorLedMode(ToolIndicatorMode.Hatch)
@@ -284,6 +289,8 @@ object LEDManager {
         trussModeHistory.update(TrussLedMode.Off)
         armModeHistory.update(ArmLedMode.Off)
         armModeHistory.update(ArmLedMode.Off)
+        toolIndicatorModeHistory.update(ToolIndicatorMode.Off)
+        toolIndicatorModeHistory.update(ToolIndicatorMode.Off)
 
         setTrussLedMode(TrussLedMode.Off)
         setArmLedMode(ArmLedMode.Off)
@@ -297,6 +304,7 @@ object LEDManager {
         on (Events.AUTO_ENABLED) {
             setTrussLedMode(TrussLedMode.Off)
             setArmLedMode(ArmLedMode.Off)
+            updateToolStatus(SuperstructureController.output.wristTool, true)
         }
 
         on (Events.TELEOP_ENABLED) {
