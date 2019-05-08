@@ -19,7 +19,6 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
     private val endPoint = ArmKinematics.inverse(segments.last().end)
 
     private val intersectsCircle = segments.size > 1
-    // TODO Use real numbers
     private val armProfile = TrapezoidalProfileGenerator(
         ControlParameters.ArmParameters.rotationVelocity,
         ControlParameters.ArmParameters.rotationAcceleration,
@@ -27,91 +26,27 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
         endPoint.theta
     )
 
-    fun solveSystem(): ArrayList<Pair<Point2d, PointPolar>>{
-        //armProfile.generate()
-        //armProfile.graph(true)
-        val armRotation = armProfile.getPosition()
-
-        val points = ArrayList<Pair<Point2d, PointPolar>>()
-        println("Intersects circle: $intersectsCircle")
-        armRotation.forEach {
-            //println("Theta: $it, Endpos : ${endPoint.theta}")
-            if (intersectsCircle) {
-                if (startPoint.theta > endPoint.theta) {
-                    when { // TODO Configure for forwards and backwards motion
-                        ArmKinematics.inverse(segments[0].end).theta < it -> points.add(
-                            Pair(
-                                segments[0].solve(it),
-                                ArmKinematics.inverse(segments[0].solve(it))
-                            )
-                        )
-                        ArmKinematics.inverse(segments[1].end).theta < it -> points.add(
-                            Pair(
-                                segments[1].solve(it),
-                                ArmKinematics.inverse(segments[1].solve(it))
-                            )
-                        )
-                        ArmKinematics.inverse(segments[2].end).theta < it -> points.add(
-                            Pair(
-                                segments[2].solve(it),
-                                ArmKinematics.inverse(segments[2].solve(it))
-                            )
-                        )
-                    }
-                }else {
-                    // Switch for different types of function
-                    when { // TODO Configure for forwards and backwards motion
-                        ArmKinematics.inverse(segments[0].end).theta.value > it.value -> points.add(
-                            Pair(
-                                segments[0].solve(it),
-                                ArmKinematics.inverse(segments[0].solve(it))
-                            )
-                        )
-                        ArmKinematics.inverse(segments[1].end).theta > it -> points.add(
-                            Pair(
-                                segments[1].solve(it),
-                                ArmKinematics.inverse(segments[1].solve(it))
-                            )
-                        )
-                        ArmKinematics.inverse(segments[2].end).theta > it -> points.add(
-                            Pair(
-                                segments[2].solve(it),
-                                ArmKinematics.inverse(segments[2].solve(it))
-                            )
-                        )
-                    }
-                }
-            }else{
-                points.add(Pair(segments[0].solve(it), ArmKinematics.inverse(segments[0].solve(it))))
-            }
-        }
-        return points
-    }
-
     fun solvePoint(theta: AngularDistanceMeasureRadians): Pair<Point2d, PointPolar>{
-        //println("Theta: $theta, Endpos : ${endPoint.theta}")
         lateinit var point: Pair<Point2d, PointPolar>
-        //println("Intersects circle: $intersectsCircle")
 
+        // Find if the desired motion would go through an illegal position
         if (intersectsCircle) {
+            // Check to see if the system is running "backwards" (going from a larger theta value to a smaller one)
             if (startPoint.theta > endPoint.theta) {
                 when {
                     ArmKinematics.inverse(segments[0].end).theta < theta -> {
-                        //println("First!")
                         point = Pair(segments[0].solve(theta), ArmKinematics.inverse(segments[0].solve(theta)))
                     }
                     ArmKinematics.inverse(segments[1].end).theta < theta -> {
-                        //println("End theta: ${ArmKinematics.inverse(segments[1].end).theta} vs $theta")
                         point = Pair(segments[1].solve(theta), ArmKinematics.inverse(segments[1].solve(theta)))
                     }
 
                     ArmKinematics.inverse(segments[2].end).theta <= theta -> {
-                        //println("Extension!")
                         point = Pair(segments[2].solve(theta), ArmKinematics.inverse(segments[2].solve(theta)))
                     }
                 }
             }else {
-                // Switch for different types of function
+                // Adjust is the system is running "forwards"
                 when {
                     ArmKinematics.inverse(segments[0].end).theta > theta -> {
                         point = Pair(segments[0].solve(theta), ArmKinematics.inverse(segments[0].solve(theta)))
@@ -125,10 +60,9 @@ class Profile2d(private val segments: Array<ProfileSegment>) {
                 }
             }
         }else{
-            //println("Theta : $theta")
+            // If the desired motion is legal, return that path
             point = Pair(segments[0].solve(theta), ArmKinematics.inverse(segments[0].solve(theta)))
         }
-    //println("theta: $theta")
     return point
     }
 

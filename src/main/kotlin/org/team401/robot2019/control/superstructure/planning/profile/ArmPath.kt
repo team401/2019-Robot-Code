@@ -21,6 +21,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         val intersectsCircle = findIntersectionPoints()
         var segments: Array<ProfileSegment>
 
+        // If the point is within our minimum circle, create path out of the circle
         if (withinCircle(start)) {
             val pointPolar = ArmKinematics.inverse(start)
             val out = PointPolar(r.Inches, pointPolar.theta)
@@ -31,9 +32,11 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
             throw Point2d.InvalidPointException("End point $end is within minimum circle")
         }
 
+        // If the desired path is through the robots minimum retraction, create two linear moves and a rotation at
+        // minimum rotation to achieve the same motion
         segments = if (intersectsCircle) {
-            val tangentPointOne = findTangentPoint(start, start)
-            val tangentPointTwo = findTangentPoint(tangentPointOne, end)
+            val tangentPointOne = findTangentPoint(start, start) // Find a line tangent to the circle that includes the starting point
+            val tangentPointTwo = findTangentPoint(tangentPointOne, end)// Find a line tangent to the circle that includes the ending point
 
             val firstSegment = LinearProfileSegment(start, tangentPointOne)
             val secondSegment = ArcProfileSegment(tangentPointOne, tangentPointTwo, r)
@@ -46,7 +49,7 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         }
         //segments.forEach { println("${it.start}, ${it.end}") }
 
-        return segments
+        return segments // return the new motion
     }
 
     private fun findTangentPoint(currentPoint: Point2d, tangentPoint: Point2d): Point2d {
@@ -56,10 +59,6 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
         val startTheta = ArmKinematics.inverse(currentPoint).theta.value
         val endTheta = ArmKinematics.inverse(end).theta.value
         val tangentTheta = ArmKinematics.inverse(solutions[0]).theta.value
-
-        //println("start theta: $startTheta, endTheta: $endTheta")
-        //println("solution 1 : ${solutions[0]}, $tangentTheta")
-        //println("solution 2 : ${solutions[1]}, ${ArmKinematics.inverse(solutions[1]).theta.value}")
 
         solution = if(tangentTheta in startTheta..endTheta || tangentTheta in endTheta..startTheta){ // Change this if a point on the circle causes problems
             solutions[0]
@@ -87,13 +86,9 @@ class ArmPath(private val path: LinearProfileSegment, minimumRadius: LinearDista
             //println("No real solutions")
             return false
         }
-        //val intY1 = -By + Math.sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
-        //val intY2 = -By - Math.sqrt(By * By - 4 * Ay * Cy) / (2 * Ay)
-
         val intX1 = (-Bx + Math.sqrt(Math.pow(Bx, 2.0) - (4 * Ax * Cx))) / (2 * Ax)
         val intX2 = (-Bx - Math.sqrt((Bx * Bx) - (4 * Ax * Cx))) / (2 * Ax)
 
-        //println("intX1 : $intX1, intX2 : $intX2")
 
         var min = x1.value
         var max = x2.value

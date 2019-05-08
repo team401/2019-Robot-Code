@@ -283,7 +283,7 @@ object ArmSubsystem: Subsystem(100L) {
         }
     }
 
-    override fun action() { //TODO change loop rate to 100ms
+    override fun action() {
         // Faults
         if (pivot.getSensorCollection().pulseWidthRiseToRiseUs == 0) {
             fault(ArmFaults.PivotEncoderFault)

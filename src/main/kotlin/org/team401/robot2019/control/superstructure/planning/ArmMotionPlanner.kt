@@ -20,8 +20,8 @@ import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 object ArmMotionPlanner{
     // 1. Calculate Path
     // 2. Calculate Point
-    // 3. Find radius
-    // 4.
+    // 3. Find radius for each point
+    // 4. Send to the controller
     private lateinit var startPos: Point2d
     private lateinit var endPos: Point2d
 
@@ -84,7 +84,7 @@ object ArmMotionPlanner{
             currentArmPosition = startTheta
             currentArmVelocity = 0.0.RadiansPerSecond
             currentRadius = ArmKinematics.inverse(endPos).r
-            currentTime = 0.0.Seconds // TODO See if this causes problems
+            currentTime = 0.0.Seconds
             done = true
         } else {
             currentArmState = rotationProfile.update(dt)
