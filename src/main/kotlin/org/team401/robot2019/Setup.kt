@@ -36,18 +36,12 @@ object RobotIndex {
 
 @Setup
 fun setup() {
-    ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
     Selectable.selected = RobotIndex.COMP //CHANGE THIS depending on what robot you're using.
 
-    AutoManager.setAutoLoop(DeepSpaceAuto)
-    DeepSpaceAuto.publish()
-
-    //AutoManager.setAutoLoop(TuningAutoCollectDynamicsData(DrivetrainSubsystem))
-
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem, ClimberSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
@@ -69,6 +63,4 @@ fun setup() {
         VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.stop()
     }
-
-    Trajectories //Load this class so the trajectories get pregenerated
 }
