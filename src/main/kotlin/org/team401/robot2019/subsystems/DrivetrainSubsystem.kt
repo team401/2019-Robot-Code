@@ -83,6 +83,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         Disabled,
         ExternalControl,
         OpenLoopOperatorControl,
+        DemoDrive,
         PathFollowing(true),
         ClimbStop,
         ClimbReposition,
@@ -120,6 +121,18 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         state(DriveStates.Disabled) {
             entry {
                 stop() //Send no more commands to the controllers
+            }
+        }
+
+        state(DriveStates.DemoDrive) {
+            val translationFactor = .33
+            val rotationFactor = .25
+
+            action {
+                arcade(
+                    LeftStick.readAxis { PITCH } * translationFactor,
+                    RightStick.readAxis { ROLL } * rotationFactor
+                )
             }
         }
 
@@ -468,7 +481,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         setPose(Pose2d.identity())
 
         on (Events.TELEOP_ENABLED) {
-            driveMachine.setState(DriveStates.OpenLoopOperatorControl)
+            driveMachine.setState(DriveStates.DemoDrive)
         }
     }
 }
