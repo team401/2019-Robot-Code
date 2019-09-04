@@ -118,7 +118,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
         state(DriveStates.DemoDrive) {
             val translationFactor = .33
-            val rotationFactor = .25
+            val rotationFactor = .2
 
             action {
                 arcade(
