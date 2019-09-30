@@ -15,7 +15,7 @@ object VisionOdometryUpdater: RealTimeTask {
     private var enabled by LockingDelegate(false)
 
     private var fieldToGoal by LockingDelegate(Pose2d.identity())
-    private var activeCamera by LockingDelegate(VisionManager.frontCamera)
+    private var activeCamera: LimelightCamera by LockingDelegate(VisionManager.frontCamera)
 
     @Synchronized fun enable(fieldToGoal: Pose2d, camera: LimelightCamera) {
         this.fieldToGoal = fieldToGoal

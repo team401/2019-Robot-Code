@@ -1,10 +1,12 @@
 package org.team401.robot2019.control.vision
 
 import org.team401.robot2019.config.Geometry
+import org.team401.robot2019.vision2.LimelightCameraEnhanced
+import org.team401.taxis.geometry.Rotation2d
 
 object VisionManager {
-    val frontCamera = LimelightCamera("limelight-front", Geometry.VisionGeometry.robotToFrontCamera)
-    val backCamera = LimelightCamera("limelight-back", Geometry.VisionGeometry.robotToBackCamera)
+    val frontCamera = LimelightCameraEnhanced("limelight-front", Geometry.VisionGeometry.robotToFrontCamera, Rotation2d.identity(), 0.0)
+    val backCamera = LimelightCameraEnhanced("limelight-back", Geometry.VisionGeometry.robotToBackCamera, Rotation2d.identity(), 0.0)
 
     fun start() {
         frontCamera.startListening()

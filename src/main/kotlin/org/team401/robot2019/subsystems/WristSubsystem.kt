@@ -4,8 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.FeedbackDevice
 import com.ctre.phoenix.motorcontrol.StatusFrame
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Solenoid
+import edu.wpi.first.wpilibj.*
 import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.CTRESmartGearbox
 import org.snakeskin.dsl.*
@@ -33,7 +32,8 @@ object WristSubsystem: Subsystem(100L) {
     val leftIntakeTalon = TalonSRX(HardwareMap.CAN.wristLeftIntakeWheelTalonId)
     val rightIntakeTalon = TalonSRX(HardwareMap.CAN.wristRightIntakeWheelTalonId)
 
-    val cargoIntake = CTRESmartGearbox(leftIntakeTalon, rightIntakeTalon)
+    private val homingButtonInput = DigitalInput(9)
+    private var homingButtonHistory = History<Boolean>()
 
     private val rotation = CTRESmartGearbox(rotationTalon)
     private val leftIntake = CTRESmartGearbox(leftIntakeTalon)
@@ -287,6 +287,18 @@ object WristSubsystem: Subsystem(100L) {
         return WristState(wristAngle, systemSeesCargo(), systemSeesHatch())
     }
 
+    private fun configWristHome(force: Boolean = false) {
+        //We're using this status frame that we don't plan on using to determine whether the talon has ever been
+        //initialized by the application.  This is what is known in the industry as a HACK
+        if (force || rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000) >= 240) {
+            //Sensor offset not set, configure it now
+            rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
+            //We homed the sensor, blink the lights for a second to indicate this.
+            LEDManager.signalTruss(LEDManager.TrussLedSignal.WristHomed)
+            rotation.master.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000, 1000)
+        }
+    }
+
     override fun action() {
         LEDManager.updateGamepieceStatus(systemSeesHatch(), systemSeesCargo()) //Update gamepiece status from sensors
 
@@ -297,62 +309,23 @@ object WristSubsystem: Subsystem(100L) {
             DriverStation.reportWarning("[Fault] Wrist Encoder has failed!", false)
         }
 
-
-        // Driver Station Shutoff
-        /*
-        if (DriverStationDisplay.wristStopped.getBoolean(false)) {
-            wristMachine.setState(WristStates.EStopped)
-        }else if (wristMachine.isInState(WristStates.EStopped) && !DriverStationDisplay.wristStopped.getBoolean(false)) {
-            wristMachine.setState(WristStates.Holding)
+        if (DriverStation.getInstance().isDisabled) {
+            homingButtonHistory.update(homingButtonInput.get())
+            if (homingButtonHistory.last == true && homingButtonHistory.current == false) {
+                configWristHome(true)
+            }
         }
-        */
-        //debug
-        //
-        //println("Raw: ${pot.value}\tDegrees: ${getPotAngleDegrees()}\tEnc: ${rotation.getPosition().toDegrees()}")
-        //println("Wrist angle: ${rotation.getPosition().toDegrees()}")
     }
 
     override fun setup() {
         leftIntakeTalon.inverted = false
         rightIntakeTalon.inverted = true
 
-        println("PWP: ${rotation.master.sensorCollection.pulseWidthPosition} set : ${rotation.master.selectedSensorPosition}")
-
-        DrivetrainSubsystem.configureFeedbackTalonsForDrive(leftIntakeTalon, rightIntakeTalon)
+        configWristHome()
 
         rotation.inverted = false
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
-
-        /*
-        if (Math.abs(rotation.master.selectedSensorPosition - rotation.master.sensorCollection.pulseWidthPosition) >= 10.0) {
-            //We need to reset the wrist home
-            rotation.master.selectedSensorPosition = Math.abs(rotation.master.sensorCollection.pulseWidthPosition % 4096.0).roundToInt() - 2396 + (2048)
-        }
-        */
-
-        /*
-        val samples = arrayListOf<Double>()
-
-        for (i in 0 until 10) {
-            samples.add(getPotAngleDegrees().value) //Take sample
-            Thread.sleep(10) //Wait ~10 ms
-        }
-
-        rotation.master.selectedSensorPosition = samples.average().Degrees.toMagEncoderTicks().value.roundToInt()
-
-*/
-        //We're using this status frame that we don't plan on using to determine whether the talon has ever been
-        //initialized by the application.  This is what is known in the industry as a HACK
-        if (rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000) >= 240) {
-            //Sensor offset not set, configure it now
-            rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
-            //We homed the sensor, blink the lights for a second to indicate this.
-            LEDManager.signalTruss(LEDManager.TrussLedSignal.WristHomed)
-            rotation.master.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000, 1000)
-        }
-
-        println("ROTATION FRAME 14: ${rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000)}")
 
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
@@ -373,15 +346,6 @@ object WristSubsystem: Subsystem(100L) {
             cargoWheelsMachine.setState(CargoWheelsStates.Idle)
             cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
             hatchClawMachine.setState(HatchClawStates.Clamped)
-
-            /*
-            val armState = ArmKinematics.forward(ArmSubsystem.getCurrentArmState())
-            val currentTool = when {
-                armState.x >= 0.0.Inches -> WristMotionPlanner.Tool.HatchPanelTool
-                else -> WristMotionPlanner.Tool.CargoTool
-            }
-            SuperstructureMotionPlanner.activeTool = currentTool
-            */
 
             wristMachine.setState(WristStates.Holding)
         }

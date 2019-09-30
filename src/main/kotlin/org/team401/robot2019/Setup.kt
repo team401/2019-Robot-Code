@@ -57,8 +57,8 @@ fun setup() {
     SuperstructureMotionPlanner.preCompile()
 
     //Initialize real-time tasks
-    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator) //Drivetrain odometry from sensors
-    RealTimeExecutor.addTask(VisionOdometryUpdater)              //Drivetrain odometry from vision
+    //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator) //Drivetrain odometry from sensors
+    //RealTimeExecutor.addTask(VisionOdometryUpdater)              //Drivetrain odometry from vision
     RealTimeExecutor.addTask(SuperstructureUpdater)              //Superstrcture motion planning / control
     //RealTimeExecutor.addTask(OdometryWatchdog)                   //Drivetrain odometry error checking
 

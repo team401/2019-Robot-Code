@@ -41,15 +41,13 @@ import org.team401.taxis.geometry.Pose2d
  *
  */
 
-object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox<TalonSRX>> by PigeonPathFollowingDiffDrive(
+object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox> by PigeonPathFollowingDiffDrive(
     SparkMaxCTRESensoredGearbox(
-        WristSubsystem.leftIntakeTalon,
         CANSparkMax(HardwareMap.CAN.drivetrainLeftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainLeftMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainLeftRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
     ),
     SparkMaxCTRESensoredGearbox(
-        WristSubsystem.rightIntakeTalon,
         CANSparkMax(HardwareMap.CAN.drivetrainRightFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainRightMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainRightRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
@@ -361,6 +359,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
 
         //Sensor faults
+        /*
         if (left.ctreController.sensorCollection.pulseWidthRiseToRiseUs == 0) {
             fault(DriveFaults.LeftEncoderFailure)
             DriverStation.reportWarning("[Fault] Left encoder failed!", false)
@@ -369,6 +368,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             fault(DriveFaults.RightEncoderFailure)
             DriverStation.reportWarning("[Fault] Right encoder failed!", false)
         }
+        */
         if (imu.state != PigeonIMU.PigeonState.Ready) {
             fault(DriveFaults.IMUFailure)
             DriverStation.reportWarning("[Fault] IMU failed!", false)
@@ -402,6 +402,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
 
         //Sensor faults
+        /*
         if (isFaulted(DriveFaults.LeftEncoderFailure)) {
             if (left.ctreController.sensorCollection.pulseWidthRiseToRiseUs != 0) {
                 clearFault(DriveFaults.LeftEncoderFailure)
@@ -414,6 +415,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 println("[Fault Cleared] Right encoder restored")
             }
         }
+        */
         if (isFaulted(DriveFaults.IMUFailure)) {
             if (imu.state == PigeonIMU.PigeonState.Ready) {
                 clearFault(DriveFaults.IMUFailure)

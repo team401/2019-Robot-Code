@@ -20,7 +20,7 @@ import org.team401.taxis.geometry.Pose2d
  * 2. The horizontal displacement from the target (y in our coordinate system) is x, and gets larger (positive) as you move right
  * 3. The yaw decreases (negative) as the camera looks more rightward from the target
  */
-class LimelightCamera(val name: String, val robotToCamera: Pose2d, val constantLatency: TimeMeasureMilliseconds = 11.0.Milliseconds) {
+open class LimelightCamera(val name: String, val robotToCamera: Pose2d, val constantLatency: TimeMeasureMilliseconds = 11.0.Milliseconds) {
     /**
      * Represents the different modes for the limelight camera.
      * @property VisionProcessor Puts the camera in vision mode, which will run the selected pipeline
@@ -50,7 +50,7 @@ class LimelightCamera(val name: String, val robotToCamera: Pose2d, val constantL
         const val PipSecondary = 2
     }
 
-    private val table = NetworkTableInstance.getDefault().getTable(name)
+    protected val table = NetworkTableInstance.getDefault().getTable(name)
 
     /**
      * Inner class for holding the TableEntry objects that are used for the limelight
