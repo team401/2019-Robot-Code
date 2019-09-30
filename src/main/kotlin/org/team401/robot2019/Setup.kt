@@ -19,6 +19,7 @@ import org.team401.robot2019.control.vision.VisionManager
 import org.team401.robot2019.control.vision.VisionOdometryUpdater
 import org.team401.robot2019.subsystems.*
 import org.team401.robot2019.util.LEDManager
+import org.team401.robot2019.vision2.RobotStateEstimator
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.trajectory.TimedView
 import org.team401.taxis.trajectory.TrajectoryIterator
@@ -59,6 +60,7 @@ fun setup() {
     //Initialize real-time tasks
     //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator) //Drivetrain odometry from sensors
     //RealTimeExecutor.addTask(VisionOdometryUpdater)              //Drivetrain odometry from vision
+    RealTimeExecutor.addTask(RobotStateEstimator)
     RealTimeExecutor.addTask(SuperstructureUpdater)              //Superstrcture motion planning / control
     //RealTimeExecutor.addTask(OdometryWatchdog)                   //Drivetrain odometry error checking
 

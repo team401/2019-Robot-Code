@@ -17,7 +17,6 @@ object RobotStateEstimator: RealTimeTask {
     private val driveEncoderRight = Encoder(2, 3, false, CounterBase.EncodingType.k4X)
     private val imu = DrivetrainSubsystem.imu
 
-    private val imuYPR = DoubleArray(3)
     private var gyroOffset = Rotation2d.identity()
 
     fun setHeading(heading: Rotation2d) {
@@ -39,6 +38,7 @@ object RobotStateEstimator: RealTimeTask {
     private var prevHeading: Rotation2d
 
     init {
+        driveEncoderRight.setReverseDirection(true)
         resetEncoders()
         setHeading(Rotation2d.identity())
         leftEncoderPrevDistance = getLeftEncoderInches()
@@ -72,6 +72,8 @@ object RobotStateEstimator: RealTimeTask {
     }
 
     override fun action(ctx: RealTimeExecutor.RealTimeContext) {
+
+        /*
         //Drive odometry
         val leftDistance = getLeftEncoderInches()
         val rightDistance = getRightEncoderInches()
@@ -100,5 +102,15 @@ object RobotStateEstimator: RealTimeTask {
         val frameCapTime = ctx.time - activeLimelight.getLatencySeconds()
         val target = activeLimelight.getTarget()
         RobotState.addVisionUpdate(frameCapTime, target, activeLimelight)
+        */
+        val leftRaw = driveEncoderLeft.raw
+        val rightRaw = driveEncoderRight.raw
+        //s = r*theta
+        //s = 60
+        //r = ?
+        //theta = measured
+        //r = s / theta
+        println("Left: $leftRaw\tRight: $rightRaw")
+
     }
 }

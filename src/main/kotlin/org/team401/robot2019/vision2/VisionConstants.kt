@@ -20,8 +20,8 @@ object VisionConstants {
     val VPW = 2.0 * tan(Math.toRadians(horizontalFOV / 2.0))
     val VPH = 2.0 * tan(Math.toRadians(verticalFOV / 2.0))
 
-    const val driveTrackWidthInches = 1.0
-    const val driveTrackScrubFactor = 1.0
+    const val driveTrackWidthInches = 26.5
+    const val driveTrackScrubFactor = 1.009268402942991
 
-    const val driveWheelRadiusInches = 3.0
+    const val driveWheelRadiusInches = 3.0748385
 }
