@@ -10,6 +10,7 @@ import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.ControlType
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
@@ -29,11 +30,22 @@ import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.vision.*
+import org.team401.robot2019.vision2.DifferentialKinematics
+import org.team401.robot2019.vision2.LimelightCameraEnhanced
+import org.team401.robot2019.vision2.RobotState
+import org.team401.robot2019.vision2.RobotStateEstimator
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
 import org.team401.taxis.diffdrive.odometry.OdometryTracker
 import org.team401.taxis.geometry.Pose2d
+import org.team401.taxis.geometry.Rotation2d
+import org.team401.taxis.geometry.Translation2d
+import org.team401.taxis.geometry.Twist2d
+import kotlin.math.abs
+import kotlin.math.ln
+import kotlin.math.min
+import kotlin.math.tan
 
 /**
  * @author Cameron Earle
@@ -66,6 +78,13 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
      */
     fun shift(state: Boolean) {
         shifter.set(state)
+    }
+
+    /**
+     * Uses a calibrated logarithmic regression to calculate the distance to a target from the area percentage
+     */
+    fun calculateLowVisionTargetDistanceInches(area: Double): Double {
+        return 72.8901074814 - 21.3227275179 * ln(area)
     }
 
     enum class DriveStates(val requiresSensors: Boolean = false) {
@@ -198,7 +217,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
         state(DrivetrainSubsystem.DriveStates.VisionAlign){
             lateinit var activeSide: SuperstructureRoutines.Side
-            lateinit var activeCamera: LimelightCamera
+            lateinit var activeCamera: LimelightCameraEnhanced
 
             entry {
                 activeSide = SuperstructureRoutines.side
@@ -211,39 +230,40 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                     }
                 }
 
-                activeCamera.configForVision(3)
+                activeCamera.configForVision(1)
                 activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
                 activeCamera.resetFrame()
+                cheesyController.reset()
             }
 
+            val alignmentOffset = 30.0 //inches
+            val autosteerKp = .2
+
             rtAction {
-                val activeOffset = ControlParameters.VisionOffsets.select(
-                    activeSide,
-                    SuperstructureController.output.visionHeightMode,
-                    SuperstructureController.output.wristTool
-                )
-                val tx = activeCamera.entries.tx.getDouble(0.0)
-                val hasTarget = activeCamera.entries.tv.getDouble(0.0) == 1.0
-                val txOffset = tx - activeOffset.value
-                //println("Active offset: $activeOffset\tHas target: $hasTarget")
-
-                val adjustment = if (hasTarget) {
-                    (ControlParameters.DrivetrainParameters.visionKp * txOffset) / 100.0 // 1 degree of error = 1%power
-                } else {
-                    0.0
-                }
-
+                val seesTarget = activeCamera.seesTarget()
                 val output = cheesyController.update(
                     LeftStick.readAxis { PITCH },
                     RightStick.readAxis { ROLL },
                     false,
                     RightStick.readButton { TRIGGER }
                 )
-
-                val leftPower = output.left + adjustment
-                val rightPower = output.right - adjustment
-
-                tank(leftPower, rightPower)
+                var outLeft = output.left
+                var outRight = output.right
+                if (seesTarget) {
+                    val area = activeCamera.getArea()
+                    val robotHdg = RobotStateEstimator.getHeading()
+                    val distance = calculateLowVisionTargetDistanceInches(area)
+                    val targetAngle = -activeCamera.entries.tx.getDouble(0.0)
+                    val cameraToTarget = Pose2d.fromTranslation(Translation2d(distance, distance * tan(Math.toRadians(targetAngle))))
+                    val cameraToTargetRotated = cameraToTarget.transformBy(Pose2d.fromRotation(robotHdg))
+                    val robotToTarget = activeCamera.robotToCamera.transformBy(cameraToTargetRotated)
+                    val bearing = robotToTarget.translation.direction()
+                    val adjustment = (bearing.degrees * ControlParameters.DrivetrainParameters.visionKp) / 100.0
+                    println(bearing)
+                    outLeft += adjustment
+                    outRight -= adjustment
+                }
+                tank(outLeft, outRight)
             }
 
             exit {

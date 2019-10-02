@@ -60,12 +60,12 @@ fun setup() {
     //Initialize real-time tasks
     //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator) //Drivetrain odometry from sensors
     //RealTimeExecutor.addTask(VisionOdometryUpdater)              //Drivetrain odometry from vision
-    RealTimeExecutor.addTask(RobotStateEstimator)
+    //RealTimeExecutor.addTask(RobotStateEstimator)
     RealTimeExecutor.addTask(SuperstructureUpdater)              //Superstrcture motion planning / control
     //RealTimeExecutor.addTask(OdometryWatchdog)                   //Drivetrain odometry error checking
 
     on (Events.TELEOP_ENABLED) {
-        VisionManager.frontCamera.configForVision(3)
+        VisionManager.frontCamera.configForVision(1)
         VisionManager.backCamera.configForVision(3)
         VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)

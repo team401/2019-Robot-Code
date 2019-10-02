@@ -124,9 +124,9 @@ object ControlParameters {
          * PIDF for the wrist rotation
          */
         object WristRotationPIDF: PIDFTemplate {
-            override val kP by Selectable(10.0, 1.7) //comp, practice
+            override val kP by Selectable(20.0, 1.7) //comp, practice
             override val kI = 0.0
-            override val kD by Selectable(100.0, 200.0) //comp wrist has friction brake, practice does not
+            override val kD by Selectable(200.0, 200.0) //comp wrist has friction brake, practice does not
             override val kF = 0.84
         }
     }

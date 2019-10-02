@@ -2,6 +2,7 @@ package org.team401.robot2019.vision2
 
 import edu.wpi.first.wpilibj.CounterBase
 import edu.wpi.first.wpilibj.Encoder
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.measure.MagEncoderTicks
 import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.rt.RealTimeTask
@@ -72,8 +73,7 @@ object RobotStateEstimator: RealTimeTask {
     }
 
     override fun action(ctx: RealTimeExecutor.RealTimeContext) {
-
-        /*
+        if (ctx.dt <= 0 || ctx.dt >= 1.0) return //reject incorrect dt values
         //Drive odometry
         val leftDistance = getLeftEncoderInches()
         val rightDistance = getRightEncoderInches()
@@ -96,21 +96,5 @@ object RobotStateEstimator: RealTimeTask {
         leftEncoderPrevDistance = leftDistance
         rightEncoderPrevDistance = rightDistance
         prevHeading = gyroAngle
-
-        //Vision updates
-        val activeLimelight = VisionManager.frontCamera
-        val frameCapTime = ctx.time - activeLimelight.getLatencySeconds()
-        val target = activeLimelight.getTarget()
-        RobotState.addVisionUpdate(frameCapTime, target, activeLimelight)
-        */
-        val leftRaw = driveEncoderLeft.raw
-        val rightRaw = driveEncoderRight.raw
-        //s = r*theta
-        //s = 60
-        //r = ?
-        //theta = measured
-        //r = s / theta
-        println("Left: $leftRaw\tRight: $rightRaw")
-
     }
 }

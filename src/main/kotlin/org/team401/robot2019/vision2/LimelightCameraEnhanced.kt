@@ -17,6 +17,7 @@ class LimelightCameraEnhanced(name: String, robotToCamera: Pose2d, val horizonta
     private val zeroArray = DoubleArray(8) { 0.0 }
     private val xCornersEntry = table.getEntry("tcornx")
     private val yCornersEntry = table.getEntry("tcorny")
+    private val taEntry = table.getEntry("ta")
 
     private var seesTarget = false
     private val targets = arrayListOf<TargetInfo>()
@@ -26,7 +27,10 @@ class LimelightCameraEnhanced(name: String, robotToCamera: Pose2d, val horizonta
     fun getLatencySeconds() = entries.tl.getDouble(0.0) / 1000.0 + constantLatencySeconds
 
     @Synchronized
-    fun seesTarget() = seesTarget
+    fun seesTarget() = entries.tv.getDouble(0.0) == 1.0
+
+    @Synchronized
+    fun getArea() = taEntry.getDouble(0.0)
 
     @Synchronized
     fun getTarget(): List<TargetInfo>? {
