@@ -237,6 +237,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
 
             val alignmentOffset = 30.0 //inches
+            val degrees180 = Rotation2d.fromDegrees(180.0)
             val autosteerKp = .2
 
             rtAction {
@@ -251,17 +252,24 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 var outRight = output.right
                 if (seesTarget) {
                     val area = activeCamera.getArea()
-                    val robotHdg = RobotStateEstimator.getHeading()
                     val distance = calculateLowVisionTargetDistanceInches(area)
-                    val targetAngle = -activeCamera.entries.tx.getDouble(0.0)
-                    val cameraToTarget = Pose2d.fromTranslation(Translation2d(distance, distance * tan(Math.toRadians(targetAngle))))
-                    val cameraToTargetRotated = cameraToTarget.transformBy(Pose2d.fromRotation(robotHdg))
-                    val robotToTarget = activeCamera.robotToCamera.transformBy(cameraToTargetRotated)
-                    val bearing = robotToTarget.translation.direction()
-                    val adjustment = (bearing.degrees * ControlParameters.DrivetrainParameters.visionKp) / 100.0
-                    println(bearing)
-                    outLeft += adjustment
-                    outRight -= adjustment
+                    if (distance > 0.0) {
+                        val targetAngle = -activeCamera.entries.tx.getDouble(0.0)
+                        val cameraToTarget =
+                            Pose2d.fromTranslation(Translation2d(distance, distance * tan(Math.toRadians(targetAngle))))
+                        val robotToTarget = activeCamera.robotToCamera.transformBy(cameraToTarget)
+                        var bearing = robotToTarget.translation.direction()
+                        if (activeSide == SuperstructureRoutines.Side.BACK) {
+                            bearing = bearing.rotateBy(degrees180)
+                        }
+                        if (bearing.degrees in -20.0..20.0) {
+                            val adjustment = (bearing.degrees * ControlParameters.DrivetrainParameters.visionKp) / 100.0
+                            outLeft -= adjustment
+                            outRight += adjustment
+                        }
+
+                        println(bearing)
+                    }
                 }
                 tank(outLeft, outRight)
             }
