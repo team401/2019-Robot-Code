@@ -10,19 +10,13 @@ import org.snakeskin.registry.Controllers
 import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.utility.Selectable
 import org.team401.robot2019.auto.DeepSpaceAuto
-import org.team401.robot2019.control.drivetrain.CriticalPoses
 import org.team401.robot2019.control.drivetrain.Trajectories
 import org.team401.robot2019.control.superstructure.SuperstructureUpdater
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.vision.LimelightCamera
 import org.team401.robot2019.control.vision.VisionManager
-import org.team401.robot2019.control.vision.VisionOdometryUpdater
 import org.team401.robot2019.subsystems.*
 import org.team401.robot2019.util.LEDManager
-import org.team401.robot2019.vision2.RobotStateEstimator
-import org.team401.taxis.geometry.Pose2d
-import org.team401.taxis.trajectory.TimedView
-import org.team401.taxis.trajectory.TrajectoryIterator
 
 /**
  * @author Cameron Earle

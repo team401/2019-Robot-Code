@@ -10,11 +10,9 @@ import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.ControlType
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
-import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
@@ -26,14 +24,9 @@ import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
-import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
-import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.vision.*
-import org.team401.robot2019.vision2.DifferentialKinematics
 import org.team401.robot2019.vision2.LimelightCameraEnhanced
-import org.team401.robot2019.vision2.RobotState
-import org.team401.robot2019.vision2.RobotStateEstimator
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
@@ -41,10 +34,8 @@ import org.team401.taxis.diffdrive.odometry.OdometryTracker
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.geometry.Translation2d
-import org.team401.taxis.geometry.Twist2d
-import kotlin.math.abs
 import kotlin.math.ln
-import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.tan
 
 /**
@@ -81,10 +72,10 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
     }
 
     /**
-     * Uses a calibrated logarithmic regression to calculate the distance to a target from the area percentage
+     * Uses a calibrated power regression to calculate the distance to a target from the area percentage
      */
-    fun calculateLowVisionTargetDistanceInches(area: Double): Double {
-        return 72.8901074814 - 21.3227275179 * ln(area)
+    private fun calculateVisionTargetDistanceInches(area: Double): Double {
+        return 80.5033419521 * area.pow(-0.483212149061)
     }
 
     enum class DriveStates(val requiresSensors: Boolean = false) {
@@ -252,7 +243,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 var outRight = output.right
                 if (seesTarget) {
                     val area = activeCamera.getArea()
-                    val distance = calculateLowVisionTargetDistanceInches(area)
+                    val distance = calculateVisionTargetDistanceInches(area)
                     if (distance > 0.0) {
                         val targetAngle = -activeCamera.entries.tx.getDouble(0.0)
                         val cameraToTarget =
