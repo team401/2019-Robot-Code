@@ -246,14 +246,10 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
             rtAction {
                 val seesTarget = activeCamera.seesTarget()
-                val output = cheesyController.update(
-                    LeftStick.readAxis { PITCH },
-                    RightStick.readAxis { ROLL },
-                    false,
-                    RightStick.readButton { TRIGGER }
-                )
-                var outLeft = output.left
-                var outRight = output.right
+                val translation = LeftStick.readAxis { PITCH } * .33
+                val rotation = RightStick.readAxis { ROLL } * .2
+                var outLeft = translation + rotation
+                var outRight = translation - rotation
                 if (seesTarget) {
                     val area = activeCamera.getArea()
                     val distance = calculateVisionTargetDistanceInches(area)
@@ -271,8 +267,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                             outLeft -= adjustment
                             outRight += adjustment
                         }
-
-                        println(bearing)
                     }
                 }
                 tank(outLeft, outRight)

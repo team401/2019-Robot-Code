@@ -36,7 +36,7 @@ fun setup() {
     Selectable.selected = RobotIndex.COMP //CHANGE THIS depending on what robot you're using.
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem, ClimberSubsystem)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
@@ -54,7 +54,7 @@ fun setup() {
 
     on (Events.TELEOP_ENABLED) {
         VisionManager.frontCamera.configForVision(1)
-        VisionManager.backCamera.configForVision(3)
+        VisionManager.backCamera.configForVision(1)
         VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.stop()

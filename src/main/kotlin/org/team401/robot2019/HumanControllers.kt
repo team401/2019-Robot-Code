@@ -19,6 +19,15 @@ import org.team401.robot2019.util.LEDManager
 
 val LeftStick = HumanControls.attack3(0) {
     invertAxis(Axes.PITCH)
+
+    whenButton(Buttons.STICK_BOTTOM) {
+        pressed {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.VisionAlign)
+        }
+        released {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.DemoDrive)
+        }
+    }
 }
 val RightStick = HumanControls.attack3(1)
 
