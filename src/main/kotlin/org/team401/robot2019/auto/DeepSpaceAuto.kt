@@ -23,7 +23,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
     }
 
     override fun assembleAuto(): SequentialSteps {
-        val selectedAuto = autoChooser.selected//DriverStationDisplay.autoSelctor.value.value as AutoMode
+        val selectedAuto = AutoMode.Manual//autoChooser.selected//DriverStationDisplay.autoSelctor.value.value as AutoMode
         println("Selected auto: ${selectedAuto}")
 
         if (selectedAuto == AutoMode.Manual) {
