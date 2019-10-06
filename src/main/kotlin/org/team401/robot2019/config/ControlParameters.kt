@@ -32,7 +32,7 @@ object ControlParameters {
          * This is used to set the offset correctly between the different robots.
          */
         // practice used to be 2278
-        val armEncoderValueAtVertical by Selectable(1800, 2278)
+        val armEncoderValueAtVertical by Selectable(2660, 2278)
 
 
         /**
