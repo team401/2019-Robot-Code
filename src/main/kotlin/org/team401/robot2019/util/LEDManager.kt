@@ -10,7 +10,6 @@ import org.team401.robot2019.RobotEvents
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
-import javax.tools.Tool
 
 object LEDManager {
     /**
@@ -38,8 +37,10 @@ object LEDManager {
         Rainbow, //All truss LEDs are in rainbow pattern
         Race, //All truss LEDs race orange for maximum robot performance
         //SideIndicator, //Front truss LEDs indicate "red side", back truss LEDs indicate "blue side"
-        ModifierRed, //Front truss LEDs are off, back truss LEDs indicate "blue side"
-        ModifierBlue, //Front truss LEDs indicate "red side", back truss LEDs are off
+        BlueSideActiveLock, //Front truss LEDs are off, back truss LEDs indicate "blue side"
+        RedSideActiveLock, //Front truss LEDs indicate "red side", back truss LEDs are off
+        BlueSideActiveAuto,
+        RedSideActiveAuto,
         Climb,
     }
 
@@ -81,6 +82,8 @@ object LEDManager {
      * Sets the truss LEDs to the specified mode
      */
     @Synchronized fun setTrussLedMode(mode: TrussLedMode) {
+        if (trussModeHistory.current == mode) return
+
         when (mode) {
             TrussLedMode.Off -> {
                 ll.off(Indices.TrussBackLeftStrip)
@@ -112,18 +115,32 @@ object LEDManager {
             }
             */
 
-            TrussLedMode.ModifierRed -> {
+            TrussLedMode.BlueSideActiveLock -> {
+                ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
+                ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
+                ll.off(Indices.TrussFrontLeftStrip)
+                ll.off(Indices.TrussFrontRightStrip)
+            }
+
+            TrussLedMode.RedSideActiveLock -> {
                 ll.solid(LightLink.Color.RED, Indices.TrussFrontLeftStrip)
                 ll.solid(LightLink.Color.RED, Indices.TrussFrontRightStrip)
                 ll.off(Indices.TrussBackLeftStrip)
                 ll.off(Indices.TrussBackRightStrip)
             }
 
-            TrussLedMode.ModifierBlue -> {
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
+            TrussLedMode.BlueSideActiveAuto -> {
+                ll.blink(LightLink.Color.BLUE, LightLink.Speed.FAST, Indices.TrussBackLeftStrip)
+                ll.blink(LightLink.Color.BLUE, LightLink.Speed.FAST, Indices.TrussBackRightStrip)
                 ll.off(Indices.TrussFrontLeftStrip)
                 ll.off(Indices.TrussFrontRightStrip)
+            }
+
+            TrussLedMode.RedSideActiveAuto -> {
+                ll.blink(LightLink.Color.RED, LightLink.Speed.FAST, Indices.TrussFrontLeftStrip)
+                ll.blink(LightLink.Color.RED, LightLink.Speed.FAST, Indices.TrussFrontRightStrip)
+                ll.off(Indices.TrussBackLeftStrip)
+                ll.off(Indices.TrussBackRightStrip)
             }
 
             TrussLedMode.Climb -> {
@@ -309,9 +326,9 @@ object LEDManager {
 
         on (Events.TELEOP_ENABLED) {
             if (SuperstructureRoutines.side == SuperstructureRoutines.Side.FRONT) {
-                setTrussLedMode(TrussLedMode.ModifierRed)
+                setTrussLedMode(TrussLedMode.BlueSideActiveLock)
             } else {
-                setTrussLedMode(TrussLedMode.ModifierBlue)
+                setTrussLedMode(TrussLedMode.RedSideActiveLock)
             }
             setArmLedMode(ArmLedMode.Off)
             updateToolStatus(SuperstructureController.output.wristTool, true)

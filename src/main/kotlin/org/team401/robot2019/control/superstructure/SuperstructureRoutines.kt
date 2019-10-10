@@ -18,33 +18,77 @@ object SuperstructureRoutines {
         FRONT, BACK
     }
 
+    val sideManager = SuperstructureSideManager()
+
     var side = Side.FRONT
     @Synchronized get
     @Synchronized set
 
-    @Synchronized fun switchSides() {
-        if (side == Side.FRONT){
-            side = Side.BACK
-            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierBlue)
-        } else {
-            side = Side.FRONT
-            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.ModifierRed)
+    /**
+     * Call this directly after calling a side manager update function
+     */
+    @Synchronized
+    fun onSideManagerUpdate() {
+        val sideManagerSide = sideManager.getSide()
+        val sideManagerLocked = sideManager.isLocked()
+
+        side = sideManagerSide
+
+        when (sideManagerSide) {
+            Side.FRONT -> {
+                if (sideManagerLocked) {
+                    //Front locked
+                    LEDManager.setTrussLedMode(LEDManager.TrussLedMode.RedSideActiveLock)
+                } else {
+                    //Front auto
+                    LEDManager.setTrussLedMode(LEDManager.TrussLedMode.RedSideActiveAuto)
+                }
+            }
+
+            Side.BACK -> {
+                if (sideManagerLocked) {
+                    //Back locked
+                    LEDManager.setTrussLedMode(LEDManager.TrussLedMode.BlueSideActiveLock)
+                } else {
+                    //Back auto
+                    LEDManager.setTrussLedMode(LEDManager.TrussLedMode.BlueSideActiveAuto)
+                }
+            }
         }
     }
 
-    fun ccMaybe(enterCC: Boolean) {
+    @Synchronized fun switchSides() {
+        sideManager.reportAction(SuperstructureSideManager.Action.TOGGLED) //Toggle the side manager
+        /*
+        if (side == Side.FRONT){
+            side = Side.BACK
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.RedSideActiveLock)
+        } else {
+            side = Side.FRONT
+            LEDManager.setTrussLedMode(LEDManager.TrussLedMode.BlueSideActiveLock)
+        }
+         */
+    }
+
+    fun ccMaybe(enterCC: Boolean): Boolean {
         if (enterCC) {
             ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
             ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.CoordinatedControl)
             WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.CoordinatedControl)
+            //
         } else {
             //ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.Holding)
             //ArmSubsystem.armExtensionMachine.setState(ArmSubsystem.ArmExtensionStates.Holding)
             //WristSubsystem.wristMachine.setState(WristSubsystem.WristStates.Holding)
         }
+        return enterCC
     }
 
+    @Synchronized
     fun goToCargoShip() {
+        sideManager.reportAction(SuperstructureSideManager.Action.SUPERSTRUCTURE_MOVED_TO_SETPOINT)
+        onSideManagerUpdate()
+
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -61,14 +105,27 @@ object SuperstructureRoutines {
         }
     }
 
+    @Synchronized
     fun goToLow() {
+        sideManager.reportAction(SuperstructureSideManager.Action.SUPERSTRUCTURE_MOVED_TO_SETPOINT)
+        onSideManagerUpdate()
+
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
                 if (side == Side.FRONT) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchBottomFront))
+                    if (ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchBottomFront))) {
+                        synchronized (this) {
+
+                        }
+                    }
                 } else if (side == Side.BACK) {
-                    ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchBottomBack))
+                    if (ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchBottomBack))) {
+                        synchronized (this) {
+                            sideManager.reportAction(SuperstructureSideManager.Action.SUPERSTRUCTURE_MOVED_TO_SETPOINT)
+                            onSideManagerUpdate()
+                        }
+                    }
                 }
             }
 
@@ -82,7 +139,11 @@ object SuperstructureRoutines {
         }
     }
 
+    @Synchronized
     fun goToMid() {
+        sideManager.reportAction(SuperstructureSideManager.Action.SUPERSTRUCTURE_MOVED_TO_SETPOINT)
+        onSideManagerUpdate()
+
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -103,7 +164,11 @@ object SuperstructureRoutines {
         }
     }
 
+    @Synchronized
     fun goToHigh() {
+        sideManager.reportAction(SuperstructureSideManager.Action.SUPERSTRUCTURE_MOVED_TO_SETPOINT)
+        onSideManagerUpdate()
+
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -111,7 +176,8 @@ object SuperstructureRoutines {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchHighFront))
                 } else if (side == Side.BACK) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.rocketHatchHighBack))
-                }            }
+                }
+            }
 
             WristMotionPlanner.Tool.CargoTool -> {
                 if (side == Side.FRONT) {
@@ -123,11 +189,19 @@ object SuperstructureRoutines {
         }
     }
 
+    @Synchronized
     fun switchTool() {
+        sideManager.reportAction(SuperstructureSideManager.Action.SUPERSTRUCTURE_MOVED_TO_SETPOINT)
+        onSideManagerUpdate()
+
         ccMaybe(SuperstructureMotionPlanner.requestToolChange(SuperstructureMotionPlanner.notActiveTool()))
     }
 
+    @Synchronized
     fun intake() {
+        sideManager.reportAction(SuperstructureSideManager.Action.INTAKE_STARTED)
+        onSideManagerUpdate()
+
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
@@ -152,7 +226,11 @@ object SuperstructureRoutines {
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Intaking)
     }
 
+    @Synchronized
     fun stopIntake() {
+        sideManager.reportAction(SuperstructureSideManager.Action.INTAKE_FINISHED)
+        onSideManagerUpdate()
+
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
@@ -167,7 +245,11 @@ object SuperstructureRoutines {
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Off)
     }
 
+    @Synchronized
     fun score() {
+        sideManager.reportAction(SuperstructureSideManager.Action.SCORE_STARTED)
+        onSideManagerUpdate()
+
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -182,7 +264,11 @@ object SuperstructureRoutines {
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Scoring)
     }
 
+    @Synchronized
     fun stopScoring() {
+        sideManager.reportAction(SuperstructureSideManager.Action.SCORE_FINISHED)
+        onSideManagerUpdate()
+
         val currentTool = SuperstructureMotionPlanner.activeTool
         when (currentTool) {
             WristMotionPlanner.Tool.CargoTool -> {
@@ -195,6 +281,7 @@ object SuperstructureRoutines {
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Off)
     }
 
+    @Synchronized
     fun goToFloorPickup() {
         score()
         SuperstructureMotionPlanner.goToFloorPickup()
@@ -220,6 +307,8 @@ object SuperstructureRoutines {
     }
 
     fun intakeCargoFromLoadingStation() {
+        //no-op (DO NOT USE!)
+        /*
         if (SuperstructureMotionPlanner.activeTool == WristMotionPlanner.Tool.CargoTool) {
             when (side){
                 Side.FRONT -> ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoIntakeLoadingStationFront))
@@ -227,5 +316,6 @@ object SuperstructureRoutines {
             }
             WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
         }
+         */
     }
 }

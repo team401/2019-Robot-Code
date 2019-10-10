@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Solenoid
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
+import org.snakeskin.hardware.Hardware
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
@@ -25,6 +26,7 @@ import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
+import org.team401.robot2019.control.superstructure.SuperstructureSideManager
 import org.team401.robot2019.control.vision.*
 import org.team401.robot2019.vision2.LimelightCameraEnhanced
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
@@ -130,14 +132,20 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
 
             action {
+                val pitch = LeftStick.readAxis { PITCH }
+                val roll = RightStick.readAxis { ROLL }
+
                 val output = cheesyController.update(
-                    LeftStick.readAxis { PITCH },
-                    RightStick.readAxis { ROLL },
+                    pitch,
+                    roll,
                     false,
                     RightStick.readButton { TRIGGER }
                 )
 
                 tank(output.left, output.right)
+
+                SuperstructureRoutines.sideManager.reportDriveCommand(Hardware.getRelativeTime(), pitch)
+                SuperstructureRoutines.onSideManagerUpdate()
             }
         }
 
@@ -211,6 +219,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             lateinit var activeCamera: LimelightCameraEnhanced
 
             entry {
+                SuperstructureRoutines.sideManager.reportAction(SuperstructureSideManager.Action.VISION_STARTED)
+                SuperstructureRoutines.onSideManagerUpdate()
                 activeSide = SuperstructureRoutines.side
                 activeCamera = when (activeSide) {
                     SuperstructureRoutines.Side.FRONT -> {
@@ -267,6 +277,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
             exit {
                 activeCamera.setLedMode(LimelightCamera.LedMode.Off)
+                SuperstructureRoutines.sideManager.reportAction(SuperstructureSideManager.Action.VISION_FINISHED)
+                SuperstructureRoutines.onSideManagerUpdate()
             }
         }
 

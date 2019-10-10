@@ -5,6 +5,7 @@ import org.snakeskin.auto.AutoManager
 import org.snakeskin.dsl.HumanControls
 import org.snakeskin.logic.Direction
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
+import org.team401.robot2019.control.superstructure.SuperstructureSideManager
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.vision.LimelightCamera
 import org.team401.robot2019.control.vision.VisionManager
@@ -181,6 +182,8 @@ val Gamepad = HumanControls.dualAction(2){
         pressed {
             SuperstructureMotionPlanner.goHome()
             SuperstructureRoutines.ccMaybe(true) //Force into coordinated control
+            SuperstructureRoutines.sideManager.reportAction(SuperstructureSideManager.Action.SUPERSTRUCTURE_STOWED)
+            SuperstructureRoutines.onSideManagerUpdate()
         }
     }
 
