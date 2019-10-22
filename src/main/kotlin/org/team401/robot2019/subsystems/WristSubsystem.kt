@@ -20,6 +20,7 @@ import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.util.LEDManager
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -288,6 +289,7 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     private fun configWristHome(force: Boolean = false) {
+        /*
         //We're using this status frame that we don't plan on using to determine whether the talon has ever been
         //initialized by the application.  This is what is known in the industry as a HACK
         if (force || rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000) >= 240) {
@@ -297,6 +299,17 @@ object WristSubsystem: Subsystem(100L) {
             LEDManager.signalTruss(LEDManager.TrussLedSignal.WristHomed)
             rotation.master.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000, 1000)
         }
+         */
+
+        val ticks = rotationTalon.sensorCollection.pulseWidthPosition
+
+        val rotatedTicks = if (ticks < 2048) {
+            (ticks + 476) % 4096
+        } else {
+            (ticks - 3620)
+        }
+
+        rotationTalon.selectedSensorPosition = rotatedTicks
     }
 
     override fun action() {
@@ -309,23 +322,25 @@ object WristSubsystem: Subsystem(100L) {
             DriverStation.reportWarning("[Fault] Wrist Encoder has failed!", false)
         }
 
+        /*
         if (DriverStation.getInstance().isDisabled) {
             homingButtonHistory.update(homingButtonInput.get())
             if (homingButtonHistory.last == true && homingButtonHistory.current == false) {
                 configWristHome(true)
             }
         }
+         */
     }
 
     override fun setup() {
         leftIntakeTalon.inverted = false
         rightIntakeTalon.inverted = true
 
-        configWristHome()
-
         rotation.inverted = false
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
-        rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
+        rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 1000)
+
+        configWristHome()
 
         rotation.setPIDF(ControlParameters.WristParameters.WristRotationPIDF)
         rotation.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
