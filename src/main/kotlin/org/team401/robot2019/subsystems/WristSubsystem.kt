@@ -330,6 +330,8 @@ object WristSubsystem: Subsystem(100L) {
             }
         }
          */
+
+        println(rotationTalon.selectedSensorPosition)
     }
 
     override fun setup() {

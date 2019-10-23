@@ -320,7 +320,6 @@ object ArmSubsystem: Subsystem(100L) {
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
         //println("Arm Position : ${ArmKinematics.forward(getCurrentArmState())}")
         //println(SuperstructureController.output.visionHeightMode)
-        //println(pivotRightTalon.sensorCollection.pulseWidthPosition)
 
     }
 
@@ -332,13 +331,26 @@ object ArmSubsystem: Subsystem(100L) {
         pivot.setForwardLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         pivot.setReverseLimitSwitch(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled)
         pivot.setCurrentLimit(30.0, 0.0, 0.0.Seconds)
-        pivot.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative)
+        pivot.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 1000)
+
+
+        /*
         if (ControlParameters.ArmParameters.armEncoderPhase) {
-            pivot.master.selectedSensorPosition = (Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - ControlParameters.ArmParameters.armEncoderValueAtVertical - 1024)
+            //pivot.master.selectedSensorPosition = (Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - ControlParameters.ArmParameters.armEncoderValueAtVertical - 1024)
 
         } else {
-            pivot.master.selectedSensorPosition = (Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - ControlParameters.ArmParameters.armEncoderValueAtVertical + 1024)
+            //pivot.master.selectedSensorPosition = (Math.abs(pivot.getSensorCollection().pulseWidthPosition % 4096.0).roundToInt() - ControlParameters.ArmParameters.armEncoderValueAtVertical + 1024)
         }
+         */
+
+        val ticks = pivotRightTalon.sensorCollection.pulseWidthPosition
+        var rotated = ticks - 3572
+
+        if (rotated < 0) {
+            rotated += 4096
+        }
+        pivotRightTalon.selectedSensorPosition = rotated
+
         pivot.setSensorPhase(ControlParameters.ArmParameters.armEncoderPhase)
         configureForMoveToVertical(true)
 
