@@ -144,7 +144,7 @@ class SuperstructureCanvas(val ppi: Double, val cargoToolLength: LinearDistanceM
         val wristAngleAdjusted = wristState.wristPosition - (Math.PI / 2.0).Radians + armState.armAngle
         val upIndicatorAngle = wristAngleAdjusted + (Math.PI / 2.0).Radians
 
-        val wristPose = EndpointKinematics.forward(armState, wristState, WristSubsystem.CargoGrabberStates.Clamped, WristSubsystem.HatchClawStates.Clamped)
+        val wristPose = EndpointKinematics.forward(armState, wristState, WristSubsystem.WristToolStates.Cargo)
         val hatchX = xToFrame(wristPose.hatchEndpoint.x)
         val hatchY = yToFrame(wristPose.hatchEndpoint.y)
         val hatchAX = xToFrame(wristPose.hatchEndpointA.x)

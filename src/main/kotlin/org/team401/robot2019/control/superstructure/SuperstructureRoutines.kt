@@ -201,17 +201,14 @@ object SuperstructureRoutines {
     fun intake() {
         sideManager.reportAction(SuperstructureSideManager.Action.INTAKE_STARTED)
         onSideManagerUpdate()
-
-        val currentTool = SuperstructureMotionPlanner.activeTool
-        when (currentTool) {
+        WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Intake)
+        when (SuperstructureMotionPlanner.activeTool) {
             WristMotionPlanner.Tool.CargoTool -> {
                 if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoFloorPickupFront))
                 } else if (side == Side.BACK){
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoFloorPickupBack))
                 }
-                WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped)
-                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Intake)
             }
 
             WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -220,7 +217,6 @@ object SuperstructureRoutines {
                 } else if (side == Side.BACK){
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.hatchIntakeBack))
                 }
-                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
             }
         }
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Intaking)
@@ -230,18 +226,7 @@ object SuperstructureRoutines {
     fun stopIntake() {
         sideManager.reportAction(SuperstructureSideManager.Action.INTAKE_FINISHED)
         onSideManagerUpdate()
-
-        val currentTool = SuperstructureMotionPlanner.activeTool
-        when (currentTool) {
-            WristMotionPlanner.Tool.CargoTool -> {
-                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
-                WristSubsystem.cargoGrabberMachine.setState(WristSubsystem.CargoGrabberStates.Clamped)
-            }
-
-            WristMotionPlanner.Tool.HatchPanelTool -> {
-                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Clamped)
-            }
-        }
+        WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Holding)
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Off)
     }
 
@@ -249,18 +234,7 @@ object SuperstructureRoutines {
     fun score() {
         sideManager.reportAction(SuperstructureSideManager.Action.SCORE_STARTED)
         onSideManagerUpdate()
-
-        val currentTool = SuperstructureMotionPlanner.activeTool
-        when (currentTool) {
-            WristMotionPlanner.Tool.HatchPanelTool -> {
-                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Unclamped)
-                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
-            }
-
-            WristMotionPlanner.Tool.CargoTool -> {
-                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Scoring)
-            }
-        }
+        WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Scoring)
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Scoring)
     }
 
@@ -268,16 +242,7 @@ object SuperstructureRoutines {
     fun stopScoring() {
         sideManager.reportAction(SuperstructureSideManager.Action.SCORE_FINISHED)
         onSideManagerUpdate()
-
-        val currentTool = SuperstructureMotionPlanner.activeTool
-        when (currentTool) {
-            WristMotionPlanner.Tool.CargoTool -> {
-                WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
-            }
-            WristMotionPlanner.Tool.HatchPanelTool -> {
-                WristSubsystem.hatchClawMachine.setState(WristSubsystem.HatchClawStates.Clamped)
-            }
-        }
+        WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Idle)
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Off)
     }
 

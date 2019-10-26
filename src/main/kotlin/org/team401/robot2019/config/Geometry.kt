@@ -66,8 +66,8 @@ object Geometry {
          * Measured by rotating the longest side of the wrist towards the end of the arm
          */
 
-        val hatchPanelToolMinSafeLength = armBaseLength + armExtensionStickout + 6.0.Inches
-        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 6.875.Inches
+        val hatchPanelToolMinSafeLength = armBaseLength + armExtensionStickout + 1.0.Inches
+        val cargoToolMinSafeLength = armBaseLength + armExtensionStickout + 1.0.Inches
         val minSafeArmLength = cargoToolMinSafeLength//armBaseLength + armExtensionStickout + 12.0.Inches + 1.5.Inches //Arm base + minimum distance + safety factor
 
 
@@ -81,7 +81,7 @@ object Geometry {
          * Minimum safe radius that it is safe to change tools at.  This allows an additional safety
          * factor for switching tools.
          */
-        val minSafeWristToolChangeRadius = minSafeArmLength + 1.0.Inches
+        val minSafeWristToolChangeRadius = minSafeArmLength
 
         val minToolChangeX = minSafeWristToolChangeRadius
         val minToolChangeY = 0.0.Inches

@@ -15,8 +15,7 @@ import org.team401.robot2019.subsystems.WristSubsystem
 data class SuperstructureSetpoint(val point: Point2d,
                                   val tool: WristMotionPlanner.Tool,
                                   val toolAngle: AngularDistanceMeasureRadians,
-                                  val cargoGrabberState: WristSubsystem.CargoGrabberStates,
-                                  val hatchClawState: WristSubsystem.HatchClawStates,
+                                  val wristToolState: WristSubsystem.WristToolStates,
                                   val visionHeightMode: VisionHeightMode) {
     companion object {
         fun holdingCargo(point: Point2d, toolAngle: AngularDistanceMeasureRadians, visionHeightMode: VisionHeightMode): SuperstructureSetpoint {
@@ -24,8 +23,7 @@ data class SuperstructureSetpoint(val point: Point2d,
                 point,
                 WristMotionPlanner.Tool.CargoTool,
                 toolAngle,
-                WristSubsystem.CargoGrabberStates.Clamped,
-                WristSubsystem.HatchClawStates.Clamped,
+                WristSubsystem.WristToolStates.Cargo,
                 visionHeightMode
             )
         }
@@ -35,8 +33,7 @@ data class SuperstructureSetpoint(val point: Point2d,
                 point,
                 WristMotionPlanner.Tool.HatchPanelTool,
                 toolAngle,
-                WristSubsystem.CargoGrabberStates.Unclamped,
-                WristSubsystem.HatchClawStates.Clamped,
+                WristSubsystem.WristToolStates.Hatch,
                 visionHeightMode
             )
         }
@@ -46,8 +43,7 @@ data class SuperstructureSetpoint(val point: Point2d,
                 point,
                 WristMotionPlanner.Tool.CargoTool,
                 toolAngle,
-                WristSubsystem.CargoGrabberStates.Unclamped,
-                WristSubsystem.HatchClawStates.Clamped,
+                WristSubsystem.WristToolStates.Cargo,
                 visionHeightMode
             )
         }
@@ -57,8 +53,7 @@ data class SuperstructureSetpoint(val point: Point2d,
                 point,
                 WristMotionPlanner.Tool.HatchPanelTool,
                 toolAngle,
-                WristSubsystem.CargoGrabberStates.Unclamped,
-                WristSubsystem.HatchClawStates.Unclamped,
+                WristSubsystem.WristToolStates.Hatch,
                 visionHeightMode
             )
         }
@@ -69,8 +64,7 @@ data class SuperstructureSetpoint(val point: Point2d,
             Point2d(point.x, point.y + Geometry.ArmGeometry.originToFloor),
             tool,
             toolAngle,
-            cargoGrabberState,
-            hatchClawState,
+            wristToolState,
             visionHeightMode
         )
     }
@@ -80,8 +74,7 @@ data class SuperstructureSetpoint(val point: Point2d,
             Point2d(point.x, point.y + distance),
             tool,
             toolAngle,
-            cargoGrabberState,
-            hatchClawState,
+            wristToolState,
             visionHeightMode
         )
     }
@@ -90,8 +83,7 @@ data class SuperstructureSetpoint(val point: Point2d,
         return SuperstructureSetpoint(Point2d(x, point.y),
             tool,
             toolAngle,
-            cargoGrabberState,
-            hatchClawState,
+            wristToolState,
             visionHeightMode
         )
     }
@@ -101,8 +93,7 @@ data class SuperstructureSetpoint(val point: Point2d,
             point,
             tool,
             angle,
-            cargoGrabberState,
-            hatchClawState,
+            wristToolState,
             visionHeightMode
         )
     }
@@ -111,8 +102,7 @@ data class SuperstructureSetpoint(val point: Point2d,
         return SuperstructureSetpoint(Point2d(point.x * (-1.0).Unitless, point.y),
             tool,
             toolAngle,
-            cargoGrabberState,
-            hatchClawState,
+            wristToolState,
             visionHeightMode
         )
     }
@@ -122,8 +112,7 @@ data class SuperstructureSetpoint(val point: Point2d,
             point,
             tool,
             toolAngle,
-            cargoGrabberState,
-            hatchClawState,
+            wristToolState,
             newHeightMode
         )
     }

@@ -39,25 +39,24 @@ object EndpointKinematics {
     fun forward(
         armState: ArmState,
         wristState: WristState,
-        cargoGrabberState: WristSubsystem.CargoGrabberStates,
-        hatchClawState: WristSubsystem.HatchClawStates
+        wristToolStates: WristSubsystem.WristToolStates
     ): FullWristPose {
         val armPose = ArmKinematics.forward(armState)
 
-        val cargoToolLength = when (cargoGrabberState) {
+        val cargoToolLength = 0.0.Inches/*when (cargoGrabberState) {
             WristSubsystem.CargoGrabberStates.Unclamped -> Geometry.WristGeometry.pivotToCargoOpenEndpoint
             WristSubsystem.CargoGrabberStates.Clamped -> Geometry.WristGeometry.pivotToCargoClosedEndpoint
-        }
+        }*/
 
-        val hatchToolLength = when (hatchClawState) {
+        val hatchToolLength = 0.0.Inches/*when (hatchClawState) {
             WristSubsystem.HatchClawStates.Clamped -> Geometry.WristGeometry.pivotToHatchClamped
             WristSubsystem.HatchClawStates.Unclamped -> Geometry.WristGeometry.pivotToHatchOpen
-        }
+        }*/
 
-        val hatchToolHeight = when (hatchClawState) {
+        val hatchToolHeight = 0.0.Inches/*when (hatchClawState) {
             WristSubsystem.HatchClawStates.Clamped -> Geometry.WristGeometry.hatchClawOpenHeight
             WristSubsystem.HatchClawStates.Unclamped -> 0.0.Inches
-        }
+        }*/
 
         val wristAngleAdjusted = wristState.wristPosition - (Math.PI / 2.0).Radians + armState.armAngle
         val wristAngleNormal = wristAngleAdjusted + (Math.PI / 2.0).Radians

@@ -255,7 +255,7 @@ object SuperstructureMotionPlanner {
             PointPolar(
                 Geometry.ArmGeometry.minSafeArmLength + 1.0.Inches,
                 Math.PI.Radians
-            )), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians, WristSubsystem.CargoGrabberStates.Clamped, WristSubsystem.HatchClawStates.Clamped, VisionHeightMode.NONE))
+            )), WristMotionPlanner.Tool.HatchPanelTool, 0.0.Radians, WristSubsystem.WristToolStates.Cargo, VisionHeightMode.NONE))
 
         var time = 0.0
         val dt = 0.1

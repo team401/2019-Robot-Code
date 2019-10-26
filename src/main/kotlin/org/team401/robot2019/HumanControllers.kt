@@ -214,15 +214,6 @@ val Gamepad = HumanControls.dualAction(2){
         }
     }
 
-    whenButton(Buttons.RIGHT_BUMPER) {
-        pressed {
-            WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Scoring)
-        }
-        released {
-            WristSubsystem.cargoWheelsMachine.setState(WristSubsystem.CargoWheelsStates.Idle)
-        }
-    }
-
     whenHatChanged(Hats.D_PAD) {
         when (it) {
             Direction.NORTH -> SuperstructureRoutines.goToHigh()

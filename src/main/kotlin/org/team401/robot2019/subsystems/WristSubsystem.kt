@@ -20,6 +20,7 @@ import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.util.LEDManager
+import org.team401.robot2019.util.MathUtil
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -33,17 +34,11 @@ object WristSubsystem: Subsystem(100L) {
     val leftIntakeTalon = TalonSRX(HardwareMap.CAN.wristLeftIntakeWheelTalonId)
     val rightIntakeTalon = TalonSRX(HardwareMap.CAN.wristRightIntakeWheelTalonId)
 
-    private val homingButtonInput = DigitalInput(9)
-    private var homingButtonHistory = History<Boolean>()
-
     private val rotation = CTRESmartGearbox(rotationTalon)
     private val leftIntake = CTRESmartGearbox(leftIntakeTalon)
     private val rightIntake = CTRESmartGearbox(rightIntakeTalon)
 
-    private val cargoHistory = History<Boolean>()
-
-    private val hatchClawSolenoid = Solenoid(HardwareMap.Pneumatics.hatchClawSolenoidId)
-    private val cargoGrabberSolenoid = Solenoid(HardwareMap.Pneumatics.cargoClawSolenoidId)
+    private val wristToolSolenoid = Solenoid(HardwareMap.Pneumatics.cargoClawSolenoidId)
 
     enum class WristStates {
         EStopped,
@@ -54,21 +49,16 @@ object WristSubsystem: Subsystem(100L) {
         CoordinatedControl
     }
 
-    enum class CargoGrabberStates {
-        Clamped,
-        Unclamped
+    enum class WristToolStates {
+        Hatch,
+        Cargo
     }
 
-    enum class CargoWheelsStates {
+    enum class WristWheelsStates {
         Intake,
         Idle,
         Scoring,
         Holding
-    }
-
-    enum class HatchClawStates {
-        Clamped, //Clamped around a gamepiece
-        Unclamped
     }
 
     enum class WristFaults {
@@ -77,13 +67,6 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     private fun move(setpoint: AngularDistanceMeasureDegrees) {
-        /*
-        if (setpoint > 210.0.Degrees || setpoint < (-185.0).Degrees) {
-            println("ILLEGAL WRIST COMMAND $setpoint")
-            wristMachine.setState(WristStates.EStopped)
-            return
-        }
-        */
         rotation.set(ControlMode.MotionMagic, setpoint.toMagEncoderTicks().value)
     }
 
@@ -159,102 +142,81 @@ object WristSubsystem: Subsystem(100L) {
         }
     }
 
-    val cargoGrabberMachine: StateMachine<CargoGrabberStates> = stateMachine {
-        state (CargoGrabberStates.Unclamped) {
+    val toolMachine: StateMachine<WristToolStates> = stateMachine {
+        state (WristToolStates.Hatch) {
             entry {
-                cargoGrabberSolenoid.set(true)
+                wristToolSolenoid.set(false)
+            }
+
+            action {
+                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
+                    setState(WristToolStates.Cargo)
+                }
             }
         }
 
-        state (CargoGrabberStates.Clamped) {
+        state (WristToolStates.Cargo) {
             entry {
-                cargoGrabberSolenoid.set(false)
+                wristToolSolenoid.set(true)
             }
 
             action {
                 if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool) {
-                    setState(CargoGrabberStates.Unclamped) //Open the grabber if we're in the hatch tool
+                    setState(WristToolStates.Hatch)
                 }
             }
         }
     }
 
-    val hatchClawMachine: StateMachine<HatchClawStates> = stateMachine {
-        state (HatchClawStates.Unclamped) {
-            entry {
-                hatchClawSolenoid.set(true)
-            }
-
-            /*
-            action {
-                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
-                    setState(HatchClawStates.Unclamped) //Open (clamp) the claw if we're in the cargo tool
-                }
-            }
-            */
-        }
-
-        state (HatchClawStates.Clamped) {
-            entry {
-                hatchClawSolenoid.set(false)
-            }
-
-            action {
-                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
-                    setState(HatchClawStates.Unclamped) //Close (unclamp) the claw if we're in the cargo tool
-                }
-            }
-        }
-    }
-
-    val cargoWheelsMachine: StateMachine<CargoWheelsStates> = stateMachine {
-        state (CargoWheelsStates.Idle) {
+    val wheelsMachine: StateMachine<WristWheelsStates> = stateMachine {
+        state (WristWheelsStates.Idle) {
             entry {
                 leftIntake.set(0.0)
                 rightIntake.set(0.0)
             }
+        }
 
+        state (WristWheelsStates.Intake) {
             action {
-                if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.CargoTool) {
-                    setState(CargoWheelsStates.Holding)
+                when (SuperstructureController.output.wristTool) {
+                    WristMotionPlanner.Tool.HatchPanelTool -> {
+                        leftIntake.set(ControlParameters.WristParameters.hatchIntakePower)
+                        rightIntake.set(ControlParameters.WristParameters.hatchIntakePower)
+                    }
+                    WristMotionPlanner.Tool.CargoTool -> {
+                        leftIntake.set(ControlParameters.WristParameters.cargoIntakePower)
+                        rightIntake.set(ControlParameters.WristParameters.cargoIntakePower)
+                    }
                 }
             }
         }
 
-        state (CargoWheelsStates.Intake) {
-            entry {
-                leftIntake.set(ControlParameters.WristParameters.intakePower)
-                rightIntake.set(ControlParameters.WristParameters.intakePower)
-            }
-
+        state (WristWheelsStates.Scoring) {
             action {
-                /*
-                cargoHistory.update(cargoSensorNO.get())
-                if (cargoHistory.current == true && cargoHistory.last == false) {
-                    send(RobotEvents.CargoAcquired)
-                    cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
-                    setState(WristSubsystem.CargoWheelsStates.Idle)
+                when (SuperstructureController.output.wristTool) {
+                    WristMotionPlanner.Tool.HatchPanelTool -> {
+                        leftIntake.set(ControlParameters.WristParameters.hatchScoringPower)
+                        rightIntake.set(ControlParameters.WristParameters.hatchScoringPower)
+                    }
+                    WristMotionPlanner.Tool.CargoTool -> {
+                        leftIntake.set(ControlParameters.WristParameters.cargoScoringPower)
+                        rightIntake.set(ControlParameters.WristParameters.cargoScoringPower)
+                    }
                 }
-                */
             }
         }
 
-        state (CargoWheelsStates.Scoring) {
-            entry {
-                leftIntake.set(ControlParameters.WristParameters.scoringPower)
-                rightIntake.set(ControlParameters.WristParameters.scoringPower)
-            }
-        }
-
-        state (CargoWheelsStates.Holding) {
-            entry {
-                leftIntake.set(ControlParameters.WristParameters.holdingPower)
-                rightIntake.set(ControlParameters.WristParameters.holdingPower)
-            }
-
+        state (WristWheelsStates.Holding) {
             action {
-                if (SuperstructureController.output.wristTool != WristMotionPlanner.Tool.CargoTool) {
-                    setState(CargoWheelsStates.Idle)
+                when (SuperstructureController.output.wristTool) {
+                    WristMotionPlanner.Tool.HatchPanelTool -> {
+                        leftIntake.set(ControlParameters.WristParameters.hatchHoldingPower)
+                        rightIntake.set(ControlParameters.WristParameters.hatchHoldingPower)
+                    }
+                    WristMotionPlanner.Tool.CargoTool -> {
+                        leftIntake.set(ControlParameters.WristParameters.cargoHoldingPower)
+                        rightIntake.set(ControlParameters.WristParameters.cargoHoldingPower)
+                    }
                 }
             }
         }
@@ -289,27 +251,9 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     private fun configWristHome(force: Boolean = false) {
-        /*
-        //We're using this status frame that we don't plan on using to determine whether the talon has ever been
-        //initialized by the application.  This is what is known in the industry as a HACK
-        if (force || rotation.master.getStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000) >= 240) {
-            //Sensor offset not set, configure it now
-            rotation.master.selectedSensorPosition = (180.0).Degrees.toMagEncoderTicks().value.roundToInt()
-            //We homed the sensor, blink the lights for a second to indicate this.
-            LEDManager.signalTruss(LEDManager.TrussLedSignal.WristHomed)
-            rotation.master.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 1000, 1000)
-        }
-         */
-
         val ticks = rotationTalon.sensorCollection.pulseWidthPosition
-
-        val rotatedTicks = if (ticks < 2048) {
-            (ticks + 476) % 4096
-        } else {
-            (ticks - 3620)
-        }
-
-        rotationTalon.selectedSensorPosition = rotatedTicks
+        val offset = MathUtil.offsetEncoder12B(ticks, 3660, 3072)
+        rotationTalon.selectedSensorPosition = offset
     }
 
     override fun action() {
@@ -322,16 +266,7 @@ object WristSubsystem: Subsystem(100L) {
             DriverStation.reportWarning("[Fault] Wrist Encoder has failed!", false)
         }
 
-        /*
-        if (DriverStation.getInstance().isDisabled) {
-            homingButtonHistory.update(homingButtonInput.get())
-            if (homingButtonHistory.last == true && homingButtonHistory.current == false) {
-                configWristHome(true)
-            }
-        }
-         */
-
-        println(rotationTalon.selectedSensorPosition)
+        //println(rotationTalon.selectedSensorPosition)
     }
 
     override fun setup() {
@@ -360,11 +295,11 @@ object WristSubsystem: Subsystem(100L) {
         )
 
         on (Events.ENABLED) {
-            cargoWheelsMachine.setState(CargoWheelsStates.Idle)
-            cargoGrabberMachine.setState(CargoGrabberStates.Clamped)
-            hatchClawMachine.setState(HatchClawStates.Clamped)
-
+            wheelsMachine.setState(WristWheelsStates.Idle)
+            toolMachine.setState(WristToolStates.Hatch)
             wristMachine.setState(WristStates.Holding)
+            //Thread.sleep(5000)
+            //wristMachine.setState(WristStates.CollectFf)
         }
     }
 }

@@ -468,10 +468,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
     override fun setup() {
         configureDriveMotorControllers()
-        configureFeedbackTalonsForDrive(
-            WristSubsystem.leftIntakeTalon,
-            WristSubsystem.rightIntakeTalon
-        )
 
         both {
             setPosition(0.0.Radians)

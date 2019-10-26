@@ -25,6 +25,7 @@ import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.robot2019.util.MathUtil
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -344,12 +345,9 @@ object ArmSubsystem: Subsystem(100L) {
          */
 
         val ticks = pivotRightTalon.sensorCollection.pulseWidthPosition
-        var rotated = ticks - 3572
+        val offset = MathUtil.offsetEncoder12B(ticks, 3572, 3072)
 
-        if (rotated < 0) {
-            rotated += 4096
-        }
-        pivotRightTalon.selectedSensorPosition = rotated
+        pivotRightTalon.selectedSensorPosition = offset
 
         pivot.setSensorPhase(ControlParameters.ArmParameters.armEncoderPhase)
         configureForMoveToVertical(true)
