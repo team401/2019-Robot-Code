@@ -70,6 +70,14 @@ object SuperstructureRoutines {
          */
     }
 
+    @Synchronized fun driverSetFront() {
+        sideManager.reportAction(SuperstructureSideManager.Action.DRIVER_SET_FRONT)
+    }
+
+    @Synchronized fun driverSetBack() {
+        sideManager.reportAction(SuperstructureSideManager.Action.DRIVER_SET_BACK)
+    }
+
     fun ccMaybe(enterCC: Boolean): Boolean {
         if (enterCC) {
             ArmSubsystem.armPivotMachine.setState(ArmSubsystem.ArmPivotStates.CoordinatedControl)
@@ -199,11 +207,11 @@ object SuperstructureRoutines {
 
     @Synchronized
     fun intake() {
-        sideManager.reportAction(SuperstructureSideManager.Action.INTAKE_STARTED)
-        onSideManagerUpdate()
         WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Intake)
         when (SuperstructureMotionPlanner.activeTool) {
             WristMotionPlanner.Tool.CargoTool -> {
+                sideManager.reportAction(SuperstructureSideManager.Action.CARGO_INTAKE_STARTED)
+                onSideManagerUpdate()
                 if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoFloorPickupFront))
                 } else if (side == Side.BACK){
@@ -212,6 +220,8 @@ object SuperstructureRoutines {
             }
 
             WristMotionPlanner.Tool.HatchPanelTool -> {
+                sideManager.reportAction(SuperstructureSideManager.Action.HATCH_INTAKE_STARTED)
+                onSideManagerUpdate()
                 if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.hatchIntakeFront))
                 } else if (side == Side.BACK){

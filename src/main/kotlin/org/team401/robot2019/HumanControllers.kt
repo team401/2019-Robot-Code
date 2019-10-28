@@ -83,6 +83,17 @@ val LeftStick = HumanControls.t16000m(0) {
 }
 
 val RightStick = HumanControls.t16000m(1) {
+    whenHatChanged(Hats.STICK_HAT) {
+        when (it) {
+            Direction.NORTH -> {
+                SuperstructureRoutines.driverSetFront()
+            }
+            Direction.SOUTH -> {
+                SuperstructureRoutines.driverSetBack()
+            }
+        }
+    }
+
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
             /*

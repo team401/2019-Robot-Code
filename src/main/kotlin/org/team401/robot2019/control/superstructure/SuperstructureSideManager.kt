@@ -12,10 +12,13 @@ class SuperstructureSideManager {
     enum class Action {
         SUPERSTRUCTURE_STOWED,
         TOGGLED,
+        DRIVER_SET_BACK,
+        DRIVER_SET_FRONT,
         SUPERSTRUCTURE_MOVED_TO_SETPOINT,
         SCORE_STARTED,
         SCORE_FINISHED,
-        INTAKE_STARTED,
+        CARGO_INTAKE_STARTED,
+        HATCH_INTAKE_STARTED,
         INTAKE_FINISHED,
         VISION_STARTED,
         VISION_FINISHED,
@@ -88,6 +91,28 @@ class SuperstructureSideManager {
                 }
             }
 
+            Action.DRIVER_SET_BACK -> {
+                //Driver requested back of robot
+                if (!lockedByScore && !lockedByIntake && !lockedByVision && !lockedByAuto) {
+                    //If we aren't locked by scoring, intaking, vision, or auto, set the active side to back
+                    currentSide = SuperstructureRoutines.Side.BACK
+
+                    //Lock the side by toggle
+                    lockedByToggle = true
+                }
+            }
+
+            Action.DRIVER_SET_FRONT -> {
+                //Driver requested back of robot
+                if (!lockedByScore && !lockedByIntake && !lockedByVision && !lockedByAuto) {
+                    //If we aren't locked by scoring, intaking, vision, or auto, set the active side to front
+                    currentSide = SuperstructureRoutines.Side.FRONT
+
+                    //Lock the side by toggle
+                    lockedByToggle = true
+                }
+            }
+
             Action.SCORE_STARTED -> {
                 //Scoring started.  Lock by score
                 lockedByScore = true
@@ -101,25 +126,30 @@ class SuperstructureSideManager {
                 wasLastMoveActionIntaking = false
             }
 
-            Action.INTAKE_STARTED -> {
+            Action.HATCH_INTAKE_STARTED -> {
                 //Intaking started.  Lock by intake
                 lockedByIntake = true
                 if (!lockedByVision && !lockedByAuto && !lockedByToggle) {
-                    println("Starting intake, not locked.  Current side: $currentSide")
                     //If we aren't locked by something else already
                     //Check if the last action was intaking
                     if (wasLastMoveActionIntaking) {
                         //If it was, set the current side to the last side we used for intaking
                         currentSide = lastIntakeSide
-                        println("Last move was intaking.  Current side: $currentSide")
                     } else {
                         //The last move was not intaking.  We are intaking now, set the side
                         lastIntakeSide = currentSide
                         //And mark the flag
                         wasLastMoveActionIntaking = true
-                        println("Last move was not intaking.  Current side: $currentSide")
                     }
                 }
+            }
+
+            Action.CARGO_INTAKE_STARTED -> {
+                //Cargo intaking started.  Lock by intake
+                lockedByIntake = true
+
+                //Cargo intaking must happen on the back of the robot.  Therefore, disregard any other locks
+                currentSide = SuperstructureRoutines.Side.BACK
             }
 
             Action.INTAKE_FINISHED -> {
