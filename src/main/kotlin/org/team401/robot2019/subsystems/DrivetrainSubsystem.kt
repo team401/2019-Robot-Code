@@ -8,10 +8,7 @@ import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.ControlType
-import edu.wpi.first.wpilibj.DigitalInput
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Solenoid
-import edu.wpi.first.wpilibj.Spark
+import edu.wpi.first.wpilibj.*
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
@@ -56,11 +53,13 @@ import kotlin.math.tan
 
 object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox> by PigeonPathFollowingDiffDrive(
     SparkMaxCTRESensoredGearbox(
+        Encoder(0, 1, false, CounterBase.EncodingType.k4X),
         CANSparkMax(HardwareMap.CAN.drivetrainLeftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainLeftMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainLeftRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
     ),
     SparkMaxCTRESensoredGearbox(
+        Encoder(2, 3, false, CounterBase.EncodingType.k4X),
         CANSparkMax(HardwareMap.CAN.drivetrainRightFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainRightMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainRightRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
@@ -108,29 +107,18 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
     }
 
-    /**
-     * Uses a calibrated power regression to calculate the distance to a target from the area percentage
-     */
-    private fun calculateVisionTargetDistanceInches(area: Double): Double {
-        return 80.5033419521 * area.pow(-0.483212149061)
-    }
-
     enum class DriveStates(val requiresSensors: Boolean = false) {
         EStopped,
         Disabled,
         ExternalControl,
         OpenLoopOperatorControl,
         PathFollowing(true),
-        ClimbStop,
         ClimbReposition,
-        VisionAlign,
-        VisionTuning
+        VisionAlign
     }
 
     enum class DriveFaults {
         MotorControllerReset,
-        LeftEncoderFailure,
-        RightEncoderFailure,
         IMUFailure
     }
 
@@ -186,59 +174,41 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
-        state (DrivetrainSubsystem.DriveStates.PathFollowing) {
+        val pathFollowingKp = 0.0
+        val pathFollowingKd = 0.0
+
+        state (DriveStates.PathFollowing) {
             entry {
-                val kP = 0.0//SmartDashboard.getNumber("driveP", 0.0)
-                val kI = 0.0//SmartDashboard.getNumber("driveI", 0.0)
-                val kD = 0.0//SmartDashboard.getNumber("driveD", 0.0)
-                val kF = 0.0
-                
                 both {
-                    master.pidController.p = kP
-                    master.pidController.i = kI
-                    master.pidController.d = kD
-                    master.pidController.ff = kF
                     setDeadband(0.0)
                 }
             }
 
             rtAction {
-                val output = pathManager.update(time, VisionState.getFieldToRobot(time))
+                val output = pathManager.update(time, driveState.getFieldToVehicle(time))
 
-                val leftVelocityRpm = output.left_velocity.RadiansPerSecond.toRevolutionsPerMinute().value * gearRatioHigh
-                val rightVelocityRpm = output.right_velocity.RadiansPerSecond.toRevolutionsPerMinute().value * gearRatioHigh
+                val leftVelocityActual = left.getVelocity().value
+                val rightVelocityActual = right.getVelocity().value
+                val errorLeft = output.left_velocity - leftVelocityActual
+                val errorRight = output.right_velocity - rightVelocityActual
 
-                val leftAccelRpmPerMs = output.left_accel.RadiansPerSecondPerSecond.toRevolutionsPerMinutePerMillisecond().value * gearRatioHigh
-                val rightAccelRpmPerMs = output.right_accel.RadiansPerSecondPerSecond.toRevolutionsPerMinutePerMillisecond().value * gearRatioHigh
+                val leftVelCorrection = errorLeft * pathFollowingKp * 12.0
+                val rightVelCorrection = errorRight * pathFollowingKp * 12.0
 
-                val leftFfVolts = output.left_feedforward_voltage
-                val rightFfVolts = output.right_feedforward_voltage
+                val leftAccelCorrection = output.left_accel * pathFollowingKd * 12.0
+                val rightAccelCorrection = output.right_accel * pathFollowingKd * 12.0
 
-                val totalFfLeft = leftFfVolts + (ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD * leftAccelRpmPerMs * 12.0)
-                val totalFfRight = rightFfVolts + (ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD * rightAccelRpmPerMs * 12.0)
+                val leftOut = output.left_feedforward_voltage + leftVelCorrection + leftAccelCorrection
+                val rightOut = output.right_feedforward_voltage + rightVelCorrection + rightAccelCorrection
 
-                left.master.pidController.setReference(leftVelocityRpm, ControlType.kVelocity, 0, totalFfLeft)
-                right.master.pidController.setReference(rightVelocityRpm, ControlType.kVelocity, 0, totalFfRight)
-
-                //println("vision: ${VisionState.getFieldToRobot(time)}  odo: ${driveState.getFieldToVehicle(time)}")
-            }
-
-            exit {
-                //stop()
+                //Use velocity PID mode with gains all set to zero, simply to force the closed loop ramp rate (0.0)
+                //and voltage compensation using arbFF.  No actual velocity control is being done on the SPARK.
+                left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, leftOut)
+                right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, rightOut)
             }
         }
 
-        state(DriveStates.ClimbStop) {
-            action {
-                if (ClimberSubsystem.backWithinTolerance(ControlParameters.ClimberPositions.stowed)){
-                    Thread.sleep(ControlParameters.DrivetrainParameters.climbWheelStopDelay.toMilliseconds().value.toLong())
-                    stop()
-                    setState(DriveStates.ClimbReposition)
-                }
-            }
-        }
-
-        state(DriveStates.ClimbReposition){
+        state(DriveStates.ClimbReposition) {
             entry {
                 DriverStationDisplay.climbRepositionModeEnabled.setBoolean(true)
             }
@@ -278,10 +248,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 VisionSolver.selectRegression(activeSide, activeHeightMode)
             }
 
-            val alignmentOffset = 30.0 //inches
-            val degrees180 = Rotation2d.fromDegrees(180.0)
-            val autosteerKp = .2
-
             rtAction {
                 val seesTarget = activeCamera.seesTarget()
                 val targetAngle = activeCamera.entries.tx.getDouble(0.0)
@@ -320,47 +286,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
-        state (DriveStates.VisionTuning) {
-            lateinit var activeSide: SuperstructureRoutines.Side
-            lateinit var activeCamera: LimelightCamera
-
-            entry {
-                activeSide = SuperstructureRoutines.side
-                activeCamera = when (activeSide) {
-                    SuperstructureRoutines.Side.FRONT -> {
-                        VisionManager.frontCamera
-                    }
-                    SuperstructureRoutines.Side.BACK -> {
-                        VisionManager.backCamera
-                    }
-                }
-
-                activeCamera.configForVision(3)
-                activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
-                activeCamera.resetFrame()
-            }
-
-            rtAction {
-                val tx = activeCamera.entries.tx.getDouble(0.0)
-
-                val output = cheesyController.update(
-                    LeftStick.readAxis { PITCH },
-                    RightStick.readAxis { ROLL },
-                    false,
-                    RightStick.readButton { TRIGGER }
-                )
-
-                tank(output.left, output.right)
-
-                println("Camera tx: $tx")
-            }
-
-            exit {
-                activeCamera.setLedMode(LimelightCamera.LedMode.Off)
-            }
-        }
-
-
         default {
             entry {
                 stop()
@@ -375,10 +300,10 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             master.setControlFramePeriodMs(5)
             master.openLoopRampRate = 0.25
             master.closedLoopRampRate = 0.0
-            master.pidController.p = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kP
-            master.pidController.i = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kI
-            master.pidController.d = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kD
-            master.pidController.ff = ControlParameters.DrivetrainParameters.VelocityPIDFHigh.kF
+            master.pidController.p = 0.0
+            master.pidController.i = 0.0
+            master.pidController.d = 0.0
+            master.pidController.ff = 0.0
             master.motorType = CANSparkMaxLowLevel.MotorType.kBrushless
             slaves.forEach {
                 it.idleMode = CANSparkMax.IdleMode.kBrake
@@ -387,30 +312,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             left.inverted = true
             right.inverted = false
         }
-    }
-
-    /**
-     * Configures the "auxiliary" Talon SRX motor controllers that will be used to provide feedback information
-     * to the drive.  This should be called by the subsystem that owns the Talons, Wrist at the time of writing.
-     */
-    fun configureFeedbackTalonsForDrive(leftTalon: TalonSRX, rightTalon: TalonSRX) {
-        //Set feedback device
-        leftTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100)
-        rightTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 100)
-
-        //Set sensor phase
-        leftTalon.setSensorPhase(true)
-        rightTalon.setSensorPhase(true)
-
-        //Configure status frame rate
-        leftTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100)
-        rightTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, 100)
-
-        //Configure velocity measurement period and window
-        leftTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_50Ms, 100)
-        rightTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_50Ms, 100)
-        leftTalon.configVelocityMeasurementWindow(1, 100)
-        rightTalon.configVelocityMeasurementWindow(1, 100)
     }
 
     override fun action() {
@@ -430,29 +331,9 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
 
         //Sensor faults
-        /*
-        if (left.ctreController.sensorCollection.pulseWidthRiseToRiseUs == 0) {
-            fault(DriveFaults.LeftEncoderFailure)
-            DriverStation.reportWarning("[Fault] Left encoder failed!", false)
-        }
-        if (right.ctreController.sensorCollection.pulseWidthRiseToRiseUs == 0) {
-            fault(DriveFaults.RightEncoderFailure)
-            DriverStation.reportWarning("[Fault] Right encoder failed!", false)
-        }
-        */
         if (imu.state != PigeonIMU.PigeonState.Ready) {
             fault(DriveFaults.IMUFailure)
             DriverStation.reportWarning("[Fault] IMU failed!", false)
-        }
-
-
-        // Break state
-        if (isFaulted(DriveFaults.LeftEncoderFailure, DriveFaults.RightEncoderFailure, DriveFaults.IMUFailure)) {
-            //A sensor has failed, if we're in a state that requires sensors, drop into a safe state
-            if ((driveMachine.getState() as? DriveStates)?.requiresSensors == true) {
-                //The current state requires sensors, drop into manual control
-                driveMachine.setState(DriveStates.OpenLoopOperatorControl)
-            }
         }
 
         // Respond to faults
@@ -472,21 +353,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)
         }
 
-        //Sensor faults
-        /*
-        if (isFaulted(DriveFaults.LeftEncoderFailure)) {
-            if (left.ctreController.sensorCollection.pulseWidthRiseToRiseUs != 0) {
-                clearFault(DriveFaults.LeftEncoderFailure)
-                println("[Fault Cleared] Left encoder restored")
-            }
-        }
-        if (isFaulted(DriveFaults.RightEncoderFailure)) {
-            if (right.ctreController.sensorCollection.pulseWidthRiseToRiseUs != 0) {
-                clearFault(DriveFaults.RightEncoderFailure)
-                println("[Fault Cleared] Right encoder restored")
-            }
-        }
-        */
         if (isFaulted(DriveFaults.IMUFailure)) {
             if (imu.state == PigeonIMU.PigeonState.Ready) {
                 clearFault(DriveFaults.IMUFailure)
@@ -494,14 +360,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
-        // Driver Station Shutoff
-        /*
-        if (DriverStationDisplay.driveStopped.getBoolean(false)) {
-            driveMachine.setState(DriveStates.EStopped)
-        }else if (driveMachine.isInState(DriveStates.EStopped) && !DriverStationDisplay.driveStopped.getBoolean(false)) {
-            driveMachine.setState(DriveStates.Disabled)
-        }
-        */
         //Insert debug println statements below:
         //println("left: ${left.getPosition()}  right: ${right.getPosition()}")
     }

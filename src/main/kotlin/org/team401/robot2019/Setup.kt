@@ -34,7 +34,7 @@ fun setup() {
     ControlPoller.pollInAutonomous = true
     RealTimeExecutor.rate = 0.01
 
-    Selectable.selected = RobotIndex.COMP //CHANGE THIS depending on what robot you're using.
+    Selectable.selected = RobotIndex.COMP //DO NOT CHANGE THIS
 
     AutoManager.setAutoLoop(DeepSpaceAuto)
     DeepSpaceAuto.publish()
@@ -52,11 +52,8 @@ fun setup() {
     SuperstructureMotionPlanner.preCompile()
 
     //Initialize real-time tasks
-    //RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator) //Drivetrain odometry from sensors
-    //RealTimeExecutor.addTask(VisionOdometryUpdater)              //Drivetrain odometry from vision
-    //RealTimeExecutor.addTask(RobotStateEstimator)
+    RealTimeExecutor.addTask(DrivetrainSubsystem.stateEstimator) //Drivetrain odometry from sensors
     RealTimeExecutor.addTask(SuperstructureUpdater)              //Superstrcture motion planning / control
-    //RealTimeExecutor.addTask(OdometryWatchdog)                   //Drivetrain odometry error checking
 
     on (Events.TELEOP_ENABLED) {
         VisionManager.frontCamera.configForVision(1)

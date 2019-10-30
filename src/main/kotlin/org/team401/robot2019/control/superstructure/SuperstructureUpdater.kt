@@ -35,10 +35,6 @@ object SuperstructureUpdater: RealTimeTask {
             WristSubsystem.getCurrentWristState()
         )
 
-        if (ds.isEnabled) {
-            LEDManager.updateToolStatus(SuperstructureController.output.wristTool)
-        }
-
         //debug
         /*
         val targetPose = ArmKinematics.forward(PointPolar(SuperstructureController.output.armRadius, SuperstructureController.output.armAngle))

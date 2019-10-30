@@ -18,8 +18,8 @@ object Geometry {
      * Geometry constants for the drivetrain
      */
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
-        override val wheelRadius by Selectable(3.062954.Inches, 3.0708584735251.Inches)
-        override val wheelbase by Selectable(26.5.Inches, 26.25.Inches)
+        override val wheelRadius = 3.0748385.Inches
+        override val wheelbase = 26.5.Inches
 
         /**
          * Distance in inches from the center of the robot to the frontmost edge, including bumpers

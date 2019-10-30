@@ -57,29 +57,23 @@ object LEDManager {
         VLoc, //Vision localized
     }
 
+    enum class ArmLedSignal {
+        HatchAcquired
+    }
+
     /**
      * Represents the various states for the LED strip running on the arm
      */
     enum class ArmLedMode {
         Off, //Arm LEDs off
         Rainbow, //Arm LEDs are in rainbow pattern
-        HasCargo, //Arm LEDs are orange
-        HasHatch, //Arn LEDs are yellow
         Intaking,
         Scoring,
         Climb,
     }
 
-    enum class ToolIndicatorMode {
-        Off,
-        Rainbow,
-        Cargo,
-        Hatch
-    }
-
     private var trussModeHistory = History<TrussLedMode>()
     private var armModeHistory = History<ArmLedMode>()
-    private var toolIndicatorModeHistory = History<ToolIndicatorMode>()
 
     /**
      * Sets the truss LEDs to the specified mode
@@ -206,10 +200,20 @@ object LEDManager {
         }
     }
 
+    fun signalArm(signal: ArmLedSignal) {
+        when (signal) {
+            ArmLedSignal.HatchAcquired -> {
+                ll.signal(LightLink.Color.GREEN, Indices.ArmStrip)
+            }
+        }
+    }
+
     /**
      * Sets the Arm LEDs to the specified mode
      */
     @Synchronized fun setArmLedMode(mode: ArmLedMode) {
+        if (armModeHistory.current == mode) return
+
         when (mode) {
             ArmLedMode.Off -> {
                 ll.off(Indices.ArmStrip)
@@ -217,14 +221,6 @@ object LEDManager {
 
             ArmLedMode.Rainbow -> {
                 ll.rainbow(LightLink.Speed.SLOW, Indices.ArmStrip)
-            }
-
-            ArmLedMode.HasHatch -> {
-                ll.solid(LightLink.Color.YELLOW, Indices.ArmStrip)
-            }
-
-            ArmLedMode.HasCargo -> {
-                ll.solid(LightLink.Color.ORANGE, Indices.ArmStrip)
             }
 
             ArmLedMode.Climb -> {
@@ -249,70 +245,6 @@ object LEDManager {
         setArmLedMode(armModeHistory.last!!)
     }
 
-    @Synchronized fun setToolIndicatorLedMode(mode: ToolIndicatorMode) {
-        when (mode) {
-            ToolIndicatorMode.Off -> {
-                ll.off(Indices.ToolIndicatorStrip)
-            }
-
-            ToolIndicatorMode.Rainbow -> {
-                ll.rainbow(LightLink.Speed.SLOW, Indices.ToolIndicatorStrip)
-            }
-
-            ToolIndicatorMode.Cargo -> {
-                ll.solid(LightLink.Color.GREEN, Indices.ToolIndicatorStrip)
-            }
-
-            ToolIndicatorMode.Hatch -> {
-                ll.solid(LightLink.Color.YELLOW, Indices.ToolIndicatorStrip)
-            }
-        }
-
-        toolIndicatorModeHistory.update(mode)
-    }
-
-    private val toolHistory = History<WristMotionPlanner.Tool>()
-
-    @Synchronized fun updateToolStatus(tool: WristMotionPlanner.Tool, force: Boolean = false) {
-        if (force || toolHistory.current != tool) {
-            when (tool) {
-                WristMotionPlanner.Tool.HatchPanelTool -> setToolIndicatorLedMode(ToolIndicatorMode.Hatch)
-                WristMotionPlanner.Tool.CargoTool -> setToolIndicatorLedMode(ToolIndicatorMode.Cargo)
-            }
-        }
-        toolHistory.update(tool)
-    }
-
-    private var hatchHistory = History<Boolean>()
-    private var cargoHistory = History<Boolean>()
-
-    /**
-     * Updates the manager with the currently loaded gamepieces, which can be used to
-     * automatically set the arm strip with the appropriate colors
-     */
-    fun updateGamepieceStatus(hasHatch: Boolean, hasCargo: Boolean) {
-        if (DriverStation.getInstance().isOperatorControl) { //Only run this in teleop mode
-            hatchHistory.update(hasHatch)
-            cargoHistory.update(hasCargo)
-
-            if (hatchHistory.current == true && hatchHistory.last != true) {
-                //We got a hatch
-                setArmLedMode(ArmLedMode.HasHatch)
-            } else if (hatchHistory.current == false && hatchHistory.last == true) {
-                //We lost a hatch
-                setArmLedMode(ArmLedMode.Off)
-            }
-
-            if (cargoHistory.current == true && cargoHistory.last != true) {
-                //We got a cargo
-                setArmLedMode(ArmLedMode.HasCargo)
-            } else if (cargoHistory.current == false && hatchHistory.last == true) {
-                //We lost a cargo
-                setArmLedMode(ArmLedMode.Off)
-            }
-        }
-    }
-
     /**
      * Sets all LEDs to off, register event listeners
      */
@@ -321,8 +253,6 @@ object LEDManager {
         trussModeHistory.update(TrussLedMode.Off)
         armModeHistory.update(ArmLedMode.Off)
         armModeHistory.update(ArmLedMode.Off)
-        toolIndicatorModeHistory.update(ToolIndicatorMode.Off)
-        toolIndicatorModeHistory.update(ToolIndicatorMode.Off)
 
         setTrussLedMode(TrussLedMode.Off)
         setArmLedMode(ArmLedMode.Off)
@@ -330,13 +260,15 @@ object LEDManager {
         on (Events.DISABLED) {
             setTrussLedMode(TrussLedMode.Rainbow)
             setArmLedMode(ArmLedMode.Rainbow)
-            setToolIndicatorLedMode(ToolIndicatorMode.Off)
         }
 
         on (Events.AUTO_ENABLED) {
             setTrussLedMode(TrussLedMode.Off)
             setArmLedMode(ArmLedMode.Off)
-            updateToolStatus(SuperstructureController.output.wristTool, true)
+        }
+
+        on (RobotEvents.HatchAcquired) {
+            signalArm(ArmLedSignal.HatchAcquired)
         }
 
         on (Events.TELEOP_ENABLED) {
@@ -346,11 +278,6 @@ object LEDManager {
                 setTrussLedMode(TrussLedMode.RedSideActiveLock)
             }
             setArmLedMode(ArmLedMode.Off)
-            updateToolStatus(SuperstructureController.output.wristTool, true)
-        }
-
-        on (RobotEvents.VLoc) {
-            signalTruss(TrussLedSignal.VLoc)
         }
     }
 }

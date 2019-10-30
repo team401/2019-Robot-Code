@@ -2,7 +2,6 @@ package org.team401.robot2019.auto.steps.drivetrain
 
 import org.snakeskin.auto.steps.AutoStep
 import org.team401.robot2019.auto.steps.InterruptableAutoStep
-import org.team401.robot2019.control.vision.VisionState
 import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.taxis.geometry.Pose2dWithCurvature
 import org.team401.taxis.trajectory.TimedView
@@ -26,7 +25,6 @@ class DriveTrajectoryStep(referenceTrajectory: Trajectory<TimedState<Pose2dWithC
             DrivetrainSubsystem.setPose(startPose, currentTime) //Reconfigure the drive
         }
         DrivetrainSubsystem.pathManager.reset() //Reset the path manager
-        VisionState.reset()
         DrivetrainSubsystem.pathManager.setTrajectory(trajectory) //Load in the path
         DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing).waitFor() //Begin following
         println("drive start")

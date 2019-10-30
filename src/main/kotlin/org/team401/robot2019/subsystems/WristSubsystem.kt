@@ -15,6 +15,7 @@ import org.snakeskin.measure.MagEncoderTicks
 import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
 import org.snakeskin.utility.Ticker
+import org.team401.robot2019.RobotEvents
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
@@ -202,6 +203,8 @@ object WristSubsystem: Subsystem(100L) {
                 }
 
                 intakeTicker.check {
+                    //Hatch acquired
+                    send(RobotEvents.HatchAcquired)
                     setState(WristWheelsStates.Holding)
                 }
             }
@@ -273,9 +276,6 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     override fun action() {
-        LEDManager.updateGamepieceStatus(systemSeesHatch(), systemSeesCargo()) //Update gamepiece status from sensors
-
-
         // Faults
         if (rotation.getSensorCollection().pulseWidthRiseToRiseUs == 0) {
             fault(WristFaults.WristEncoderFault)
