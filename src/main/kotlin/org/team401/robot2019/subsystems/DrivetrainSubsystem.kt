@@ -13,14 +13,12 @@ import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.hardware.Hardware
+import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
 import org.snakeskin.utility.CheesyDriveController
-import org.team401.robot2019.DriverStationDisplay
-import org.team401.robot2019.Gamepad
-import org.team401.robot2019.LeftStick
-import org.team401.robot2019.RightStick
+import org.team401.robot2019.*
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
@@ -29,8 +27,10 @@ import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureSideManager
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
+import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.vision.*
+import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.util.LEDManager
 import org.team401.robot2019.vision2.LimelightCameraEnhanced
 import org.team401.robot2019.vision2.VisionSolver
@@ -169,7 +169,9 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
                 tank(output.left + scoreAdjust, output.right + scoreAdjust)
 
-                SuperstructureRoutines.sideManager.reportDriveCommand(Hardware.getRelativeTime(), pitch)
+                val poseX = driveState.getLatestXInches()
+
+                SuperstructureRoutines.sideManager.reportDriveCommand(Hardware.getRelativeTime(), pitch, poseX)
                 SuperstructureRoutines.onSideManagerUpdate()
             }
         }
@@ -372,6 +374,24 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         }
 
         setPose(Pose2d.identity())
+
+        on (RobotEvents.HatchAcquired) {
+            if (DriverStation.getInstance().isOperatorControl) {
+                val ssPosition = ArmKinematics.forward(ArmSubsystem.getCurrentArmState())
+
+                //If we're in teleop, reset drive pose on successful hatch intake.
+                //This is used by the superstructure side manager to estimate the back hatch cycle
+                if (ssPosition.x >= 0.0.Inches) {
+                    //Front side is active, facing backwards
+                    //13 inches from wheels to wrist pivot + x coord from wrist pivot to robot center
+                    setPose(Pose2d(13.0 + ssPosition.x.value, 0.0, Rotation2d.fromDegrees(180.0)))
+                } else {
+                    //Back side is active, facing forwards
+                    //13 inches from wheels to wrist pivot - x coord from wrist pivot to robot center
+                    setPose(Pose2d(13.0 - ssPosition.x.value, 0.0, Rotation2d.identity()))
+                }
+            }
+        }
 
         on (Events.TELEOP_ENABLED) {
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)

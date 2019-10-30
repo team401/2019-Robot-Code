@@ -189,12 +189,13 @@ class SuperstructureSideManager {
 
     private val driveThreshold = 0.1
     private val driveTimeSeconds = 0.1
+    private val driveBackRocketCycleThresholdInches = 219.813 //Measured from field CAD (loading station to rocket edge)
 
     /**
      * Reports data from the drive stick
      */
     @Synchronized
-    fun reportDriveCommand(timestamp: Double, driveThrottle: Double) {
+    fun reportDriveCommand(timestamp: Double, driveThrottle: Double, driveXInches: Double) {
         if (lastDriveReportTimestamp == 0.0) {
             lastDriveReportTimestamp = timestamp
             return
@@ -234,7 +235,13 @@ class SuperstructureSideManager {
 
         if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool && !isLocked() && driveSelectedSide != null) {
             //If we're not locked and there was a side selected by the drive, update the current side
-            currentSide = driveSelectedSide
+            currentSide = if (driveXInches >= driveBackRocketCycleThresholdInches) {
+                //We're past the back rocket cycle position threshold, so suggest back side
+                SuperstructureRoutines.Side.BACK
+            } else {
+                //We're not past the back cycle threshold, so suggest the drive selected side
+                driveSelectedSide
+            }
         }
     }
 }
