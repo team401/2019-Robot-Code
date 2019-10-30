@@ -395,6 +395,10 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
         on (Events.TELEOP_ENABLED) {
             driveMachine.setState(DriveStates.OpenLoopOperatorControl)
+            //On teleop enabled, set the pose to a very high magnitude negative number
+            //This ensures that the superstructure side manager won't think we're doing a back
+            //hatch cycle by mistake if the pose is somehow close to that threshold coming into teleop.
+            setPose(Pose2d(-1e6, 0.0, Rotation2d.identity()))
         }
     }
 }

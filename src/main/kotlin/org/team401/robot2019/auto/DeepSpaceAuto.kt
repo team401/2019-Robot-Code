@@ -5,7 +5,6 @@ import org.snakeskin.auto.RobotAuto
 import org.snakeskin.auto.steps.SequentialSteps
 import org.snakeskin.dsl.auto
 import org.snakeskin.measure.Seconds
-import org.team401.robot2019.DriverStationDisplay
 import org.team401.robot2019.auto.steps.climber.HomeClimberStep
 import org.team401.robot2019.auto.steps.drivetrain.*
 import org.team401.robot2019.auto.steps.superstructure.*
@@ -41,20 +40,9 @@ object DeepSpaceAuto: RobotAuto(20L) {
             }
         }
 
-        val startToRocketTrajectory = when (selectedAuto.side) {
-            AutoSide.Left -> Trajectories.level1HabToLineUpWithRocketLeft
-            AutoSide.Right -> Trajectories.level1HabToLineUpWithRocketRight
-        }
+        val rocketToLoadingTrajectory = Trajectories.rocketLeftToHatchIntakeLeft
+        val loadingToRocketTrajectory = Trajectories.hatchIntakeLeftToRocketLeft
 
-        val rocketToInboundingTrajectory = when (selectedAuto.side) {
-            AutoSide.Left -> Trajectories.nearRocketLeftToInboundingStationLineUpLeft
-            AutoSide.Right -> Trajectories.nearRocketRightToInboundingStationLineUpRight
-        }
-
-        val inboundingToRocketTrajectory = when (selectedAuto.side) {
-            AutoSide.Left -> Trajectories.inboundingStationLeftToNearRocketLineUpLeft
-            AutoSide.Right -> Trajectories.inboundingStationRightToNearRocketLineUpRight
-        }
 
         return auto {
             //Step 1: Arm homing and initial trajectory
@@ -73,62 +61,43 @@ object DeepSpaceAuto: RobotAuto(20L) {
                     //Drive to the near rocket
                     parallel {
                         step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
-                        // Drive to in front of the rocket
-                        step(DriveTrajectoryStep(startToRocketTrajectory, true))
+                        step(OperatorDriveStep())
+                        step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchBottomFront))
+                    }
 
+                    //Wait for scoring the hatch
+                    step(WaitForScoreButtonStep())
+
+                    //Start auto routine
+
+                    //Drive to loading and move arm and intake
+                    parallel {
+                        step(DriveTrajectoryStep(rocketToLoadingTrajectory, true))
                         sequential {
-                            // wait to move the arm until crosses a threshold
-                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 100.0))
-                            // Move the arm to high
-                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchHighFront))
-
+                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.NEGATIVE, 120.0))
+                            step(SuperstructureIntakeHatchStep())
+                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.hatchIntakeBack))
                         }
                     }
 
-                    // Vision moves to the rocket to score
-                    step(VisionAlignStep(SuperstructureRoutines.Side.FRONT, 1.4.Seconds))
+                    //Wait to get the hatch
+                    step(WaitForHatchAcquiredStep())
 
-                    //Score the hatch
-                    step(SuperstructureScoreStep())
-
-                    //Drive from the near rocket to the inbounding station, move to the intake position, enable vision
+                    //Drive back to the rocket
                     parallel {
-                        step(DriveTrajectoryStep(rocketToInboundingTrajectory))
-
+                        step(DriveTrajectoryStep(loadingToRocketTrajectory, false))
                         sequential {
-                            //Wait to move to intake until we cross the x threshold
-                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.NEGATIVE, 160.0))
-                            //Move the arm to the intake position
-                            step(SuperstructureIntakeStep(SuperstructureRoutines.Side.BACK))
-                        }
-                    }
-
-                    //Vision align to the inbounding station
-                    step(VisionAlignStep(SuperstructureRoutines.Side.BACK, 1.8.Seconds, .15, 0.9))
-
-                    //Grab the hatch
-                    step(SuperstructureStopIntakingStep())
-
-                    //Drive from the inbounding station to the rocket, move to scoring position, enable vision
-                    parallel {
-                        step(DriveTrajectoryStep(inboundingToRocketTrajectory))
-
-                        sequential {
-                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 110.0))
+                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 120.0))
                             step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
                         }
                     }
 
-                    //Vision align to the inbounding station
-                    step(VisionAlignStep(SuperstructureRoutines.Side.FRONT, 1.9.Seconds, .15, .9))
-
                     //Score the hatch
                     step(SuperstructureScoreStep())
-
-                    step(OpenLoopReverseStep(0.25, 1.0.Seconds))
+                    step(OpenLoopReverseStep(.25, 1.0.Seconds))
+                    step(SuperstructureStopScoringStep())
                 }
             }
-            step(OperatorDriveStep())
         }
     }
 }

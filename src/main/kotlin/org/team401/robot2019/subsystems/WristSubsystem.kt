@@ -20,7 +20,9 @@ import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.control.superstructure.SuperstructureController
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.util.LEDManager
 import org.team401.robot2019.util.MathUtil
@@ -205,7 +207,11 @@ object WristSubsystem: Subsystem(100L) {
                 intakeTicker.check {
                     //Hatch acquired
                     send(RobotEvents.HatchAcquired)
-                    setState(WristWheelsStates.Holding)
+                    if (SuperstructureMotionPlanner.isInFloorPickup) {
+                        SuperstructureRoutines.returnFromFloorPickup()
+                    } else {
+                        setState(WristWheelsStates.Holding)
+                    }
                 }
             }
         }

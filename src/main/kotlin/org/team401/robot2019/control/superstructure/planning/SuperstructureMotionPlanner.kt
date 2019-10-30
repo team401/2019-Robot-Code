@@ -38,6 +38,10 @@ object SuperstructureMotionPlanner {
     private set
     @Synchronized get
 
+    var isInFloorPickup = false
+    private set
+    @Synchronized get
+
     private var jogArmPose = Point2d(0.0.Inches, 0.0.Inches)
     private var jogWristState = WristState(0.0.Radians, false, false)
     private var jogXRate = 0.0
@@ -276,6 +280,7 @@ object SuperstructureMotionPlanner {
     @Synchronized
     private fun reset(){
         commandQueue.clear()
+        isInFloorPickup = false
 
         //Push through a command to the controller so that when the subsystems
         //enter coordinated control, they'll hold at their current states and not
@@ -522,6 +527,8 @@ object SuperstructureMotionPlanner {
 
     @Synchronized fun goToFloorPickup(){
         reset()
+        isInFloorPickup = true
+
         activeTool = WristMotionPlanner.Tool.HatchPanelTool
         commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))
         commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, ControlParameters.FloorPickupParameters.floorPickupAngle))
