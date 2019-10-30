@@ -522,7 +522,7 @@ object SuperstructureMotionPlanner {
 
     @Synchronized fun goToFloorPickup(){
         reset()
-
+        activeTool = WristMotionPlanner.Tool.HatchPanelTool
         commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))
         commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, ControlParameters.FloorPickupParameters.floorPickupAngle))
         commandQueue.add(DelayCommand(0.5.Seconds))

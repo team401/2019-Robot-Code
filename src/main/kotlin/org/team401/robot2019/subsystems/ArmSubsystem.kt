@@ -321,6 +321,7 @@ object ArmSubsystem: Subsystem(100L) {
         //println(extension.getPosition().toLinearDistance(Geometry.ArmGeometry.extensionPitchRadius))
         //println("Arm Position : ${ArmKinematics.forward(getCurrentArmState())}")
         //println(SuperstructureController.output.visionHeightMode)
+        //println("Arm r: ${getCurrentArmState().armRadius}  Arm theta: ${getCurrentArmState().armAngle.toDegrees()}")
 
     }
 

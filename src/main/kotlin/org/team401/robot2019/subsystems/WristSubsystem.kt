@@ -11,8 +11,10 @@ import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.logic.History
 import org.snakeskin.measure.Degrees
+import org.snakeskin.measure.MagEncoderTicks
 import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.distance.angular.AngularDistanceMeasureDegrees
+import org.snakeskin.utility.Ticker
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
@@ -168,6 +170,12 @@ object WristSubsystem: Subsystem(100L) {
         }
     }
 
+    private val intakeTicker = Ticker(
+        { leftIntakeTalon.outputCurrent >= 20.0 && rightIntakeTalon.outputCurrent >= 20.0 },
+        0.25.Seconds,
+        0.02.Seconds
+    )
+
     val wheelsMachine: StateMachine<WristWheelsStates> = stateMachine {
         state (WristWheelsStates.Idle) {
             entry {
@@ -177,6 +185,10 @@ object WristSubsystem: Subsystem(100L) {
         }
 
         state (WristWheelsStates.Intake) {
+            entry {
+                intakeTicker.reset()
+            }
+
             action {
                 when (SuperstructureController.output.wristTool) {
                     WristMotionPlanner.Tool.HatchPanelTool -> {
@@ -187,6 +199,10 @@ object WristSubsystem: Subsystem(100L) {
                         leftIntake.set(ControlParameters.WristParameters.cargoIntakePower)
                         rightIntake.set(ControlParameters.WristParameters.cargoIntakePower)
                     }
+                }
+
+                intakeTicker.check {
+                    setState(WristWheelsStates.Holding)
                 }
             }
         }
@@ -252,7 +268,7 @@ object WristSubsystem: Subsystem(100L) {
 
     private fun configWristHome(force: Boolean = false) {
         val ticks = rotationTalon.sensorCollection.pulseWidthPosition
-        val offset = MathUtil.offsetEncoder12B(ticks, 3660, 3072)
+        val offset = MathUtil.offsetEncoder12B(ticks, 3070, 3072)
         rotationTalon.selectedSensorPosition = offset
     }
 
@@ -266,7 +282,10 @@ object WristSubsystem: Subsystem(100L) {
             DriverStation.reportWarning("[Fault] Wrist Encoder has failed!", false)
         }
 
+        //println(Math.floorMod(rotationTalon.sensorCollection.pulseWidthPosition, 4096))
         //println(rotationTalon.selectedSensorPosition)
+        //println(rotationTalon.selectedSensorPosition.toDouble().MagEncoderTicks.toDegrees())
+        //println(leftIntakeTalon.outputCurrent)
     }
 
     override fun setup() {

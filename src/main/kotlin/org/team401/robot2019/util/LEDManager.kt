@@ -6,6 +6,7 @@ import org.lightlink.LightLink
 import org.snakeskin.dsl.on
 import org.snakeskin.event.Events
 import org.snakeskin.logic.History
+import org.team401.lightlink.LightLinkPatched
 import org.team401.robot2019.RobotEvents
 import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
@@ -15,7 +16,7 @@ object LEDManager {
     /**
      * LightLink instance
      */
-    private val ll = LightLink(I2C.Port.kMXP)
+    private val ll = LightLinkPatched(I2C.Port.kMXP)
 
     /**
      * LightLink indices of the various LED strips
@@ -36,9 +37,11 @@ object LEDManager {
         Off, //All truss LEDs are off
         Rainbow, //All truss LEDs are in rainbow pattern
         Race, //All truss LEDs race orange for maximum robot performance
-        //SideIndicator, //Front truss LEDs indicate "red side", back truss LEDs indicate "blue side"
         BlueSideActiveLock, //Front truss LEDs are off, back truss LEDs indicate "blue side"
+        BlueSideActiveLockVision,
         RedSideActiveLock, //Front truss LEDs indicate "red side", back truss LEDs are off
+        RedSideActiveLockVision,
+        CargoLock,
         BlueSideActiveAuto,
         RedSideActiveAuto,
         Climb,
@@ -106,15 +109,6 @@ object LEDManager {
                 ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
             }
 
-            /*
-            TrussLedMode.SideIndicator -> {
-                ll.solid(LightLink.Color.RED, Indices.TrussFrontLeftStrip)
-                ll.solid(LightLink.Color.RED, Indices.TrussFrontRightStrip)
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
-            }
-            */
-
             TrussLedMode.BlueSideActiveLock -> {
                 ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
                 ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
@@ -141,6 +135,27 @@ object LEDManager {
                 ll.blink(LightLink.Color.RED, LightLink.Speed.FAST, Indices.TrussFrontRightStrip)
                 ll.off(Indices.TrussBackLeftStrip)
                 ll.off(Indices.TrussBackRightStrip)
+            }
+
+            TrussLedMode.BlueSideActiveLockVision -> {
+                ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
+                ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
+                ll.solid(LightLink.Color.GREEN, Indices.TrussFrontLeftStrip)
+                ll.solid(LightLink.Color.GREEN, Indices.TrussFrontRightStrip)
+            }
+
+            TrussLedMode.RedSideActiveLockVision -> {
+                ll.solid(LightLink.Color.RED, Indices.TrussFrontLeftStrip)
+                ll.solid(LightLink.Color.RED, Indices.TrussFrontRightStrip)
+                ll.solid(LightLink.Color.GREEN, Indices.TrussBackLeftStrip)
+                ll.solid(LightLink.Color.GREEN, Indices.TrussBackRightStrip)
+            }
+
+            TrussLedMode.CargoLock -> {
+                ll.solid(LightLink.Color.ORANGE, Indices.TrussBackLeftStrip)
+                ll.solid(LightLink.Color.ORANGE, Indices.TrussBackRightStrip)
+                ll.off(Indices.TrussFrontLeftStrip)
+                ll.off(Indices.TrussFrontRightStrip)
             }
 
             TrussLedMode.Climb -> {

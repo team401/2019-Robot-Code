@@ -1,5 +1,7 @@
 package org.team401.robot2019.control.superstructure
 
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+
 /**
  * Class implementing heuristics for automatically switching the active side of the robot
  * based on specific drive commands, as well as handling prioritization of locking the active
@@ -30,6 +32,7 @@ class SuperstructureSideManager {
     private var lockedByScore = false
     private var lockedByIntake = false
     private var lockedByVision = false
+    private var lockedBySuperstructureMove = false
     private var lockedByAuto = false
 
     /**
@@ -37,7 +40,7 @@ class SuperstructureSideManager {
      */
     @Synchronized
     fun isLocked(): Boolean {
-        return lockedByToggle || lockedByScore || lockedByIntake || lockedByVision || lockedByAuto
+        return lockedByToggle || lockedByScore || lockedByIntake || lockedByVision || lockedBySuperstructureMove || lockedByAuto
     }
 
     /**
@@ -69,6 +72,7 @@ class SuperstructureSideManager {
                 lockedByScore = false
                 lockedByIntake = false
                 lockedByVision = false
+                lockedBySuperstructureMove = false
                 //We should also clear the intaking flag
                 wasLastMoveActionIntaking = false
             }
@@ -76,6 +80,8 @@ class SuperstructureSideManager {
             Action.SUPERSTRUCTURE_MOVED_TO_SETPOINT -> {
                 //Clear the intaking flag
                 wasLastMoveActionIntaking = false
+                //Set lock flag
+                lockedBySuperstructureMove = true
             }
 
             Action.TOGGLED -> {
@@ -123,12 +129,14 @@ class SuperstructureSideManager {
                 lockedByScore = false
                 lockedByToggle = false
                 lockedByIntake = false
+                lockedBySuperstructureMove = false
                 wasLastMoveActionIntaking = false
             }
 
             Action.HATCH_INTAKE_STARTED -> {
                 //Intaking started.  Lock by intake
                 lockedByIntake = true
+                lockedBySuperstructureMove = false
                 if (!lockedByVision && !lockedByAuto && !lockedByToggle) {
                     //If we aren't locked by something else already
                     //Check if the last action was intaking
@@ -224,7 +232,7 @@ class SuperstructureSideManager {
             else -> null //No selected side, meaning we just use whatever side we did before
         }
 
-        if (!isLocked() && driveSelectedSide != null) {
+        if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool && !isLocked() && driveSelectedSide != null) {
             //If we're not locked and there was a side selected by the drive, update the current side
             currentSide = driveSelectedSide
         }

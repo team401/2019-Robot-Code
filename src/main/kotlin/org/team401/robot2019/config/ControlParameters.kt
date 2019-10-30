@@ -122,7 +122,7 @@ object ControlParameters {
 
         const val hatchIntakePower = -1.0
         const val hatchHoldingPower = -0.1
-        const val hatchScoringPower = 0.15
+        const val hatchScoringPower = 0.5
 
         /**
          * PIDF for the wrist rotation
@@ -144,7 +144,7 @@ object ControlParameters {
             Point2d(23.5.Inches, 5.0.Inches),
             0.0.Radians,
             VisionHeightMode.NONE
-        ).withAngle((15.0).Degrees.toRadians()).fromFloor()
+        ).withAngle((5.0).Degrees.toRadians()).fromFloor()
 
         val cargoFloorPickupBack = cargoFloorPickupFront.flipped()
 
@@ -152,10 +152,10 @@ object ControlParameters {
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(
             Point2d(24.0.Inches, 27.5.Inches),
             10.0.Degrees.toRadians(),
-            VisionHeightMode.LOW
+            VisionHeightMode.CARGO_SCORE_ROCKET
         ).fromFloor()
-        val rocketCargoMidFront = rocketCargoBottomFront.upBy(27.75.Inches).atX(6.0.Inches).withHeightMode(VisionHeightMode.MID)
-        val rocketCargoHighFront = rocketCargoMidFront.upBy(19.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
+        val rocketCargoMidFront = rocketCargoBottomFront.upBy(27.75.Inches).atX(6.0.Inches)
+        val rocketCargoHighFront = rocketCargoMidFront.upBy(19.0.Inches).atX((5.0).Inches).withAngle(45.0.Degrees.toRadians())
 
         val rocketCargoBottomBack = rocketCargoBottomFront.flipped()
         val rocketCargoMidBack = rocketCargoMidFront.flipped()
@@ -163,33 +163,33 @@ object ControlParameters {
 
         //Intake hatch positions
         val hatchIntakeFront = SuperstructureSetpoint.intakingHatch(
-            Point2d(24.0.Inches, 20.0.Inches),
+            Point2d(24.0.Inches, 21.0.Inches),
             0.0.Radians,
-            VisionHeightMode.LOW
+            VisionHeightMode.HATCH_INTAKE
         ).fromFloor()
 
         val hatchIntakeBack = hatchIntakeFront.flipped()
 
         //Rocket hatch positions
         val rocketHatchBottomFront = SuperstructureSetpoint.holdingHatch(
-            Point2d(24.0.Inches, 20.0.Inches),
+            Point2d(24.0.Inches, 21.0.Inches),
             0.0.Radians,
-            VisionHeightMode.LOW
+            VisionHeightMode.HATCH_SCORE
         ).fromFloor()
-        val rocketHatchMidFront = rocketHatchBottomFront.upBy(29.0.Inches).atX(6.0.Inches).withHeightMode(VisionHeightMode.MID)
-        val rocketHatchHighFront = rocketHatchMidFront.upBy(25.0.Inches).atX((6.0).Inches).withAngle(15.0.Degrees.toRadians()).withHeightMode(VisionHeightMode.HIGH)
+        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(6.0.Inches)
+        val rocketHatchHighFront = rocketHatchMidFront.upBy(25.0.Inches).atX((6.0).Inches).withAngle(15.0.Degrees.toRadians())
 
         val rocketHatchBottomBack = rocketHatchBottomFront.flipped()
         val rocketHatchMidBack = rocketHatchMidFront.flipped()
         val rocketHatchHighBack = rocketHatchHighFront.flipped()
 
-        val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(16.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians(), VisionHeightMode.NONE).fromFloor()
+        val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(16.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians(), VisionHeightMode.HATCH_SCORE).fromFloor()
         val cargoShipCargoBack = cargoShipCargoFront.flipped()
 
         val cargoIntakeLoadingStationFront = SuperstructureSetpoint.intakingCargo(
             Point2d(19.0.Inches, 23.5.Inches),
             0.0.Radians,
-            VisionHeightMode.NONE
+            VisionHeightMode.HATCH_INTAKE //hatch intake since we use the hatch loading station to get the ball
         )
         val cargoIntakeLoadingStationBack = cargoIntakeLoadingStationFront.flipped()
     }
@@ -246,9 +246,9 @@ object ControlParameters {
         const val intakeSpeed = 1.0
         const val ejectSpeed = -1.0
 
-        val floorPickupAngle = 50.0.Degrees.toRadians()
+        val floorPickupAngle = 16.171875.Degrees.toRadians()
 
-        val floorPickupPoint = ArmKinematics.inverse(Point2d(18.0.Inches, (-17.0).Inches))
+        val floorPickupPoint = ArmKinematics.inverse(Point2d(21.40664.Inches, (-6.38621).Inches))
 
         const val floorPickupCurrentLimit = 4.0
         val floorPickupCurrentTimeout = 0.2.Seconds
@@ -344,63 +344,7 @@ object ControlParameters {
          * Selects the appropriate offset given the side, height, and tool
          */
         fun select(side: SuperstructureRoutines.Side, heightMode: VisionHeightMode, tool: WristMotionPlanner.Tool): AngularDistanceMeasureDegrees {
-            return when (heightMode) {
-                VisionHeightMode.NONE -> 0.0.Degrees
-
-                VisionHeightMode.LOW -> {
-                    when (side) {
-                        SuperstructureRoutines.Side.FRONT -> {
-                            when (tool) {
-                                WristMotionPlanner.Tool.HatchPanelTool -> lowHatchAngularOffsetFront
-                                WristMotionPlanner.Tool.CargoTool -> lowCargoAngularOffsetFront
-                            }
-                        }
-
-                        SuperstructureRoutines.Side.BACK -> {
-                            when (tool) {
-                                WristMotionPlanner.Tool.HatchPanelTool -> lowHatchAngularOffsetBack
-                                WristMotionPlanner.Tool.CargoTool -> lowCargoAngularOffsetBack
-                            }
-                        }
-                    }
-                }
-
-                VisionHeightMode.MID -> {
-                    when (side) {
-                        SuperstructureRoutines.Side.FRONT -> {
-                            when (tool) {
-                                WristMotionPlanner.Tool.HatchPanelTool -> midHatchAngularOffsetFront
-                                WristMotionPlanner.Tool.CargoTool -> midCargoAngularOffsetFront
-                            }
-                        }
-
-                        SuperstructureRoutines.Side.BACK -> {
-                            when (tool) {
-                                WristMotionPlanner.Tool.HatchPanelTool -> midHatchAngularOffsetBack
-                                WristMotionPlanner.Tool.CargoTool -> midCargoAngularOffsetBack
-                            }
-                        }
-                    }
-                }
-
-                VisionHeightMode.HIGH -> {
-                    when (side) {
-                        SuperstructureRoutines.Side.FRONT -> {
-                            when (tool) {
-                                WristMotionPlanner.Tool.HatchPanelTool -> highHatchAngularOffsetFront
-                                WristMotionPlanner.Tool.CargoTool -> highCargoAngularOffsetFront
-                            }
-                        }
-
-                        SuperstructureRoutines.Side.BACK -> {
-                            when (tool) {
-                                WristMotionPlanner.Tool.HatchPanelTool -> highHatchAngularOffsetBack
-                                WristMotionPlanner.Tool.CargoTool -> highCargoAngularOffsetBack
-                            }
-                        }
-                    }
-                }
-            }
+            return 0.0.Degrees
         }
     }
 }

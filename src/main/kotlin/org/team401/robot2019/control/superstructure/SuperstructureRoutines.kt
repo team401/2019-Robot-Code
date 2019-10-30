@@ -31,12 +31,13 @@ object SuperstructureRoutines {
     fun onSideManagerUpdate() {
         val sideManagerSide = sideManager.getSide()
         val sideManagerLocked = sideManager.isLocked()
+        val tool = SuperstructureController.output.wristTool
 
         side = sideManagerSide
 
         when (sideManagerSide) {
             Side.FRONT -> {
-                if (sideManagerLocked) {
+                if (sideManagerLocked || tool == WristMotionPlanner.Tool.CargoTool) {
                     //Front locked
                     LEDManager.setTrussLedMode(LEDManager.TrussLedMode.RedSideActiveLock)
                 } else {
@@ -46,7 +47,7 @@ object SuperstructureRoutines {
             }
 
             Side.BACK -> {
-                if (sideManagerLocked) {
+                if (sideManagerLocked || tool == WristMotionPlanner.Tool.CargoTool) {
                     //Back locked
                     LEDManager.setTrussLedMode(LEDManager.TrussLedMode.BlueSideActiveLock)
                 } else {
@@ -258,8 +259,8 @@ object SuperstructureRoutines {
 
     @Synchronized
     fun goToFloorPickup() {
-        score()
         SuperstructureMotionPlanner.goToFloorPickup()
+        WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Intake)
 
         FloorPickupSubsystem.wheelsMachine.setState(FloorPickupSubsystem.WheelsStates.Intake)
         Thread.sleep(250)

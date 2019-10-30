@@ -8,8 +8,10 @@ import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.ControlType
+import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Solenoid
+import edu.wpi.first.wpilibj.Spark
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
@@ -19,16 +21,22 @@ import org.snakeskin.measure.RadiansPerSecond
 import org.snakeskin.measure.RadiansPerSecondPerSecond
 import org.snakeskin.utility.CheesyDriveController
 import org.team401.robot2019.DriverStationDisplay
+import org.team401.robot2019.Gamepad
 import org.team401.robot2019.LeftStick
 import org.team401.robot2019.RightStick
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.config.Geometry
 import org.team401.robot2019.config.HardwareMap
 import org.team401.robot2019.config.Physics
+import org.team401.robot2019.control.superstructure.SuperstructureController
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureSideManager
+import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
+import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.vision.*
+import org.team401.robot2019.util.LEDManager
 import org.team401.robot2019.vision2.LimelightCameraEnhanced
+import org.team401.robot2019.vision2.VisionSolver
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.component.impl.PigeonPathFollowingDiffDrive
 import org.team401.taxis.diffdrive.control.NonlinearFeedbackPathController
@@ -66,11 +74,38 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
     private val shifter = Solenoid(HardwareMap.Pneumatics.drivetrainShifterSolenoidId)
 
+    private val visionTuningButton = DigitalInput(9)
+
+    private fun updateVisionDebug() {
+        val activeCamera = VisionManager.frontCamera
+
+        if (!visionTuningButton.get()) {
+            activeCamera.configForVision(1)
+            activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
+            val area = activeCamera.getArea()
+
+            println("Area: $area")
+        } else {
+            activeCamera.setLedMode(LimelightCamera.LedMode.Off)
+        }
+    }
+
     /**
      * Shifts the drivetrain to the selected gear.  The available shifter states are available in ShifterStates.
      */
     fun shift(state: Boolean) {
         shifter.set(state)
+    }
+
+    private fun getScoreReversePercent(): Double {
+        return if (Gamepad.readButton { RIGHT_BUMPER } && SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool) {
+            when (SuperstructureRoutines.side) {
+                SuperstructureRoutines.Side.FRONT -> -0.25
+                SuperstructureRoutines.Side.BACK -> 0.25
+            }
+        } else {
+            0.0
+        }
     }
 
     /**
@@ -142,7 +177,9 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                     RightStick.readButton { TRIGGER }
                 )
 
-                tank(output.left, output.right)
+                val scoreAdjust = getScoreReversePercent()
+
+                tank(output.left + scoreAdjust, output.right + scoreAdjust)
 
                 SuperstructureRoutines.sideManager.reportDriveCommand(Hardware.getRelativeTime(), pitch)
                 SuperstructureRoutines.onSideManagerUpdate()
@@ -214,14 +251,16 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
         }
 
-        state(DrivetrainSubsystem.DriveStates.VisionAlign){
+        state(DriveStates.VisionAlign) {
             lateinit var activeSide: SuperstructureRoutines.Side
             lateinit var activeCamera: LimelightCameraEnhanced
+            lateinit var activeHeightMode: VisionHeightMode
 
             entry {
                 SuperstructureRoutines.sideManager.reportAction(SuperstructureSideManager.Action.VISION_STARTED)
                 SuperstructureRoutines.onSideManagerUpdate()
                 activeSide = SuperstructureRoutines.side
+                activeHeightMode = SuperstructureController.output.visionHeightMode
                 activeCamera = when (activeSide) {
                     SuperstructureRoutines.Side.FRONT -> {
                         VisionManager.frontCamera
@@ -231,10 +270,12 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                     }
                 }
 
-                activeCamera.configForVision(1)
+                activeCamera.configForVision(activeHeightMode.pipeline)
                 activeCamera.setLedMode(LimelightCamera.LedMode.UsePipeline)
                 activeCamera.resetFrame()
                 cheesyController.reset()
+
+                VisionSolver.selectRegression(activeSide, activeHeightMode)
             }
 
             val alignmentOffset = 30.0 //inches
@@ -243,36 +284,33 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
             rtAction {
                 val seesTarget = activeCamera.seesTarget()
+                val targetAngle = activeCamera.entries.tx.getDouble(0.0)
+                val targetArea = activeCamera.getArea()
                 val output = cheesyController.update(
                     LeftStick.readAxis { PITCH },
                     RightStick.readAxis { ROLL },
                     false,
                     RightStick.readButton { TRIGGER }
                 )
-                var outLeft = output.left
-                var outRight = output.right
-                if (seesTarget) {
-                    val area = activeCamera.getArea()
-                    val distance = calculateVisionTargetDistanceInches(area)
-                    if (distance > 0.0) {
-                        val targetAngle = -activeCamera.entries.tx.getDouble(0.0)
-                        val cameraToTarget =
-                            Pose2d.fromTranslation(Translation2d(distance, distance * tan(Math.toRadians(targetAngle))))
-                        val robotToTarget = activeCamera.robotToCamera.transformBy(cameraToTarget)
-                        var bearing = robotToTarget.translation.direction()
-                        if (activeSide == SuperstructureRoutines.Side.BACK) {
-                            bearing = bearing.rotateBy(degrees180)
-                        }
-                        if (bearing.degrees in -20.0..20.0) {
-                            val adjustment = (bearing.degrees * ControlParameters.DrivetrainParameters.visionKp) / 100.0
-                            outLeft -= adjustment
-                            outRight += adjustment
-                        }
+                val scoreAdjust = getScoreReversePercent()
 
-                        println(bearing)
+                val correctionAngle = VisionSolver.solve(seesTarget, targetArea, targetAngle, activeCamera.robotToCamera)
+                if (!correctionAngle.isNaN()) {
+                    //Vision has found a valid target
+                    when (activeSide) {
+                        SuperstructureRoutines.Side.BACK -> LEDManager.setTrussLedMode(LEDManager.TrussLedMode.BlueSideActiveLockVision)
+                        SuperstructureRoutines.Side.FRONT -> LEDManager.setTrussLedMode(LEDManager.TrussLedMode.RedSideActiveLockVision)
                     }
+                    val adjustment = (correctionAngle * ControlParameters.DrivetrainParameters.visionKp) / 100.0
+                    tank(output.left - adjustment + scoreAdjust, output.right + adjustment + scoreAdjust)
+                } else {
+                    //Vision has not found a valid target
+                    when (activeSide) {
+                        SuperstructureRoutines.Side.BACK -> LEDManager.setTrussLedMode(LEDManager.TrussLedMode.BlueSideActiveLock)
+                        SuperstructureRoutines.Side.FRONT -> LEDManager.setTrussLedMode(LEDManager.TrussLedMode.RedSideActiveLock)
+                    }
+                    tank(output.left + scoreAdjust, output.right + scoreAdjust)
                 }
-                tank(outLeft, outRight)
             }
 
             exit {
@@ -376,6 +414,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
     }
 
     override fun action() {
+        //updateVisionDebug()
+
         // Detect faults
 
         //Motor controller reset fault
