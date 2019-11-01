@@ -527,7 +527,6 @@ object SuperstructureMotionPlanner {
 
     @Synchronized fun goToFloorPickup(){
         reset()
-        isInFloorPickup = true
 
         activeTool = WristMotionPlanner.Tool.HatchPanelTool
         commandQueue.add(ExtensionOnlyCommand(Geometry.ArmGeometry.minSafeArmLength, activeTool))
@@ -535,6 +534,7 @@ object SuperstructureMotionPlanner {
         commandQueue.add(DelayCommand(0.5.Seconds))
         commandQueue.add(ExtensionOnlyCommand(ControlParameters.FloorPickupParameters.floorPickupPoint.r, activeTool))
         commandQueue.add(RotationOnlyCommand(ControlParameters.FloorPickupParameters.floorPickupPoint.theta, activeTool))
+        isInFloorPickup = true
     }
 
     @Synchronized fun returnFromFloorPickup() {

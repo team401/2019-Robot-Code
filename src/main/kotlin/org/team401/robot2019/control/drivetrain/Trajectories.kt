@@ -27,8 +27,8 @@ import org.team401.taxis.trajectory.timing.VelocityLimitRegionConstraint
 object Trajectories {
     private val pm = DrivetrainSubsystem.pathManager
     private val maxCentrip = 110.0
-    private val maxVel = 8.0 * 12
-    private val maxAccel = 5.0 * 12
+    private val maxVel = 5.0 * 12.0
+    private val maxAccel = 3.0 * 12
     private val maxVoltage = 9.0
 
     private fun flipWaypoints(waypointsIn: List<Pose2d>): List<Pose2d> {
@@ -58,41 +58,34 @@ object Trajectories {
         )
     }
 
-    val rocketRightToHatchIntakeRightWaypoints = listOf(
-        CriticalPoses.trajRight1,
-        CriticalPoses.trajRight2,
-        CriticalPoses.trajRight3,
-        CriticalPoses.trajRight4
+    val habToRocketLeft = generateTrajectory(
+        listOf(
+            CriticalPoses.robotRelativeStart,
+            CriticalPoses.robotRelativeDriveFromL2,
+            CriticalPoses.robotRelativeDriveToRocketLeftAlignEnd
+        ),
+        false,
+        3.0 * 12.0
     )
 
-    val rocketLeftToHatchIntakeLeftWaypoints = flipWaypoints(rocketRightToHatchIntakeRightWaypoints)
-
-    val hatchIntakeRightToRocketRightWaypoints = listOf(
-        CriticalPoses.trajRight4,
-        CriticalPoses.trajRight5,
-        CriticalPoses.trajRight6,
-        CriticalPoses.trajRight7
+    val rocketLeftToStation = generateTrajectory(
+        listOf(
+            CriticalPoses.stationRelativeToRocketLeft,
+            CriticalPoses.stationRelativeToRocketLeftBackUp,
+            CriticalPoses.stationRelativeToStationAlignStart,
+            CriticalPoses.stationRelativeToStationAlignEnd
+        ),
+        true,
+        3.0 * 12.0
     )
 
-    val hatchIntakeLeftToRocketLeftWaypoints = flipWaypoints(hatchIntakeRightToRocketRightWaypoints)
-
-    val rocketRightToHatchIntakeRight = generateTrajectory(
-        rocketRightToHatchIntakeRightWaypoints,
-        true
-    )
-
-    val rocketLeftToHatchIntakeLeft = generateTrajectory(
-        rocketLeftToHatchIntakeLeftWaypoints,
-        true
-    )
-
-    val hatchIntakeRightToRocketRight = generateTrajectory(
-        hatchIntakeRightToRocketRightWaypoints,
-        false
-    )
-
-    val hatchIntakeLeftToRocketLeft = generateTrajectory(
-        hatchIntakeLeftToRocketLeftWaypoints,
-        false
+    val stationToRocketLeft = generateTrajectory(
+        listOf(
+            CriticalPoses.stationRelativeToHatchGrabbed,
+            CriticalPoses.stationRelativeTurnPoint,
+            CriticalPoses.stationRelativeToRocketLeftAlignEnd.transformBy(Pose2d.fromTranslation(Translation2d(0.0, -4.0)))
+        ),
+        false,
+        3.0 * 12.0
     )
 }

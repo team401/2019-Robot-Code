@@ -10,10 +10,11 @@ import kotlin.math.tan
 
 object VisionSolver {
     //Regressions
-    private val hatchStationFrontRegression = VisionRegression(81.892342, -0.493349)
-    private val hatchStationBackRegression = hatchStationFrontRegression
-    private val hatchScoringFrontRegression = VisionRegression(81.892342, -0.493349)
-    private val hatchScoringBackRegression = hatchScoringFrontRegression
+    private val hatchStationFrontRegression = VisionRegression(81.892342, -0.49334)
+    private val hatchStationBackRegression = VisionRegression(81.892342, -0.49334)
+    private val hatchScoringFrontRegression = VisionRegression(83.175269, -0.493551, 0.0)
+    private val hatchScoringAutoFrontRegression = VisionRegression(83.175269, -0.493551, -1.0)
+    private val hatchScoringBackRegression = VisionRegression(83.175269, -0.493551, 0.0)
     private val cargoScoringRocketFrontRegression = VisionRegression(81.892342, -0.493349)
     private val cargoScoringRocketBackRegression = cargoScoringRocketFrontRegression
 
@@ -22,13 +23,14 @@ object VisionSolver {
     /**
      * Selects the correct regression to use given the conditions
      */
-    fun selectRegression(activeSide: SuperstructureRoutines.Side, activeMode: VisionHeightMode) {
+    fun selectRegression(activeSide: SuperstructureRoutines.Side, activeMode: VisionHeightMode, isAuto: Boolean = false) {
         activeRegression = when (activeSide) {
             SuperstructureRoutines.Side.FRONT -> {
                 when (activeMode) {
                     VisionHeightMode.NONE -> hatchStationFrontRegression
                     VisionHeightMode.HATCH_INTAKE -> hatchStationFrontRegression
-                    VisionHeightMode.HATCH_SCORE -> hatchScoringFrontRegression
+                    VisionHeightMode.HATCH_SCORE ->
+                        if (isAuto) hatchScoringAutoFrontRegression else hatchScoringFrontRegression
                     VisionHeightMode.CARGO_SCORE_ROCKET -> cargoScoringRocketFrontRegression
                 }
             }
@@ -53,7 +55,7 @@ object VisionSolver {
             val targetAngleRads = -Math.toRadians(targetAngle)
             if (distance > 0.0) {
                 val cameraToTarget = Pose2d.fromTranslation(Translation2d(distance, distance * tan(targetAngleRads)))
-                val robotToTarget = robotToCamera.transformBy(cameraToTarget)
+                val robotToTarget = robotToCamera.transformBy(cameraToTarget).transformBy(activeRegression.offset)
                 val bearing = robotToTarget.translation.direction().rotateBy(robotToCamera.rotation).degrees
                 if (bearing in -20.0..20.0) {
                     return bearing

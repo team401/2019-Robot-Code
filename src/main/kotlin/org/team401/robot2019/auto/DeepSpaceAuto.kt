@@ -10,8 +10,9 @@ import org.team401.robot2019.auto.steps.drivetrain.*
 import org.team401.robot2019.auto.steps.superstructure.*
 import org.team401.robot2019.config.ControlParameters
 import org.team401.robot2019.control.drivetrain.Trajectories
-import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.robot2019.subsystems.DrivetrainSubsystem
+import org.team401.robot2019.subsystems.WristSubsystem
 
 object DeepSpaceAuto: RobotAuto(20L) {
     private val autoChooser = AutoMode.toSendableChooser()
@@ -22,7 +23,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
     }
 
     override fun assembleAuto(): SequentialSteps {
-        val selectedAuto = AutoMode.Manual//autoChooser.selected//DriverStationDisplay.autoSelctor.value.value as AutoMode
+        val selectedAuto = AutoMode.TwoHatchLeft//autoChooser.selected//DriverStationDisplay.autoSelctor.value.value as AutoMode
         println("Selected auto: ${selectedAuto}")
 
         if (selectedAuto == AutoMode.Manual) {
@@ -40,64 +41,46 @@ object DeepSpaceAuto: RobotAuto(20L) {
             }
         }
 
-        val rocketToLoadingTrajectory = Trajectories.rocketLeftToHatchIntakeLeft
-        val loadingToRocketTrajectory = Trajectories.hatchIntakeLeftToRocketLeft
+        val rocketToLoadingTrajectory = Trajectories.habToRocketLeft
+        //val loadingToRocketTrajectory = Trajectories.hatchIntakeLeftToRocketLeft
 
 
         return auto {
-            //Step 1: Arm homing and initial trajectory
             parallel {
-                //Prepare cameras
-                //step(PrepareVisionStep())
-
-                //Arm configuration sequence
+                step(DriveTrajectoryStep(rocketToLoadingTrajectory, true, DrivetrainSubsystem.VisionContinuanceMode.ContinueRocketFront))
+                step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
                 sequential {
+                    step(SuperstructureSwitchToolStep(WristMotionPlanner.Tool.HatchPanelTool)) //Configure for hatch tool
+                    step { WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Holding) }
                     step(ArmHomeStep()) //The first step in any auto routine is to home the arm.  This can't be interrupted
                     step(SuperstructureGoHomeStep()) //Next, move to the home position
-                    step(SuperstructureSwitchToolStep(WristMotionPlanner.Tool.HatchPanelTool)) //Configure for hatch tool
-                }
 
-                sequential {
-                    //Drive to the near rocket
-                    parallel {
-                        step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
-                        step(OperatorDriveStep())
-                        step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchBottomFront))
-                    }
-
-                    //Wait for scoring the hatch
-                    step(WaitForScoreButtonStep())
-
-                    //Start auto routine
-
-                    //Drive to loading and move arm and intake
-                    parallel {
-                        step(DriveTrajectoryStep(rocketToLoadingTrajectory, true))
-                        sequential {
-                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.NEGATIVE, 120.0))
-                            step(SuperstructureIntakeHatchStep())
-                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.hatchIntakeBack))
-                        }
-                    }
-
-                    //Wait to get the hatch
-                    step(WaitForHatchAcquiredStep())
-
-                    //Drive back to the rocket
-                    parallel {
-                        step(DriveTrajectoryStep(loadingToRocketTrajectory, false))
-                        sequential {
-                            step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 120.0))
-                            step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
-                        }
-                    }
-
-                    //Score the hatch
-                    step(SuperstructureScoreStep())
-                    step(OpenLoopReverseStep(.25, 1.0.Seconds))
-                    step(SuperstructureStopScoringStep())
+                    step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 90.0))
+                    step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchHighFront))
                 }
             }
+            step(SuperstructureScoreStep())
+
+            parallel {
+                step(DriveTrajectoryStep(Trajectories.rocketLeftToStation, true, DrivetrainSubsystem.VisionContinuanceMode.ContinueHatchBack))
+                sequential {
+                    step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.NEGATIVE, 13.0 * 12.0))
+                    step(SuperstructureIntakeHatchStep())
+                    step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.hatchIntakeBack))
+                }
+            }
+
+            parallel {
+                step(DriveTrajectoryStep(Trajectories.stationToRocketLeft, false, DrivetrainSubsystem.VisionContinuanceMode.ContinueRocketFront))
+                sequential {
+                    step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 6.0 * 12.0))
+                    step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))
+                }
+            }
+
+            step(SuperstructureScoreStep())
+            step(OpenLoopReverseStep(.25, 1.0.Seconds))
+            step(SuperstructureStopScoringStep())
         }
     }
 }

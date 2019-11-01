@@ -16,52 +16,50 @@ import kotlin.math.abs
  *
  */
 object CriticalPoses {
-    //Field relative positions of various field elements
-    val fieldToNearRocketRight = Pose2d(213.678, 18.116, Rotation2d.fromDegrees(331.23))
-    val fieldToInboundingStationRight = Pose2d(0.0, 25.715, Rotation2d.fromDegrees(180.0))
+    const val habDriveDistance = 40.775
 
-    //Offset poses for robot geometry (14 inches is the distance from hatch wheels to the wrist pivot)
-    val lowHatchWheelsFrontTransform = Pose2d(
-        -abs(ControlParameters.SuperstructurePositions.rocketHatchBottomFront.point.x.value) - 14.0,
-        0.0,
-        Rotation2d.identity()
+    val robotRelativeStart = Pose2d.identity()
+    val robotRelativeDriveFromL2 = robotRelativeStart.transformBy(
+        Pose2d.fromTranslation(Translation2d(habDriveDistance, 0.0))
+    )
+    val robotRelativeToRocketLeft = robotRelativeDriveFromL2.transformBy(
+        Pose2d(101.216, 98.884, Rotation2d.fromDegrees(28.77))
+    )
+    val robotRelativeToRocketRight = robotRelativeDriveFromL2.transformBy(
+        Pose2d(101.216, -98.884, Rotation2d.fromDegrees(-28.77))
     )
 
-    val midHatchWheelsFrontTransform = Pose2d(
-        -abs(ControlParameters.SuperstructurePositions.rocketHatchMidFront.point.x.value) - 14.0,
-        0.0,
-        Rotation2d.identity()
+    val robotRelativeDriveToRocketLeftAlignEnd = robotRelativeToRocketLeft.transformBy(
+        Pose2d.fromTranslation(Translation2d(-4.0 * 12.0, 0.0))
     )
 
-    val intakeHatchWheelsBackTransform = Pose2d(
-        -abs(ControlParameters.SuperstructurePositions.hatchIntakeBack.point.x.value) - 14.0,
-        0.0,
-        Rotation2d.identity()
+    val stationRelativeLoadingStation = Pose2d.identity()
+    val stationRelativeToRocketLeft = stationRelativeLoadingStation.transformBy(
+        Pose2d(198.650, 1.063, Rotation2d.fromDegrees(28.77))
     )
 
-    //Path transforms
-    val targetAlignmentTransform = Pose2d(
-        -42.0, //Allow 4 feet to align with any target
-        0.0,
-        Rotation2d.identity()
+    val stationRelativeToRocketLeftBackUp = stationRelativeToRocketLeft.transformBy(
+        Pose2d.fromTranslation(Translation2d(-3.0 * 12.0, 16.0))
+    ).withHeading(Rotation2d.identity())
+
+    val stationRelativeToRocketLeftAlignEnd = stationRelativeToRocketLeft.transformBy(
+        Pose2d.fromTranslation(Translation2d(-4.0 * 12.0, 0.0))
     )
 
-    val clearanceTransform = Pose2d(
-        -12.0, //Allow 1 foot to reverse from any target before turning
-        0.0,
-        Rotation2d.identity()
+    val stationRelativeToStationAlignStart = stationRelativeLoadingStation.transformBy(
+        Pose2d.fromTranslation(Translation2d(8.0 * 12.0, 0.0))
+    )
+    val stationRelativeToStationAlignEnd = stationRelativeLoadingStation.transformBy(
+        Pose2d.fromTranslation(Translation2d(4.0 * 12.0, 0.0))
     )
 
-    val forwardHeading = Rotation2d.identity()
+    val stationRelativeToHatchGrabbed = stationRelativeLoadingStation.transformBy(
+        Pose2d.fromTranslation(Translation2d(38.0, 0.0))
+    )
 
-    //Robot trajectory poses
-    val trajRight1 = fieldToNearRocketRight.transformBy(lowHatchWheelsFrontTransform) //Low hatch scoring position
-    val trajRight2 = Pose2d.fromTranslation(trajRight1.translation.translateBy(Translation2d(-3.0 * 12.0, 0.0))).withHeading(Rotation2d.fromDegrees(15.0))
-    val trajRight3 = fieldToInboundingStationRight.transformBy(targetAlignmentTransform).withHeading(forwardHeading) //Aligning with station
-    val trajRight4 = fieldToInboundingStationRight.transformBy(intakeHatchWheelsBackTransform).withHeading(forwardHeading) //Intaking hatch
-    val trajRight5 = trajRight4.transformBy(clearanceTransform) //Backed up from station after intaking
-    val trajRight6 = fieldToNearRocketRight.transformBy(targetAlignmentTransform) //Aligning with rocket
-    val trajRight7 = fieldToNearRocketRight.transformBy(midHatchWheelsFrontTransform) //Scoring on rocket
+    val stationRelativeTurnPoint = stationRelativeToHatchGrabbed.transformBy(
+        Pose2d.fromTranslation(Translation2d(5.0 * 12.0, -3.0 * 12.0))
+    ).withHeading(Rotation2d.fromDegrees(-20.0))
 }
 
 fun genPointJson(pose: Pose2d): String {
@@ -91,12 +89,23 @@ fun genJson(poses: List<Pose2d>): String {
 }
 
 fun main(args: Array<String>) {
+
     val level1HabToNearRocketRightWaypoints = listOf(
-        CriticalPoses.trajRight4,
-        CriticalPoses.trajRight5,
-        CriticalPoses.trajRight6,
-        CriticalPoses.trajRight7
+        CriticalPoses.stationRelativeToHatchGrabbed,
+        CriticalPoses.stationRelativeTurnPoint,
+        CriticalPoses.stationRelativeToRocketLeftAlignEnd
     )
 
     println(genJson(level1HabToNearRocketRightWaypoints))
+
+
+
+    /*
+    println(CriticalPoses.trajRight1)
+    println(CriticalPoses.trajRight2)
+    println(CriticalPoses.trajRight3)
+    println(CriticalPoses.trajRight4)
+
+
+     */
 }

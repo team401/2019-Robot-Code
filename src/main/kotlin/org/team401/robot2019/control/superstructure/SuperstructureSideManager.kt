@@ -35,12 +35,22 @@ class SuperstructureSideManager {
     private var lockedBySuperstructureMove = false
     private var lockedByAuto = false
 
+    @Synchronized
+    fun reset() {
+        lockedByToggle = false
+        lockedByScore = false
+        lockedByIntake = false
+        lockedByVision = false
+        lockedBySuperstructureMove = false
+        lockedByAuto = false
+    }
+
     /**
      * Returns true if we are locked to the current side
      */
     @Synchronized
     fun isLocked(): Boolean {
-        return lockedByToggle || lockedByScore || lockedByIntake || lockedByVision || lockedBySuperstructureMove || lockedByAuto
+        return lockedByToggle || lockedByScore || lockedByIntake || lockedByVision || lockedBySuperstructureMove
     }
 
     /**
@@ -177,7 +187,7 @@ class SuperstructureSideManager {
 
             Action.AUTO_STARTED -> {
                 //Lock for auto
-                lockedByAuto = true
+                //lockedByAuto = true
             }
 
             Action.AUTO_FINISHED -> {
@@ -236,8 +246,8 @@ class SuperstructureSideManager {
         if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool && !isLocked() && driveSelectedSide != null) {
             //If we're not locked and there was a side selected by the drive, update the current side
             currentSide = if (driveXInches >= driveBackRocketCycleThresholdInches) {
-                //We're past the back rocket cycle position threshold, so suggest back side
-                SuperstructureRoutines.Side.BACK
+                //We're past the back rocket cycle position threshold, so suggest front side only
+                SuperstructureRoutines.Side.FRONT
             } else {
                 //We're not past the back cycle threshold, so suggest the drive selected side
                 driveSelectedSide

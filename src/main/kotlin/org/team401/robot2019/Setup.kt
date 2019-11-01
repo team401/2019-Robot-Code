@@ -11,6 +11,7 @@ import org.snakeskin.rt.RealTimeExecutor
 import org.snakeskin.utility.Selectable
 import org.team401.robot2019.auto.DeepSpaceAuto
 import org.team401.robot2019.control.drivetrain.Trajectories
+import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureUpdater
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.vision.LimelightCamera
@@ -61,6 +62,8 @@ fun setup() {
         VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.stop()
+
+        SuperstructureRoutines.sideManager.reset()
     }
 
     Trajectories //Load this class so the trajectories get pregenerated

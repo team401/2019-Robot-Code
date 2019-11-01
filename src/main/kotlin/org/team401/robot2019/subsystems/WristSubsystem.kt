@@ -175,7 +175,7 @@ object WristSubsystem: Subsystem(100L) {
 
     private val intakeTicker = Ticker(
         { leftIntakeTalon.outputCurrent >= 20.0 && rightIntakeTalon.outputCurrent >= 20.0 },
-        0.25.Seconds,
+        0.15.Seconds,
         0.02.Seconds
     )
 
@@ -208,7 +208,9 @@ object WristSubsystem: Subsystem(100L) {
                     //Hatch acquired
                     send(RobotEvents.HatchAcquired)
                     if (SuperstructureMotionPlanner.isInFloorPickup) {
+                        println("Starting return")
                         SuperstructureRoutines.returnFromFloorPickup()
+                        println("Returned")
                     } else {
                         setState(WristWheelsStates.Holding)
                     }

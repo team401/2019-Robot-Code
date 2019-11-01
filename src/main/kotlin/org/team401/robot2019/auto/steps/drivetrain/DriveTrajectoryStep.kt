@@ -15,7 +15,7 @@ import org.team401.taxis.trajectory.timing.TimedState
  *
  * Auto step that drives a trajectory.  Can optionally reconfigure the pose of the system before starting.
  */
-class DriveTrajectoryStep(referenceTrajectory: Trajectory<TimedState<Pose2dWithCurvature>>, val reconfigurePose: Boolean = false): AutoStep() {
+class DriveTrajectoryStep(referenceTrajectory: Trajectory<TimedState<Pose2dWithCurvature>>, val reconfigurePose: Boolean = false, val continuanceMode: DrivetrainSubsystem.VisionContinuanceMode = DrivetrainSubsystem.VisionContinuanceMode.DoNotContinue): AutoStep() {
     private val trajectory = TrajectoryIterator(TimedView(referenceTrajectory))
 
     override fun entry(currentTime: Double) {
@@ -25,11 +25,16 @@ class DriveTrajectoryStep(referenceTrajectory: Trajectory<TimedState<Pose2dWithC
         }
         DrivetrainSubsystem.pathManager.reset() //Reset the path manager
         DrivetrainSubsystem.pathManager.setTrajectory(trajectory) //Load in the path
+        DrivetrainSubsystem.activeVisionContinuanceMode = continuanceMode
         DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.PathFollowing).waitFor() //Begin following
     }
 
     override fun action(currentTime: Double, lastTime: Double): Boolean {
-        return DrivetrainSubsystem.pathManager.isDone //Wait for the path manager to be done
+        return if (continuanceMode != DrivetrainSubsystem.VisionContinuanceMode.DoNotContinue) {
+            DrivetrainSubsystem.visionContinuanceDone
+        } else {
+            DrivetrainSubsystem.pathManager.isDone //Wait for the path manager to be done
+        }
     }
 
     override fun exit(currentTime: Double) {

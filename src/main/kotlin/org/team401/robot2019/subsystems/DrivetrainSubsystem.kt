@@ -13,6 +13,7 @@ import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.hardware.Hardware
+import org.snakeskin.logic.LockingDelegate
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.RadiansPerSecond
@@ -32,6 +33,7 @@ import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.control.vision.*
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.util.LEDManager
+import org.team401.robot2019.util.fieldMirror
 import org.team401.robot2019.vision2.LimelightCameraEnhanced
 import org.team401.robot2019.vision2.VisionSolver
 import org.team401.taxis.diffdrive.component.IPathFollowingDiffDrive
@@ -41,6 +43,7 @@ import org.team401.taxis.diffdrive.odometry.OdometryTracker
 import org.team401.taxis.geometry.Pose2d
 import org.team401.taxis.geometry.Rotation2d
 import org.team401.taxis.geometry.Translation2d
+import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.tan
@@ -59,7 +62,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         CANSparkMax(HardwareMap.CAN.drivetrainLeftRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
     ),
     SparkMaxCTRESensoredGearbox(
-        Encoder(2, 3, false, CounterBase.EncodingType.k4X),
+        Encoder(2, 3, true, CounterBase.EncodingType.k4X),
         CANSparkMax(HardwareMap.CAN.drivetrainRightFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainRightMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
         CANSparkMax(HardwareMap.CAN.drivetrainRightRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
@@ -95,6 +98,15 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
     fun shift(state: Boolean) {
         shifter.set(state)
     }
+
+    enum class VisionContinuanceMode {
+        DoNotContinue,
+        ContinueRocketFront,
+        ContinueHatchBack
+    }
+
+    var activeVisionContinuanceMode by LockingDelegate(VisionContinuanceMode.DoNotContinue)
+    var visionContinuanceDone by LockingDelegate(false)
 
     private fun getScoreReversePercent(): Double {
         return if (Gamepad.readButton { RIGHT_BUMPER } && SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool) {
@@ -180,10 +192,34 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         val pathFollowingKd = 0.0
 
         state (DriveStates.PathFollowing) {
+            var lastOutputAvg = 0.0
+            var lastVelAvg = 0.0
+            var activeCamera: LimelightCameraEnhanced? = null
+            var activeHeightMode = VisionHeightMode.NONE
+
             entry {
                 both {
                     setDeadband(0.0)
                 }
+
+                when (activeVisionContinuanceMode) {
+                    VisionContinuanceMode.DoNotContinue -> activeCamera = null
+                    VisionContinuanceMode.ContinueHatchBack -> {
+                        activeCamera = VisionManager.backCamera
+                        activeHeightMode = VisionHeightMode.HATCH_INTAKE
+                        VisionSolver.selectRegression(SuperstructureRoutines.Side.BACK, activeHeightMode, true)
+                    }
+                    VisionContinuanceMode.ContinueRocketFront -> {
+                        activeCamera = VisionManager.frontCamera
+                        activeHeightMode = VisionHeightMode.HATCH_SCORE
+                        VisionSolver.selectRegression(SuperstructureRoutines.Side.FRONT, activeHeightMode, true)
+                    }
+                }
+                activeCamera?.configForVision(activeHeightMode.pipeline)
+                activeCamera?.setLedMode(LimelightCamera.LedMode.UsePipeline)
+                visionContinuanceDone = false
+                lastOutputAvg = 0.0
+                lastVelAvg = 0.0
             }
 
             rtAction {
@@ -203,10 +239,43 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 val leftOut = output.left_feedforward_voltage + leftVelCorrection + leftAccelCorrection
                 val rightOut = output.right_feedforward_voltage + rightVelCorrection + rightAccelCorrection
 
-                //Use velocity PID mode with gains all set to zero, simply to force the closed loop ramp rate (0.0)
-                //and voltage compensation using arbFF.  No actual velocity control is being done on the SPARK.
-                left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, leftOut)
-                right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, rightOut)
+                if (pathManager.isDone) {
+                    if (activeVisionContinuanceMode != VisionContinuanceMode.DoNotContinue) {
+                        //Continue with vision
+                        val seesTarget = activeCamera!!.seesTarget()
+                        val targetAngle = activeCamera!!.entries.tx.getDouble(0.0)
+                        val targetArea = activeCamera!!.getArea()
+                        val correctionAngle = VisionSolver.solve(seesTarget, targetArea, targetAngle, activeCamera!!.robotToCamera)
+                        val adjustment = if (!correctionAngle.isNaN()) {
+                            ((correctionAngle * ControlParameters.DrivetrainParameters.visionKp) / 100.0) * 12.0
+                        } else {
+                            0.0
+                        }
+                        if (!visionContinuanceDone) {
+                            if ((abs(leftVelocityActual) + abs(rightVelocityActual)) / 2.0 <= (lastVelAvg / 3.0)) {
+                                println("continuance done")
+                                visionContinuanceDone = true
+                            }
+                            left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, lastOutputAvg - adjustment)
+                            right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, lastOutputAvg + adjustment)
+                        } else {
+                            left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, 0.0)
+                            right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, 0.0)
+                        }
+
+
+                    }
+                } else {
+                    //Use velocity PID mode with gains all set to zero, simply to force the closed loop ramp rate (0.0)
+                    //and voltage compensation using arbFF.  No actual velocity control is being done on the SPARK.
+                    left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, leftOut)
+                    right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, rightOut)
+                    lastOutputAvg = (leftOut + rightOut) / 2.0
+                    lastVelAvg = (abs(leftVelocityActual) + abs(rightVelocityActual)) / 2.0
+                }
+
+
+                //println("error: ${pathManager.error}")
             }
         }
 
@@ -364,6 +433,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
         //Insert debug println statements below:
         //println("left: ${left.getPosition()}  right: ${right.getPosition()}")
+
+        //println(driveState.getLatestFieldToVehicle().value)
     }
 
     override fun setup() {
@@ -398,7 +469,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             //On teleop enabled, set the pose to a very high magnitude negative number
             //This ensures that the superstructure side manager won't think we're doing a back
             //hatch cycle by mistake if the pose is somehow close to that threshold coming into teleop.
-            setPose(Pose2d(-1e6, 0.0, Rotation2d.identity()))
+            setPose(Pose2d(0.0, 0.0, Rotation2d.identity()))
         }
     }
 }

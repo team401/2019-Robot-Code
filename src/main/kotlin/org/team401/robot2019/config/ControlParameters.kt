@@ -239,7 +239,7 @@ object ControlParameters {
 
         val slowingFactor = 1 / 2.0
 
-        val visionKp = 0.9
+        val visionKp = 0.6
     }
 
     object FloorPickupParameters {
@@ -301,7 +301,7 @@ object ControlParameters {
         /**
          * Power to apply to the legs to home them.  This should be negative
          */
-        val homingPower = -0.25
+        val homingPower = -0.35
 
         /**
          * Number of seconds the legs must be at zero velocity until the system is considered homed

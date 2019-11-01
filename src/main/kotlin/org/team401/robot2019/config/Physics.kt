@@ -11,7 +11,7 @@ import org.team401.taxis.template.DriveDynamicsTemplate
 
 object Physics {
     object DrivetrainDynamics: DriveDynamicsTemplate {
-        override val angularDrag = 12.0
+        override val angularDrag = 1.0
         override val inertialMass = 67.154
         override val leftKa = 0.0184
         override val leftKs = 0.1574

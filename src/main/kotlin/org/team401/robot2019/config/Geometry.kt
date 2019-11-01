@@ -18,7 +18,7 @@ object Geometry {
      * Geometry constants for the drivetrain
      */
     object DrivetrainGeometry: TankDrivetrainGeometryTemplate {
-        override val wheelRadius = 3.0748385.Inches
+        override val wheelRadius = 3.00586.Inches
         override val wheelbase = 26.5.Inches
 
         /**
