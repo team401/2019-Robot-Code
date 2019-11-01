@@ -31,16 +31,6 @@ object Trajectories {
     private val maxAccel = 3.0 * 12
     private val maxVoltage = 9.0
 
-    private fun flipWaypoints(waypointsIn: List<Pose2d>): List<Pose2d> {
-        val waypoints = ArrayList<Pose2d>(waypointsIn.size)
-        waypointsIn.forEach {
-            val poseMirrored = it.fieldMirror()
-            waypoints.add(poseMirrored)
-        }
-
-        return waypoints
-    }
-
     private fun generateTrajectory(points: List<Pose2d>, reversed: Boolean = false, endVelocity: Double = 0.0, constraints: List<TimingConstraint<Pose2dWithCurvature>> = listOf()): Trajectory<TimedState<Pose2dWithCurvature>> {
         val allConstraints = arrayListOf<TimingConstraint<Pose2dWithCurvature>>()
         allConstraints.add(CentripetalAccelerationConstraint(maxCentrip))
@@ -59,32 +49,37 @@ object Trajectories {
     }
 
     val habToRocketLeft = generateTrajectory(
-        listOf(
-            CriticalPoses.robotRelativeStart,
-            CriticalPoses.robotRelativeDriveFromL2,
-            CriticalPoses.robotRelativeDriveToRocketLeftAlignEnd
-        ),
+        CriticalPoses.habToRocketLeftPoints,
         false,
         3.0 * 12.0
     )
 
     val rocketLeftToStation = generateTrajectory(
-        listOf(
-            CriticalPoses.stationRelativeToRocketLeft,
-            CriticalPoses.stationRelativeToRocketLeftBackUp,
-            CriticalPoses.stationRelativeToStationAlignStart,
-            CriticalPoses.stationRelativeToStationAlignEnd
-        ),
+        CriticalPoses.rocketLeftToStationPoints,
         true,
         3.0 * 12.0
     )
 
     val stationToRocketLeft = generateTrajectory(
-        listOf(
-            CriticalPoses.stationRelativeToHatchGrabbed,
-            CriticalPoses.stationRelativeTurnPoint,
-            CriticalPoses.stationRelativeToRocketLeftAlignEnd.transformBy(Pose2d.fromTranslation(Translation2d(0.0, -4.0)))
-        ),
+        CriticalPoses.stationToRocketLeftPoints,
+        false,
+        3.0 * 12.0
+    )
+
+    val habToRocketRight = generateTrajectory(
+        CriticalPoses.habToRocketRightPoints,
+        false,
+        3.0 * 12.0
+    )
+
+    val rocketRightToStation = generateTrajectory(
+        CriticalPoses.rocketRightToStationPoints,
+        true,
+        3.0 * 12.0
+    )
+
+    val stationToRocketRight = generateTrajectory(
+        CriticalPoses.stationToRocketRightPoints,
         false,
         3.0 * 12.0
     )

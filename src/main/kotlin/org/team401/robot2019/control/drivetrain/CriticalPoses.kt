@@ -16,6 +16,16 @@ import kotlin.math.abs
  *
  */
 object CriticalPoses {
+    private fun flipWaypoints(waypointsIn: List<Pose2d>): List<Pose2d> {
+        val waypoints = ArrayList<Pose2d>(waypointsIn.size)
+        waypointsIn.forEach {
+            val poseMirrored = Pose2d(it.translation.x(), -it.translation.y(), it.rotation.inverse())
+            waypoints.add(poseMirrored)
+        }
+
+        return waypoints
+    }
+    
     const val habDriveDistance = 40.775
 
     val robotRelativeStart = Pose2d.identity()
@@ -24,9 +34,6 @@ object CriticalPoses {
     )
     val robotRelativeToRocketLeft = robotRelativeDriveFromL2.transformBy(
         Pose2d(101.216, 98.884, Rotation2d.fromDegrees(28.77))
-    )
-    val robotRelativeToRocketRight = robotRelativeDriveFromL2.transformBy(
-        Pose2d(101.216, -98.884, Rotation2d.fromDegrees(-28.77))
     )
 
     val robotRelativeDriveToRocketLeftAlignEnd = robotRelativeToRocketLeft.transformBy(
@@ -60,6 +67,30 @@ object CriticalPoses {
     val stationRelativeTurnPoint = stationRelativeToHatchGrabbed.transformBy(
         Pose2d.fromTranslation(Translation2d(5.0 * 12.0, -3.0 * 12.0))
     ).withHeading(Rotation2d.fromDegrees(-20.0))
+
+
+    val habToRocketLeftPoints = listOf(
+        robotRelativeStart,
+        robotRelativeDriveFromL2,
+        robotRelativeDriveToRocketLeftAlignEnd
+    )
+
+    val rocketLeftToStationPoints = listOf(
+        stationRelativeToRocketLeft,
+        stationRelativeToRocketLeftBackUp,
+        stationRelativeToStationAlignStart,
+        stationRelativeToStationAlignEnd
+    )
+
+    val stationToRocketLeftPoints = listOf(
+        stationRelativeToHatchGrabbed,
+        stationRelativeTurnPoint,
+        stationRelativeToRocketLeftAlignEnd.transformBy(Pose2d.fromTranslation(Translation2d(0.0, -4.0)))
+    )
+
+    val habToRocketRightPoints = flipWaypoints(habToRocketLeftPoints)
+    val rocketRightToStationPoints = flipWaypoints(rocketLeftToStationPoints)
+    val stationToRocketRightPoints = flipWaypoints(stationToRocketLeftPoints)
 }
 
 fun genPointJson(pose: Pose2d): String {
@@ -89,23 +120,13 @@ fun genJson(poses: List<Pose2d>): String {
 }
 
 fun main(args: Array<String>) {
+    CriticalPoses.stationToRocketLeftPoints.forEach {
+        println(it)
+    }
 
-    val level1HabToNearRocketRightWaypoints = listOf(
-        CriticalPoses.stationRelativeToHatchGrabbed,
-        CriticalPoses.stationRelativeTurnPoint,
-        CriticalPoses.stationRelativeToRocketLeftAlignEnd
-    )
+    println()
 
-    println(genJson(level1HabToNearRocketRightWaypoints))
-
-
-
-    /*
-    println(CriticalPoses.trajRight1)
-    println(CriticalPoses.trajRight2)
-    println(CriticalPoses.trajRight3)
-    println(CriticalPoses.trajRight4)
-
-
-     */
+    CriticalPoses.stationToRocketRightPoints.forEach {
+        println(it)
+    }
 }

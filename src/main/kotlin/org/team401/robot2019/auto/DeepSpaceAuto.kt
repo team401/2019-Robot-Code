@@ -23,8 +23,8 @@ object DeepSpaceAuto: RobotAuto(20L) {
     }
 
     override fun assembleAuto(): SequentialSteps {
-        val selectedAuto = AutoMode.TwoHatchLeft//autoChooser.selected//DriverStationDisplay.autoSelctor.value.value as AutoMode
-        println("Selected auto: ${selectedAuto}")
+        val selectedAuto = autoChooser.selected
+        println("Selected auto: $selectedAuto")
 
         if (selectedAuto == AutoMode.Manual) {
             return auto {
@@ -41,13 +41,13 @@ object DeepSpaceAuto: RobotAuto(20L) {
             }
         }
 
-        val rocketToLoadingTrajectory = Trajectories.habToRocketLeft
-        //val loadingToRocketTrajectory = Trajectories.hatchIntakeLeftToRocketLeft
-
+        val habToRocketTrajectory = if (selectedAuto == AutoMode.TwoHatchLeft) Trajectories.habToRocketLeft else Trajectories.habToRocketRight
+        val rocketToLoadingTrajectory = if (selectedAuto == AutoMode.TwoHatchLeft) Trajectories.rocketLeftToStation else Trajectories.rocketRightToStation
+        val loadingToRocketTrajectory = if (selectedAuto == AutoMode.TwoHatchLeft) Trajectories.stationToRocketLeft else Trajectories.stationToRocketRight
 
         return auto {
             parallel {
-                step(DriveTrajectoryStep(rocketToLoadingTrajectory, true, DrivetrainSubsystem.VisionContinuanceMode.ContinueRocketFront))
+                step(DriveTrajectoryStep(habToRocketTrajectory, true, DrivetrainSubsystem.VisionContinuanceMode.ContinueRocketFront))
                 step(HomeClimberStep()) //Homes the climber.  This must happen before we can drive.
                 sequential {
                     step(SuperstructureSwitchToolStep(WristMotionPlanner.Tool.HatchPanelTool)) //Configure for hatch tool
@@ -62,7 +62,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
             step(SuperstructureScoreStep())
 
             parallel {
-                step(DriveTrajectoryStep(Trajectories.rocketLeftToStation, true, DrivetrainSubsystem.VisionContinuanceMode.ContinueHatchBack))
+                step(DriveTrajectoryStep(rocketToLoadingTrajectory, true, DrivetrainSubsystem.VisionContinuanceMode.ContinueHatchBack))
                 sequential {
                     step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.NEGATIVE, 13.0 * 12.0))
                     step(SuperstructureIntakeHatchStep())
@@ -71,7 +71,7 @@ object DeepSpaceAuto: RobotAuto(20L) {
             }
 
             parallel {
-                step(DriveTrajectoryStep(Trajectories.stationToRocketLeft, false, DrivetrainSubsystem.VisionContinuanceMode.ContinueRocketFront))
+                step(DriveTrajectoryStep(loadingToRocketTrajectory, false, DrivetrainSubsystem.VisionContinuanceMode.ContinueRocketFront))
                 sequential {
                     step(WaitForOdometry(WaitForOdometry.Axis.X, WaitForOdometry.Direction.POSITIVE, 6.0 * 12.0))
                     step(SuperstructureMoveStep(ControlParameters.SuperstructurePositions.rocketHatchMidFront))

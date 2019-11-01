@@ -208,9 +208,7 @@ object WristSubsystem: Subsystem(100L) {
                     //Hatch acquired
                     send(RobotEvents.HatchAcquired)
                     if (SuperstructureMotionPlanner.isInFloorPickup) {
-                        println("Starting return")
                         SuperstructureRoutines.returnFromFloorPickup()
-                        println("Returned")
                     } else {
                         setState(WristWheelsStates.Holding)
                     }

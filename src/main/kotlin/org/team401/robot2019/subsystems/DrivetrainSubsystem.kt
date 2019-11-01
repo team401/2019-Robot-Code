@@ -253,7 +253,6 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                         }
                         if (!visionContinuanceDone) {
                             if ((abs(leftVelocityActual) + abs(rightVelocityActual)) / 2.0 <= (lastVelAvg / 3.0)) {
-                                println("continuance done")
                                 visionContinuanceDone = true
                             }
                             left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, lastOutputAvg - adjustment)
