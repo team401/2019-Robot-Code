@@ -246,8 +246,8 @@ class SuperstructureSideManager {
         if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool && !isLocked() && driveSelectedSide != null) {
             //If we're not locked and there was a side selected by the drive, update the current side
             currentSide = if (driveXInches >= driveBackRocketCycleThresholdInches) {
-                //We're past the back rocket cycle position threshold, so suggest front side only
-                SuperstructureRoutines.Side.FRONT
+                //We're past the back rocket cycle position threshold, so suggest back side only
+                SuperstructureRoutines.Side.BACK
             } else {
                 //We're not past the back cycle threshold, so suggest the drive selected side
                 driveSelectedSide

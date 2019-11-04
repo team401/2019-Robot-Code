@@ -10,12 +10,12 @@ import kotlin.math.tan
 
 object VisionSolver {
     //Regressions
-    private val hatchStationFrontRegression = VisionRegression(81.892342, -0.49334)
-    private val hatchStationBackRegression = VisionRegression(81.892342, -0.49334)
-    private val hatchScoringFrontRegression = VisionRegression(83.175269, -0.493551, 0.0)
-    private val hatchScoringAutoFrontRegression = VisionRegression(83.175269, -0.493551, -1.0)
-    private val hatchScoringBackRegression = VisionRegression(83.175269, -0.493551, 0.0)
-    private val cargoScoringRocketFrontRegression = VisionRegression(81.892342, -0.493349)
+    private val hatchStationFrontRegression = VisionRegression(83.699302, -0.492193)
+    private val hatchStationBackRegression = VisionRegression(83.699302, -0.492193)
+    private val hatchScoringFrontRegression = VisionRegression(84.951478, -0.490044, -1.0)
+    private val hatchScoringAutoFrontRegression = VisionRegression(84.951478, -0.490044, -1.0)
+    private val hatchScoringBackRegression = VisionRegression(84.951478, -0.490044, -1.0)
+    private val cargoScoringRocketFrontRegression = VisionRegression(84.951478, -0.490044)
     private val cargoScoringRocketBackRegression = cargoScoringRocketFrontRegression
 
     private var activeRegression = hatchStationFrontRegression

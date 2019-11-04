@@ -277,7 +277,7 @@ object WristSubsystem: Subsystem(100L) {
 
     private fun configWristHome(force: Boolean = false) {
         val ticks = rotationTalon.sensorCollection.pulseWidthPosition
-        val offset = MathUtil.offsetEncoder12B(ticks, 3070, 3072)
+        val offset = MathUtil.offsetEncoder12B(ticks, 3370, 3072)
         rotationTalon.selectedSensorPosition = offset
     }
 

@@ -163,24 +163,25 @@ object ControlParameters {
 
         //Intake hatch positions
         val hatchIntakeFront = SuperstructureSetpoint.intakingHatch(
-            Point2d(24.0.Inches, 21.0.Inches),
-            0.0.Radians,
+            Point2d(24.0.Inches, 20.0.Inches),
+            (10.0).Degrees.toRadians(),
             VisionHeightMode.HATCH_INTAKE
         ).fromFloor()
 
-        val hatchIntakeBack = hatchIntakeFront.flipped()
+        val hatchIntakeBack = hatchIntakeFront.flipped().withAngle(10.0.Degrees.toRadians())
+            //.upBy((-1.0).Inches)
 
         //Rocket hatch positions
         val rocketHatchBottomFront = SuperstructureSetpoint.holdingHatch(
             Point2d(24.0.Inches, 21.0.Inches),
-            0.0.Radians,
+            (10.0.Degrees).toRadians(),
             VisionHeightMode.HATCH_SCORE
         ).fromFloor()
-        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(6.0.Inches)
+        val rocketHatchMidFront = rocketHatchBottomFront.upBy(28.0.Inches).atX(6.0.Inches).withAngle(10.0.Degrees.toRadians())
         val rocketHatchHighFront = rocketHatchMidFront.upBy(25.0.Inches).atX((6.0).Inches).withAngle(15.0.Degrees.toRadians())
 
-        val rocketHatchBottomBack = rocketHatchBottomFront.flipped()
-        val rocketHatchMidBack = rocketHatchMidFront.flipped()
+        val rocketHatchBottomBack = rocketHatchBottomFront.flipped().withAngle(10.0.Degrees.toRadians())
+        val rocketHatchMidBack = rocketHatchMidFront.flipped().withAngle(0.0.Radians)
         val rocketHatchHighBack = rocketHatchHighFront.flipped()
 
         val cargoShipCargoFront = SuperstructureSetpoint.holdingCargo(Point2d(16.0.Inches, 49.0.Inches), (-45.0).Degrees.toRadians(), VisionHeightMode.HATCH_SCORE).fromFloor()
