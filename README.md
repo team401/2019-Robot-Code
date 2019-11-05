@@ -5,7 +5,7 @@
 # 2019-Robot-Code
 
 ## Software
-* [SnakeSkin](https://github.com/team401/SnakeSkin): Modular domain specific language
+* [SnakeSkin](https://github.com/team401/SnakeSkin): Modular domain-specific language
 * [SnakeSkin-Units](https://github.com/team401/SnakeSkin-Units): Statically compiled units-of-measure library
 * [SnakeSkin-Gradle](https://github.com/team401/SnakeSkin-Gradle): Custom Gradle plugin for project configuration
 * [Taxis](https://github.com/team401/Taxis): Motion planning and trajectory following
@@ -14,7 +14,7 @@
 
 
 ## Robot features
-* Custom 2 speed 6 Neo drive
+* Custom 2-speed 6 Neo drive
 * Telescoping "light red" arm for intaking and scoring on both sides of robot
 * 3 position fully contained ground hatch intake
 * 360 degree range of motion wrist with cargo and hatch tools
