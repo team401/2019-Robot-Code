@@ -37,18 +37,18 @@ fun setup() {
 
     Selectable.selected = RobotIndex.COMP //DO NOT CHANGE THIS
 
-    AutoManager.setAutoLoop(DeepSpaceAuto)
-    DeepSpaceAuto.publish()
+    //AutoManager.setAutoLoop(DeepSpaceAuto)
+    //DeepSpaceAuto.publish()
 
     //AutoManager.setAutoLoop(TuningAutoCollectDynamicsData(DrivetrainSubsystem))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem, ClimberSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization
     LEDManager.init()
-    VisionManager.stop()
+    //VisionManager.stop()
     DriverStationDisplay.init()
     SuperstructureMotionPlanner.preCompile()
 
@@ -57,14 +57,14 @@ fun setup() {
     RealTimeExecutor.addTask(SuperstructureUpdater)              //Superstrcture motion planning / control
 
     on (Events.TELEOP_ENABLED) {
-        VisionManager.frontCamera.configForVision(1)
-        VisionManager.backCamera.configForVision(3)
-        VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
-        VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
-        VisionManager.stop()
+        //VisionManager.frontCamera.configForVision(1)
+        //VisionManager.backCamera.configForVision(3)
+        //VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
+        //VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
+        //VisionManager.stop()
 
         SuperstructureRoutines.sideManager.reset()
     }
 
-    Trajectories //Load this class so the trajectories get pregenerated
+    //Trajectories //Load this class so the trajectories get pregenerated
 }

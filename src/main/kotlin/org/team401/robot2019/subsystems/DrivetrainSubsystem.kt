@@ -167,9 +167,10 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             }
 
             action {
-                val pitch = LeftStick.readAxis { PITCH }
-                val roll = RightStick.readAxis { ROLL }
+                val pitch = LeftStick.readAxis { PITCH } * -0.3 //Scale and negate to switch front
+                val roll = RightStick.readAxis { ROLL } * 0.2 //Scale and negate to switch front
 
+                /*
                 val output = cheesyController.update(
                     pitch,
                     roll,
@@ -185,6 +186,10 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
                 SuperstructureRoutines.sideManager.reportDriveCommand(Hardware.getRelativeTime(), pitch, poseX)
                 SuperstructureRoutines.onSideManagerUpdate()
+
+                 */
+
+                arcade(pitch, roll)
             }
         }
 

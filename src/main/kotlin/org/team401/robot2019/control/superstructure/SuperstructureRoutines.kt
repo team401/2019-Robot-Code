@@ -29,10 +29,13 @@ object SuperstructureRoutines {
      */
     @Synchronized
     fun onSideManagerUpdate() {
-        val sideManagerSide = sideManager.getSide()
-        val sideManagerLocked = sideManager.isLocked()
-        val tool = SuperstructureController.output.wristTool
+        //val sideManagerSide = sideManager.getSide()
+        //val sideManagerLocked = sideManager.isLocked()
+        //val tool = SuperstructureController.output.wristTool
 
+        side = Side.BACK
+
+        /*
         side = sideManagerSide
 
         when (sideManagerSide) {
@@ -56,6 +59,7 @@ object SuperstructureRoutines {
                 }
             }
         }
+         */
     }
 
     @Synchronized fun switchSides() {
