@@ -56,7 +56,8 @@ object WristSubsystem: Subsystem(100L) {
 
     enum class WristToolStates {
         Hatch,
-        Cargo
+        Cargo,
+        UnclampedForCargoIntake
     }
 
     enum class WristWheelsStates {
@@ -162,13 +163,19 @@ object WristSubsystem: Subsystem(100L) {
 
         state (WristToolStates.Cargo) {
             entry {
-                wristToolSolenoid.set(true)
+                wristToolSolenoid.set(false)
             }
 
             action {
                 if (SuperstructureController.output.wristTool == WristMotionPlanner.Tool.HatchPanelTool) {
                     setState(WristToolStates.Hatch)
                 }
+            }
+        }
+
+        state (WristToolStates.UnclampedForCargoIntake) {
+            entry {
+                wristToolSolenoid.set(true)
             }
         }
     }

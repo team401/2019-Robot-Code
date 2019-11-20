@@ -64,6 +64,8 @@ fun setup() {
         //VisionManager.stop()
 
         SuperstructureRoutines.sideManager.reset()
+
+        SuperstructureRoutines.setCargoTool()
     }
 
     //Trajectories //Load this class so the trajectories get pregenerated

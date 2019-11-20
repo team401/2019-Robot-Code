@@ -211,11 +211,18 @@ object SuperstructureRoutines {
     }
 
     @Synchronized
+    fun setCargoTool() {
+        SuperstructureMotionPlanner.activeTool = WristMotionPlanner.Tool.CargoTool
+        //ccMaybe(SuperstructureMotionPlanner.requestToolChange(WristMotionPlanner.Tool.CargoTool))
+    }
+
+    @Synchronized
     fun intake() {
         WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Intake)
         when (SuperstructureMotionPlanner.activeTool) {
             WristMotionPlanner.Tool.CargoTool -> {
                 sideManager.reportAction(SuperstructureSideManager.Action.CARGO_INTAKE_STARTED)
+                WristSubsystem.toolMachine.setState(WristSubsystem.WristToolStates.UnclampedForCargoIntake)
                 onSideManagerUpdate()
                 if (side == Side.FRONT) {
                     ccMaybe(SuperstructureMotionPlanner.requestMove(ControlParameters.SuperstructurePositions.cargoFloorPickupFront))
@@ -242,6 +249,9 @@ object SuperstructureRoutines {
         sideManager.reportAction(SuperstructureSideManager.Action.INTAKE_FINISHED)
         onSideManagerUpdate()
         WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Holding)
+        if (SuperstructureMotionPlanner.activeTool == WristMotionPlanner.Tool.CargoTool) {
+            WristSubsystem.toolMachine.setState(WristSubsystem.WristToolStates.Cargo)
+        }
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Off)
     }
 

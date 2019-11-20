@@ -4,6 +4,7 @@ package org.team401.robot2019
 import org.snakeskin.auto.AutoManager
 import org.snakeskin.dsl.HumanControls
 import org.snakeskin.logic.Direction
+import org.snakeskin.logic.scalars.SquareScalar
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureSideManager
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
@@ -26,6 +27,8 @@ val LeftStick = HumanControls.attack3(0) {
 
 val RightStick = HumanControls.attack3(1) {
     deadbandAxis(Axes.ROLL, 0.1)
+
+    scaleAxis(Axes.ROLL, SquareScalar)
 }
 
 
@@ -67,7 +70,11 @@ val Gamepad = HumanControls.dualAction(2){
 
     whenButton(Buttons.LEFT_BUMPER) {
         pressed {
-            SuperstructureRoutines.switchSides()
+            //SuperstructureRoutines.switchSides()
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.Disabled)
+        }
+        released {
+            DrivetrainSubsystem.driveMachine.setState(DrivetrainSubsystem.DriveStates.OpenLoopOperatorControl)
         }
     }
 
