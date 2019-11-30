@@ -1,15 +1,16 @@
 package org.team401.robot2019.subsystems
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice
-import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced
-import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod
+import com.ctre.phoenix.motorcontrol.*
 import com.ctre.phoenix.motorcontrol.can.TalonSRX
+import com.ctre.phoenix.motorcontrol.can.VictorSPX
 import com.ctre.phoenix.sensors.PigeonIMU
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.ControlType
 import edu.wpi.first.wpilibj.*
+import org.snakeskin.component.ISmartGearbox
 import org.snakeskin.component.impl.SparkMaxCTRESensoredGearbox
+import org.snakeskin.component.impl.TalonSRXVictorSensoredGearbox
 import org.snakeskin.dsl.*
 import org.snakeskin.event.Events
 import org.snakeskin.hardware.Hardware
@@ -54,18 +55,16 @@ import kotlin.math.tan
  *
  */
 
-object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTRESensoredGearbox> by PigeonPathFollowingDiffDrive(
-    SparkMaxCTRESensoredGearbox(
+object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<TalonSRXVictorSensoredGearbox> by PigeonPathFollowingDiffDrive(
+    TalonSRXVictorSensoredGearbox(
         Encoder(0, 1, false, CounterBase.EncodingType.k4X),
-        CANSparkMax(HardwareMap.CAN.drivetrainLeftFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
-        CANSparkMax(HardwareMap.CAN.drivetrainLeftMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
-        CANSparkMax(HardwareMap.CAN.drivetrainLeftRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
+        TalonSRX(HardwareMap.CAN.drivetrainLeftMasterId),
+        VictorSPX(HardwareMap.CAN.drivetrainLeftSlaveId)
     ),
-    SparkMaxCTRESensoredGearbox(
+    TalonSRXVictorSensoredGearbox(
         Encoder(2, 3, true, CounterBase.EncodingType.k4X),
-        CANSparkMax(HardwareMap.CAN.drivetrainRightFrontSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
-        CANSparkMax(HardwareMap.CAN.drivetrainRightMidSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless),
-        CANSparkMax(HardwareMap.CAN.drivetrainRightRearSparkMaxId, CANSparkMaxLowLevel.MotorType.kBrushless)
+        TalonSRX(HardwareMap.CAN.drivetrainRightMasterId),
+        VictorSPX(HardwareMap.CAN.drivetrainRightSlaveId)
     ),
     PigeonIMU(HardwareMap.CAN.drivetrainPigeonImuId),
     Geometry.DrivetrainGeometry,
@@ -255,11 +254,12 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                             if ((abs(leftVelocityActual) + abs(rightVelocityActual)) / 2.0 <= (lastVelAvg / 3.0)) {
                                 visionContinuanceDone = true
                             }
-                            left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, lastOutputAvg - adjustment)
-                            right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, lastOutputAvg + adjustment)
+                            //TODO re-enable path following and vision
+                            //left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, lastOutputAvg - adjustment)
+                            //right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, lastOutputAvg + adjustment)
                         } else {
-                            left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, 0.0)
-                            right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, 0.0)
+                            //left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, 0.0)
+                            //right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, 0.0)
                         }
 
 
@@ -267,8 +267,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
                 } else {
                     //Use velocity PID mode with gains all set to zero, simply to force the closed loop ramp rate (0.0)
                     //and voltage compensation using arbFF.  No actual velocity control is being done on the SPARK.
-                    left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, leftOut)
-                    right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, rightOut)
+                    //left.master.pidController.setReference(0.0, ControlType.kVelocity, 0, leftOut)
+                    //right.master.pidController.setReference(0.0, ControlType.kVelocity, 0, rightOut)
                     lastOutputAvg = (leftOut + rightOut) / 2.0
                     lastVelAvg = (abs(leftVelocityActual) + abs(rightVelocityActual)) / 2.0
                 }
@@ -365,19 +365,11 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
 
     private fun configureDriveMotorControllers() {
         both {
-            master.idleMode = CANSparkMax.IdleMode.kBrake
-            master.setSmartCurrentLimit(40)
-            master.setControlFramePeriodMs(5)
-            master.openLoopRampRate = 0.25
-            master.closedLoopRampRate = 0.0
-            master.pidController.p = 0.0
-            master.pidController.i = 0.0
-            master.pidController.d = 0.0
-            master.pidController.ff = 0.0
-            master.motorType = CANSparkMaxLowLevel.MotorType.kBrushless
-            slaves.forEach {
-                it.idleMode = CANSparkMax.IdleMode.kBrake
-            }
+            setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
+            master.configContinuousCurrentLimit(40)
+            master.setControlFramePeriod(ControlFrame.Control_3_General, 5)
+            master.configOpenloopRamp(.25)
+            master.configClosedloopRamp(0.0)
 
             left.inverted = true
             right.inverted = false
@@ -390,6 +382,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
         // Detect faults
 
         //Motor controller reset fault
+        /*
         if (left.master.getStickyFault(CANSparkMax.FaultID.kHasReset) || left.slaves.any { it.getStickyFault(CANSparkMax.FaultID.kHasReset) } ||
             right.master.getStickyFault(CANSparkMax.FaultID.kHasReset) || right.slaves.any {
                 it.getStickyFault(
@@ -399,6 +392,7 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             fault(DriveFaults.MotorControllerReset)
             DriverStation.reportWarning("[Fault] A drive motor controller has reset!", false)
         }
+         */
 
         //Sensor faults
         if (imu.state != PigeonIMU.PigeonState.Ready) {
@@ -414,9 +408,9 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<SparkMaxCTR
             configureDriveMotorControllers() //Reconfigure motor controllers
             clearFault(DriveFaults.MotorControllerReset)
             both {
-                master.clearFaults()
+                //master.clearFaults()
                 slaves.forEach {
-                    it.clearFaults()
+                    //it.clearFaults()
                 }
             }
             println("[Fault Cleared] Drive motor controllers reconfigured")

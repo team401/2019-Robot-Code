@@ -21,12 +21,16 @@ HardwareMap {
      * Holds IDs for all devices on CAN
      */
     object CAN {
-        const val drivetrainLeftRearSparkMaxId = 1
-        const val drivetrainLeftMidSparkMaxId = 2
-        const val drivetrainLeftFrontSparkMaxId = 3
-        const val drivetrainRightRearSparkMaxId = 4
-        const val drivetrainRightMidSparkMaxId = 5
-        const val drivetrainRightFrontSparkMaxId = 6
+        //const val drivetrainLeftRearSparkMaxId = 1
+        //const val drivetrainLeftMidSparkMaxId = 2
+        //const val drivetrainLeftFrontSparkMaxId = 3
+        //const val drivetrainRightRearSparkMaxId = 4
+        //const val drivetrainRightMidSparkMaxId = 5
+        //const val drivetrainRightFrontSparkMaxId = 6
+        const val drivetrainLeftMasterId = 1
+        const val drivetrainLeftSlaveId = 2
+        const val drivetrainRightMasterId = 3
+        const val drivetrainRightSlaveId = 4
         const val drivetrainPigeonImuId = 1
 
         const val wristLeftIntakeWheelTalonId = 30

@@ -128,9 +128,9 @@ object ControlParameters {
          * PIDF for the wrist rotation
          */
         object WristRotationPIDF: PIDFTemplate {
-            override val kP by Selectable(10.0, 1.7) //comp, practice
+            override val kP by Selectable(8.0, 1.7) //comp, practice
             override val kI = 0.0
-            override val kD by Selectable(500.0, 200.0) //comp wrist has friction brake, practice does not
+            override val kD by Selectable(800.0, 200.0) //comp wrist has friction brake, practice does not
             override val kF = 2.0
         }
     }
@@ -146,7 +146,7 @@ object ControlParameters {
             VisionHeightMode.NONE
         ).withAngle((5.0).Degrees.toRadians()).fromFloor()
 
-        val cargoFloorPickupBack = cargoFloorPickupFront.flipped()
+        val cargoFloorPickupBack = cargoFloorPickupFront.flipped().upBy(1.0.Inches).withAngle((10.0).Degrees.toRadians())
 
         //Rocket cargo positions
         val rocketCargoBottomFront = SuperstructureSetpoint.holdingCargo(

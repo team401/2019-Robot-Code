@@ -37,13 +37,13 @@ fun setup() {
 
     Selectable.selected = RobotIndex.COMP //DO NOT CHANGE THIS
 
-    AutoManager.setAutoLoop(DeepSpaceAuto)
-    DeepSpaceAuto.publish()
+    //AutoManager.setAutoLoop(DeepSpaceAuto)
+    //DeepSpaceAuto.publish()
 
     //AutoManager.setAutoLoop(TuningAutoCollectDynamicsData(DrivetrainSubsystem))
 
     //Register components
-    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem, FloorPickupSubsystem, ClimberSubsystem)
+    Subsystems.add(DrivetrainSubsystem, ArmSubsystem, WristSubsystem)
     Controllers.add(LeftStick, RightStick, Gamepad)
 
     //Miscellaneous initialization

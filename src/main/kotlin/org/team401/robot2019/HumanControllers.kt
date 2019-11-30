@@ -93,6 +93,7 @@ val RightStick = HumanControls.t16000m(1) {
             }
         }
     }
+    /*
 
     whenButton(Buttons.STICK_BOTTOM) {
         pressed {
@@ -184,6 +185,8 @@ val RightStick = HumanControls.t16000m(1) {
         }
     }
 
+     */
+
 }
 
 
@@ -270,7 +273,7 @@ val Gamepad = HumanControls.dualAction(2){
         }
     }
 
-
+/*
     whenButton(Buttons.START){
         pressed {
             SuperstructureRoutines.ccMaybe(true)
@@ -283,6 +286,7 @@ val Gamepad = HumanControls.dualAction(2){
             SuperstructureRoutines.returnFromFloorPickup()
         }
     }
+ */
 
     whenButton(Buttons.RIGHT_TRIGGER){
         pressed {
