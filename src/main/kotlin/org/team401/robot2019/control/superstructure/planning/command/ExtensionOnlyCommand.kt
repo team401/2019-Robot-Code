@@ -8,6 +8,7 @@ import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.taxis.geometry.Pose2d
 
 /**
  * @author Cameron Earle
@@ -24,7 +25,7 @@ class ExtensionOnlyCommand(val radius: LinearDistanceMeasureInches, val tool: Wr
         println("Extending to ${radius}")
     }
 
-    override fun action(dt: Double, armState: ArmState, wristState: WristState) {
+    override fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
         if (wristInitial == null) {
             wristInitial = wristState
         }

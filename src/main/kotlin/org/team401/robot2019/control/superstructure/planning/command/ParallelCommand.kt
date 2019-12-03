@@ -2,6 +2,7 @@ package org.team401.robot2019.control.superstructure.planning.command
 
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.taxis.geometry.Pose2d
 
 /**
  * @author Cameron Earle
@@ -16,9 +17,9 @@ class ParallelCommand(vararg val sequence: SuperstructureCommand): Superstructur
         }
     }
 
-    override fun action(dt: Double, armState: ArmState, wristState: WristState) {
+    override fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
         sequence.forEach {
-            if (!it.isDone()) it.update(dt, armState, wristState)
+            if (!it.isDone()) it.update(dt, armState, wristState, drivePose)
         }
     }
 

@@ -5,6 +5,7 @@ import org.snakeskin.measure.Seconds
 import org.snakeskin.measure.time.TimeMeasureSeconds
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.taxis.geometry.Pose2d
 
 class DelayCommand(val time: TimeMeasureSeconds): SuperstructureCommand() {
     var startTime = 0.0.Seconds
@@ -13,7 +14,7 @@ class DelayCommand(val time: TimeMeasureSeconds): SuperstructureCommand() {
         startTime = Hardware.getRelativeTime().Seconds
     }
 
-    override fun action(dt: Double, armState: ArmState, wristState: WristState) {
+    override fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
 
     }
 

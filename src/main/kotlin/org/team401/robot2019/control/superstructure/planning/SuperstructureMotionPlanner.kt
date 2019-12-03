@@ -10,6 +10,7 @@ import org.team401.robot2019.control.superstructure.geometry.*
 import org.team401.robot2019.control.superstructure.planning.command.*
 import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.taxis.geometry.Pose2d
 import java.util.*
 
 object SuperstructureMotionPlanner {
@@ -47,6 +48,7 @@ object SuperstructureMotionPlanner {
     private var jogXRate = 0.0
     private var jogYRate = 0.0
     private var jogWristRate = 0.0
+    private var drivePose = Pose2d.identity()
 
     @Synchronized fun setToSlowSpeedMode() {
         reset()
@@ -89,6 +91,10 @@ object SuperstructureMotionPlanner {
 
     @Synchronized fun updateWristJog(angle: Double) {
         jogWristRate = angle
+    }
+
+    @Synchronized fun updateDrivePose(pose: Pose2d) {
+        drivePose = pose
     }
 
     val commandQueue = LinkedList<SuperstructureCommand>()
@@ -136,7 +142,7 @@ object SuperstructureMotionPlanner {
                     val currentCommand = commandQueue.pop() //Remove the first element
 
                     try {
-                        currentCommand.update(dt, armState, wristState) //Update the command
+                        currentCommand.update(dt, armState, wristState, drivePose) //Update the command
                         if (!currentCommand.isDone()) { //If the command isn't done
                             commandQueue.push(currentCommand) //Put it back at the start of the queue
                         }
@@ -332,7 +338,7 @@ object SuperstructureMotionPlanner {
             }
         }
 
-        if (!isDone()) return false //Don't do this unless our other steps are done
+        if (!isDone() && !ArmMotionPlanner.isChicken()) return false //Don't do this unless our other steps are done
         reset()
 
         val startArmPose = ArmKinematics.forward(lastObservedArmState) //Calculate the current arm pose
@@ -437,7 +443,7 @@ object SuperstructureMotionPlanner {
             return false
         }
 
-        if (!isDone()) return false
+        if (!isDone() && !ArmMotionPlanner.isChicken()) return false
         reset()
 
         val currentPose = ArmKinematics.forward(lastObservedArmState)
@@ -543,5 +549,11 @@ object SuperstructureMotionPlanner {
         commandQueue.add(SetWristAngleAbsoluteCommand(activeTool, ControlParameters.FloorPickupParameters.floorPickupAngle - 0.0.Degrees.toRadians()))
         commandQueue.add(ExtensionOnlyCommand(ControlParameters.FloorPickupParameters.floorPickupPoint.r + 5.0.Inches, activeTool))
         commandQueue.add(RotationOnlyCommand(90.0.Degrees.toRadians(), activeTool))
+    }
+
+    @Synchronized fun startChicken() {
+        reset()
+
+        commandQueue.add(ArmChickenModeCommand(activeTool))
     }
 }

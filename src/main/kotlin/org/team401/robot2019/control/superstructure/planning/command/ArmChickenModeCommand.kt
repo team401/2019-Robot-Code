@@ -13,35 +13,28 @@ import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.taxis.geometry.Pose2d
 
-/**
- * @author Cameron Earle
- * @version 2/12/2019
- *
- */
-class MoveSuperstructureCommandStaticWrist(val start: Point2d, val end: Point2d, val tool: WristMotionPlanner.Tool, val wristAngle: AngularDistanceMeasureRadians, val minimumRadius: LinearDistanceMeasureInches, val heightMode: VisionHeightMode): SuperstructureCommand() {
+class ArmChickenModeCommand(val tool: WristMotionPlanner.Tool): SuperstructureCommand() {
+    var firstRun = true
+
     override fun entry() {
-        //Set the waypoints for the arm motion planner.  This should also reset it
-        ArmMotionPlanner.setDesiredTrajectory(start, end, minimumRadius)
-        WristMotionPlanner.setToAngleMode(tool, wristAngle, end)
     }
 
     override fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
-        val armCommand = ArmMotionPlanner.update(dt, drivePose) //Update the arm motion planner
-        val wristCommand = WristMotionPlanner.update(armState, wristState) //Update the wrist motion planner
-        SuperstructureController.update(armCommand, wristCommand, tool, heightMode)
-        if (ArmMotionPlanner.isDone()) {
-            //Push a last command through with the final state
-            val finalArmPolar = ArmKinematics.inverse(end)
-            val finalArmState = ArmState(finalArmPolar.r, finalArmPolar.theta, 0.0.RadiansPerSecond)
-            SuperstructureController.update(finalArmState, wristCommand, tool, heightMode)
+        if (firstRun) {
+            ArmMotionPlanner.setChickenModeOn(drivePose)
+            firstRun = false
         }
+        val armCommand = ArmMotionPlanner.update(dt, drivePose) //Update the arm motion planner
+        WristMotionPlanner.setToParallelMode(tool, ArmKinematics.forward(armCommand))
+        val wristCommand = WristMotionPlanner.update(armState, wristState) //Update the wrist motion planner
+        SuperstructureController.update(armCommand, wristCommand, tool, VisionHeightMode.NONE)
     }
 
     override fun isDone(): Boolean {
-        return ArmMotionPlanner.isDone() //We're done when the arm planner is finished executing the trajectory
+        return false//ArmMotionPlanner.isDone() //We're done when the arm planner is finished executing the trajectory
     }
 
     override fun getDescription(): String {
-        return "Start Pose: $start | End Pose: $end | Active Tool: $tool | Target Wrist Floor Relative Angle: $wristAngle | Minimum Radius Constraint: $minimumRadius"
+        return "CHICKEN"
     }
 }

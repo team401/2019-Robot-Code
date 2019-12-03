@@ -2,6 +2,7 @@ package org.team401.robot2019.control.superstructure.planning.command
 
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.taxis.geometry.Pose2d
 
 /**
  * @author Cameron Earle
@@ -16,8 +17,8 @@ class SeriesCommand(vararg val sequence: SuperstructureCommand): SuperstructureC
         //Do nothing
     }
 
-    override fun action(dt: Double, armState: ArmState, wristState: WristState) {
-        sequence[seqIdx].update(dt, armState, wristState)
+    override fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
+        sequence[seqIdx].update(dt, armState, wristState, drivePose)
         if (sequence[seqIdx].isDone()) seqIdx++
     }
 
