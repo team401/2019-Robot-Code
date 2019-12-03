@@ -11,6 +11,7 @@ import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.ArmMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.taxis.geometry.Pose2d
 
 /**
  * @author Cameron Earle
@@ -25,7 +26,7 @@ class RotationOnlyCommand(val angle: AngularDistanceMeasureRadians, val tool: Wr
     override fun entry() {
     }
 
-    override fun action(dt: Double, armState: ArmState, wristState: WristState) {
+    override fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
         if (wristInitial == null) {
             wristInitial = wristState
         }
@@ -37,7 +38,7 @@ class RotationOnlyCommand(val angle: AngularDistanceMeasureRadians, val tool: Wr
                 armInitial!!.armRadius - 0.1.Inches
             )
         }
-        val armCommand = ArmMotionPlanner.update(dt)
+        val armCommand = ArmMotionPlanner.update(dt, drivePose)
 
         SuperstructureController.update(
             ArmState(

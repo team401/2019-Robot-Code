@@ -77,7 +77,13 @@ val LeftStick = HumanControls.t16000m(0) {
 
     whenButton(Buttons.STICK_RIGHT) {
         pressed {
-            ClimberSubsystem.climberMachine.setState(ClimberSubsystem.ClimberStates.Homing)
+            SuperstructureRoutines.ccMaybe(true)
+            SuperstructureMotionPlanner.startChicken()
+        }
+
+        released {
+            SuperstructureRoutines.ccMaybe(true)
+            SuperstructureMotionPlanner.goHome()
         }
     }
 }

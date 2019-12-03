@@ -366,13 +366,14 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<TalonSRXVic
     private fun configureDriveMotorControllers() {
         both {
             setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
-            master.configContinuousCurrentLimit(40)
+            master.configPeakCurrentDuration(0, 1000)
+            master.configContinuousCurrentLimit(20, 1000)
             master.setControlFramePeriod(ControlFrame.Control_3_General, 5)
-            master.configOpenloopRamp(.25)
+            master.configOpenloopRamp(0.0)
             master.configClosedloopRamp(0.0)
 
-            left.inverted = true
-            right.inverted = false
+            left.inverted = false
+            right.inverted = true
         }
     }
 

@@ -6,6 +6,7 @@ import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
+import org.team401.taxis.geometry.Pose2d
 
 class SetWristAngleAbsoluteCommand(val tool: WristMotionPlanner.Tool, val angle: AngularDistanceMeasureRadians): SuperstructureCommand() {
     var done = false
@@ -15,7 +16,7 @@ class SetWristAngleAbsoluteCommand(val tool: WristMotionPlanner.Tool, val angle:
         WristMotionPlanner.setToAbsoluteAngleMode(angle)
     }
 
-    override fun action(dt: Double, armState: ArmState, wristState: WristState) {
+    override fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
         if (startArmState == null) {
             startArmState = armState
         }

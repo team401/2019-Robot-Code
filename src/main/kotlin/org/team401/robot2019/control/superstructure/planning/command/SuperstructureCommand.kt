@@ -2,6 +2,7 @@ package org.team401.robot2019.control.superstructure.planning.command
 
 import org.team401.robot2019.control.superstructure.geometry.ArmState
 import org.team401.robot2019.control.superstructure.geometry.WristState
+import org.team401.taxis.geometry.Pose2d
 
 /**
  * @author Cameron Earle
@@ -12,19 +13,19 @@ import org.team401.robot2019.control.superstructure.geometry.WristState
 abstract class SuperstructureCommand() {
     private var isStarted = false
 
-    fun update(dt: Double, armState: ArmState, wristState: WristState) {
+    fun update(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
         if (!isStarted) {
             println("Starting Command:\t${javaClass.simpleName}")
             println("Description:\t${getDescription()}")
             entry()
             isStarted = true
         } else {
-            action(dt, armState, wristState)
+            action(dt, armState, wristState, drivePose)
         }
     }
 
     abstract fun entry()
-    abstract fun action(dt: Double, armState: ArmState, wristState: WristState)
+    abstract fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d)
     abstract fun isDone(): Boolean
 
     /**

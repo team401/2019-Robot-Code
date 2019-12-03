@@ -9,6 +9,7 @@ import org.team401.robot2019.control.superstructure.geometry.VisionHeightMode
 import org.team401.robot2019.control.superstructure.geometry.WristState
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
+import org.team401.taxis.geometry.Pose2d
 
 /**
  * @author Cameron Earle
@@ -25,7 +26,7 @@ class SetWristAngleCommand(val tool: WristMotionPlanner.Tool, val angle: Angular
         WristMotionPlanner.setToAngleMode(tool, angle, targetPose)
     }
 
-    override fun action(dt: Double, armState: ArmState, wristState: WristState) {
+    override fun action(dt: Double, armState: ArmState, wristState: WristState, drivePose: Pose2d) {
         if (startArmState == null) {
             startArmState = armState
         }

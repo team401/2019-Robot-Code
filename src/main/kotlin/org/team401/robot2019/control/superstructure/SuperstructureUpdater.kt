@@ -8,6 +8,7 @@ import org.team401.robot2019.Gamepad
 import org.team401.robot2019.control.superstructure.geometry.PointPolar
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.subsystems.ArmSubsystem
+import org.team401.robot2019.subsystems.DrivetrainSubsystem
 import org.team401.robot2019.subsystems.WristSubsystem
 import org.team401.robot2019.subsystems.arm.control.ArmKinematics
 import org.team401.robot2019.util.LEDManager
@@ -27,6 +28,8 @@ object SuperstructureUpdater: RealTimeTask {
             SuperstructureMotionPlanner.updateArmJog(Gamepad.readAxis { LEFT_X }, Gamepad.readAxis { LEFT_Y })
             SuperstructureMotionPlanner.updateWristJog(Gamepad.readAxis { RIGHT_X })
         }
+
+        SuperstructureMotionPlanner.updateDrivePose(DrivetrainSubsystem.driveState.getFieldToVehicle(ctx.time))
 
         SuperstructureMotionPlanner.update(
             ctx.time,
