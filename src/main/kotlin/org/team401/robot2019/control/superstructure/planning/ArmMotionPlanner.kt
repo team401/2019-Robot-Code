@@ -105,8 +105,13 @@ object ArmMotionPlanner{
 
         if (chickenMode) {
             val adjusted = Pose2d(drivePose.translation.translateBy(chickenStart.translation.inverse()).rotateBy(drivePose.rotation.inverse()), Rotation2d.identity())
-            println(adjusted)
-            val xInches = (-adjusted.translation.x()).Inches
+            var xInches = (-adjusted.translation.x()).Inches
+            if (xInches >= 44.0.Inches) {
+                xInches = 44.0.Inches
+            }
+            if (xInches <= (-44.0).Inches) {
+                xInches = (-44.0).Inches
+            }
             val yInches = chickenSafe.y
             val point = Point2d(xInches, yInches)
             val polar = ArmKinematics.inverse(point)

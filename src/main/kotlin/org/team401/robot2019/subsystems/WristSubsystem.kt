@@ -211,6 +211,8 @@ object WristSubsystem: Subsystem(100L) {
                     }
                 }
 
+                //println("${leftIntakeTalon.outputCurrent} ${rightIntakeTalon.outputCurrent}")
+
                 intakeTicker.check {
                     //Hatch acquired
                     send(RobotEvents.HatchAcquired)
