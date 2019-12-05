@@ -83,10 +83,10 @@ object LEDManager {
 
         when (mode) {
             TrussLedMode.Off -> {
-                ll.off(Indices.TrussBackLeftStrip)
-                ll.off(Indices.TrussFrontLeftStrip)
-                ll.off(Indices.TrussBackRightStrip)
-                ll.off(Indices.TrussFrontRightStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.TrussFrontLeftStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.TrussFrontRightStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.TrussBackLeftStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
             }
             
             TrussLedMode.Rainbow -> {
@@ -97,66 +97,39 @@ object LEDManager {
             }
 
             TrussLedMode.Race -> {
-                ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussFrontLeftStrip)
-                ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussFrontRightStrip)
-                ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackLeftStrip)
-                ll.bounce(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
+
             }
 
             TrussLedMode.BlueSideActiveLock -> {
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
-                ll.off(Indices.TrussFrontLeftStrip)
-                ll.off(Indices.TrussFrontRightStrip)
+
             }
 
             TrussLedMode.RedSideActiveLock -> {
-                ll.solid(LightLink.Color.RED, Indices.TrussFrontLeftStrip)
-                ll.solid(LightLink.Color.RED, Indices.TrussFrontRightStrip)
-                ll.off(Indices.TrussBackLeftStrip)
-                ll.off(Indices.TrussBackRightStrip)
+
             }
 
             TrussLedMode.BlueSideActiveAuto -> {
-                ll.blink(LightLink.Color.BLUE, LightLink.Speed.FAST, Indices.TrussBackLeftStrip)
-                ll.blink(LightLink.Color.BLUE, LightLink.Speed.FAST, Indices.TrussBackRightStrip)
-                ll.off(Indices.TrussFrontLeftStrip)
-                ll.off(Indices.TrussFrontRightStrip)
+
             }
 
             TrussLedMode.RedSideActiveAuto -> {
-                ll.blink(LightLink.Color.RED, LightLink.Speed.FAST, Indices.TrussFrontLeftStrip)
-                ll.blink(LightLink.Color.RED, LightLink.Speed.FAST, Indices.TrussFrontRightStrip)
-                ll.off(Indices.TrussBackLeftStrip)
-                ll.off(Indices.TrussBackRightStrip)
+
             }
 
             TrussLedMode.BlueSideActiveLockVision -> {
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackLeftStrip)
-                ll.solid(LightLink.Color.BLUE, Indices.TrussBackRightStrip)
-                ll.solid(LightLink.Color.GREEN, Indices.TrussFrontLeftStrip)
-                ll.solid(LightLink.Color.GREEN, Indices.TrussFrontRightStrip)
+
             }
 
             TrussLedMode.RedSideActiveLockVision -> {
-                ll.solid(LightLink.Color.RED, Indices.TrussFrontLeftStrip)
-                ll.solid(LightLink.Color.RED, Indices.TrussFrontRightStrip)
-                ll.solid(LightLink.Color.GREEN, Indices.TrussBackLeftStrip)
-                ll.solid(LightLink.Color.GREEN, Indices.TrussBackRightStrip)
+
             }
 
             TrussLedMode.CargoLock -> {
-                ll.solid(LightLink.Color.ORANGE, Indices.TrussBackLeftStrip)
-                ll.solid(LightLink.Color.ORANGE, Indices.TrussBackRightStrip)
-                ll.off(Indices.TrussFrontLeftStrip)
-                ll.off(Indices.TrussFrontRightStrip)
+
             }
 
             TrussLedMode.Climb -> {
-                ll.race(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackLeftStrip)
-                ll.race(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussBackRightStrip)
-                ll.race(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussFrontLeftStrip)
-                ll.race(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.TrussFrontRightStrip)
+
             }
         }
         trussModeHistory.update(mode)
@@ -216,7 +189,7 @@ object LEDManager {
 
         when (mode) {
             ArmLedMode.Off -> {
-                ll.off(Indices.ArmStrip)
+                ll.rainbow(LightLink.Speed.SLOW, Indices.ArmStrip)
             }
 
             ArmLedMode.Rainbow -> {
@@ -224,15 +197,12 @@ object LEDManager {
             }
 
             ArmLedMode.Climb -> {
-                ll.blink(LightLink.Color.ORANGE, LightLink.Speed.SLOW, Indices.ArmStrip)
             }
 
             ArmLedMode.Intaking -> {
-                ll.solid(LightLink.Color.GREEN, Indices.ArmStrip)
             }
 
             ArmLedMode.Scoring -> {
-                ll.solid(LightLink.Color.BLUE, Indices.ArmStrip)
             }
         }
         armModeHistory.update(mode)
