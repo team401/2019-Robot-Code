@@ -174,7 +174,7 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     private val intakeTicker = Ticker(
-        { leftIntakeTalon.outputCurrent >= 20.0 && rightIntakeTalon.outputCurrent >= 20.0 },
+        { leftIntakeTalon.outputCurrent >= 40.0 && rightIntakeTalon.outputCurrent >= 40.0 },
         0.15.Seconds,
         0.02.Seconds
     )
@@ -203,6 +203,8 @@ object WristSubsystem: Subsystem(100L) {
                         rightIntake.set(ControlParameters.WristParameters.cargoIntakePower)
                     }
                 }
+
+                //println("${leftIntakeTalon.outputCurrent} ${rightIntakeTalon.outputCurrent}")
 
                 intakeTicker.check {
                     //Hatch acquired

@@ -1,5 +1,6 @@
 package org.team401.robot2019.control.superstructure.planning
 
+import org.snakeskin.measure.Degrees
 import org.snakeskin.measure.Inches
 import org.snakeskin.measure.Radians
 import org.snakeskin.measure.Unitless
@@ -58,7 +59,7 @@ object WristMotionPlanner {
      * Configures the wrist planner to keep the wrist parallel to the floor
      */
     fun setToParallelMode(tool: Tool, finalState: Point2d) {
-        setToMaintainAngleMode(0.0.Radians, tool, finalState)
+        setToMaintainAngleMode(90.0.Degrees.toRadians(), tool, finalState)
     }
 
     /**
