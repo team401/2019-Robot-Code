@@ -169,8 +169,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<TalonSRXVic
             }
 
             action {
-                val pitch = LeftStick.readAxis { PITCH } * -0.3 //Scale and negate to switch front
-                val roll = RightStick.readAxis { ROLL } * 0.2 //Scale and negate to switch front
+                val pitch = LeftStick.readAxis { PITCH } * -0.6 //Scale and negate to switch front
+                val roll = RightStick.readAxis { ROLL } * 0.4 //Scale and negate to switch front
 
                 /*
                 val output = cheesyController.update(

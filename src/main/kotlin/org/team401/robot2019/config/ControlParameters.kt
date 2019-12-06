@@ -116,8 +116,8 @@ object ControlParameters {
         /**
          * Intake/scoring powers.  Negative values will spin the wheels clockwise (intake)
          */
-        const val cargoIntakePower = 1.0
-        const val cargoHoldingPower = 0.1
+        const val cargoIntakePower = .5
+        const val cargoHoldingPower = 0.0//0.1
         const val cargoScoringPower = -1.0
 
         const val hatchIntakePower = -1.0

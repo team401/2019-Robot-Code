@@ -305,6 +305,9 @@ object WristSubsystem: Subsystem(100L) {
         leftIntakeTalon.inverted = false
         rightIntakeTalon.inverted = true
 
+        leftIntakeTalon.configContinuousCurrentLimit(5)
+        rightIntakeTalon.configContinuousCurrentLimit(5)
+
         rotation.inverted = false
         rotation.setNeutralMode(ISmartGearbox.CommonNeutralMode.BRAKE)
         rotation.setFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 1000)
