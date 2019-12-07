@@ -47,13 +47,13 @@ object ArmMotionPlanner{
 
     private val chickenSafe = ArmKinematics.forward(PointPolar(Geometry.ArmGeometry.minSafeArmLength + 2.0.Inches, 90.0.Degrees.toRadians()))
 
-    fun setChickenModeOn(startPose: Pose2d) {
+    @Synchronized fun setChickenModeOn(startPose: Pose2d) {
         chickenMode = true
         done = false
         chickenStart = startPose
     }
 
-    fun isChicken(): Boolean {
+    @Synchronized fun isChicken(): Boolean {
         return chickenMode
     }
 
@@ -84,7 +84,7 @@ object ArmMotionPlanner{
         rotationAcceleration = speed.acceleration
     }
 
-    fun reset() {
+    @Synchronized fun reset() {
         done = false
         chickenMode = false
     }

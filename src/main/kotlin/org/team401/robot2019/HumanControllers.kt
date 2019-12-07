@@ -4,6 +4,8 @@ package org.team401.robot2019
 import org.snakeskin.auto.AutoManager
 import org.snakeskin.dsl.HumanControls
 import org.snakeskin.logic.Direction
+import org.snakeskin.logic.scalars.CubicScalar
+import org.snakeskin.logic.scalars.SineScalar
 import org.snakeskin.logic.scalars.SquareScalar
 import org.team401.robot2019.control.superstructure.SuperstructureRoutines
 import org.team401.robot2019.control.superstructure.SuperstructureSideManager
@@ -28,7 +30,19 @@ val LeftStick = HumanControls.attack3(0) {
 val RightStick = HumanControls.attack3(1) {
     deadbandAxis(Axes.ROLL, 0.1)
 
-    scaleAxis(Axes.ROLL, SquareScalar)
+    scaleAxis(Axes.ROLL, SineScalar)
+
+    whenButton(Buttons.STICK_TOP) {
+        pressed {
+            SuperstructureRoutines.ccMaybe(true)
+            SuperstructureMotionPlanner.startChicken()
+        }
+
+        released {
+            SuperstructureRoutines.ccMaybe(true)
+            SuperstructureMotionPlanner.goHome()
+        }
+    }
 }
 
 

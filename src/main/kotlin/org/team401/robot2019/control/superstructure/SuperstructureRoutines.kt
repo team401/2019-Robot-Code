@@ -1,6 +1,7 @@
 package org.team401.robot2019.control.superstructure
 
 import org.team401.robot2019.config.ControlParameters
+import org.team401.robot2019.control.superstructure.planning.ArmMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.SuperstructureMotionPlanner
 import org.team401.robot2019.control.superstructure.planning.WristMotionPlanner
 import org.team401.robot2019.subsystems.ArmSubsystem
@@ -267,7 +268,12 @@ object SuperstructureRoutines {
     fun stopScoring() {
         sideManager.reportAction(SuperstructureSideManager.Action.SCORE_FINISHED)
         onSideManagerUpdate()
-        WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Idle)
+        if (ArmMotionPlanner.isChicken()) {
+            //Backspin the wheels for a bit to get the ball back
+            WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.ChickenIntake)
+        } else {
+            WristSubsystem.wheelsMachine.setState(WristSubsystem.WristWheelsStates.Idle)
+        }
         LEDManager.setArmLedMode(LEDManager.ArmLedMode.Off)
     }
 

@@ -62,6 +62,7 @@ object WristSubsystem: Subsystem(100L) {
 
     enum class WristWheelsStates {
         Intake,
+        ChickenIntake,
         Idle,
         Scoring,
         Holding
@@ -191,6 +192,15 @@ object WristSubsystem: Subsystem(100L) {
             entry {
                 leftIntake.set(0.0)
                 rightIntake.set(0.0)
+            }
+        }
+
+        state (WristWheelsStates.ChickenIntake) {
+            timeout(1.0.Seconds, WristWheelsStates.Idle) //Backspin for one second, switch to idle
+
+            action {
+                leftIntake.set(ControlParameters.WristParameters.cargoIntakePower)
+                rightIntake.set(ControlParameters.WristParameters.cargoIntakePower)
             }
         }
 
