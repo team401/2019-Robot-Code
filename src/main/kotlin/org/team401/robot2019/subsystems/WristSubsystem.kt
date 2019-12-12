@@ -198,9 +198,17 @@ object WristSubsystem: Subsystem(100L) {
         state (WristWheelsStates.ChickenIntake) {
             timeout(1.0.Seconds, WristWheelsStates.Idle) //Backspin for one second, switch to idle
 
+            entry {
+                toolMachine.setState(WristToolStates.UnclampedForCargoIntake)
+            }
+
             action {
                 leftIntake.set(ControlParameters.WristParameters.cargoIntakePower)
                 rightIntake.set(ControlParameters.WristParameters.cargoIntakePower)
+            }
+
+            exit {
+                toolMachine.setState(WristToolStates.Cargo)
             }
         }
 
@@ -314,7 +322,7 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     override fun setup() {
-        leftIntakeTalon.inverted = false
+        leftIntakeTalon.inverted = true
         rightIntakeTalon.inverted = true
 
         leftIntakeTalon.configContinuousCurrentLimit(5)
