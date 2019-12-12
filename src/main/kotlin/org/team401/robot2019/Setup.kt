@@ -58,7 +58,7 @@ fun setup() {
 
     on (Events.TELEOP_ENABLED) {
         VisionManager.frontCamera.configForVision(1)
-        VisionManager.backCamera.configForVision(3)
+        VisionManager.backCamera.configForVision(1)
         VisionManager.frontCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.backCamera.setLedMode(LimelightCamera.LedMode.Off)
         VisionManager.stop()

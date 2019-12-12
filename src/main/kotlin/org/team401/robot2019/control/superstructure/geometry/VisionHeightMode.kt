@@ -6,8 +6,8 @@ package org.team401.robot2019.control.superstructure.geometry
  *
  */
 enum class VisionHeightMode(val pipeline: Int) {
-    NONE(1),
-    HATCH_INTAKE(1),
-    HATCH_SCORE(1),
-    CARGO_SCORE_ROCKET(1)
+    NONE(0),
+    HATCH_INTAKE(0),
+    HATCH_SCORE(0),
+    CARGO_SCORE_ROCKET(0)
 }

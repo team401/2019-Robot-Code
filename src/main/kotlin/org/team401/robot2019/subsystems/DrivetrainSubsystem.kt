@@ -292,6 +292,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<TalonSRXVic
         }
 
         state(DriveStates.VisionAlign) {
+            rejectIf { SuperstructureRoutines.side == SuperstructureRoutines.Side.BACK }
+
             lateinit var activeSide: SuperstructureRoutines.Side
             lateinit var activeCamera: LimelightCameraEnhanced
             lateinit var activeHeightMode: VisionHeightMode
@@ -330,6 +332,10 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<TalonSRXVic
                 )
                 val scoreAdjust = getScoreReversePercent()
 
+                val adjustment = targetAngle * ControlParameters.DrivetrainParameters.visionKp / 100.0
+                tank(output.left + adjustment + scoreAdjust, output.right - adjustment + scoreAdjust)
+
+                /*
                 val correctionAngle = VisionSolver.solve(seesTarget, targetArea, targetAngle, activeCamera.robotToCamera)
                 if (!correctionAngle.isNaN()) {
                     //Vision has found a valid target
@@ -347,6 +353,8 @@ object DrivetrainSubsystem: Subsystem(100L), IPathFollowingDiffDrive<TalonSRXVic
                     }
                     tank(output.left + scoreAdjust, output.right + scoreAdjust)
                 }
+
+                 */
             }
 
             exit {

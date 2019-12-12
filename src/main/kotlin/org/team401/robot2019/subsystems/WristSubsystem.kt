@@ -297,7 +297,7 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     override fun setup() {
-        leftIntakeTalon.inverted = false
+        leftIntakeTalon.inverted = true
         rightIntakeTalon.inverted = true
 
         rotation.inverted = false
