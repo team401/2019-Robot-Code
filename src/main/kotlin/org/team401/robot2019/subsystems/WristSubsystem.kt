@@ -174,7 +174,7 @@ object WristSubsystem: Subsystem(100L) {
     }
 
     private val intakeTicker = Ticker(
-        { leftIntakeTalon.outputCurrent >= 40.0 && rightIntakeTalon.outputCurrent >= 40.0 },
+        { leftIntakeTalon.outputCurrent >= 20.0 && rightIntakeTalon.outputCurrent >= 20.0 },
         0.15.Seconds,
         0.02.Seconds
     )

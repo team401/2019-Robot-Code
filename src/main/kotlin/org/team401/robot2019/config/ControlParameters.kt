@@ -240,7 +240,7 @@ object ControlParameters {
 
         val slowingFactor = 1 / 2.0
 
-        val visionKp = 0.6
+        val visionKp = 0.8
     }
 
     object FloorPickupParameters {
